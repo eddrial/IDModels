@@ -15,6 +15,7 @@ Holds for 2d coordinates in perpendicular plane.
 For This Model, y is electron direction, x is transverse, z is vertical
 '''
 from wRadia import wradObj as wrd
+from wRadia import wradMat
 import radia as rd
 import numpy as np
 
@@ -26,12 +27,19 @@ class model_parameters():
         self.mainmagdimension = 30
         self.clampcut = 5
         self.direction = 'y'
+        
+        self.ksi = [.019, .06]
+        
+        self.magnet_material = wradMat.wradMatLin([1,0],[0,1,0])
+        
+        #wrd.wradObj
     
 
 
-def appleMagnet(parameter_class, mag_center, loc_offset = [0,0,0]):
+def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
     '''orientation order z,y,x'''
     a = wrd.wradObjCnt([])
+    a.magnet_material = magnet_material
     p1 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2],
                                                               [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
                                                               [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
@@ -48,7 +56,9 @@ def appleMagnet(parameter_class, mag_center, loc_offset = [0,0,0]):
                                                               [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2 + parameter_class.clampcut]], 
                                                               parameter_class.direction)
     
-    a = wrd.wradObjAddToCnt(a, [p1,p2,p3])
+    a.wradObjAddToCnt([p1,p2,p3])
+    a.wradMatAppl(a.magnet_material)
+    
     return a
 
 def appleArray():
@@ -69,16 +79,21 @@ if __name__ == '__main__':
     #ATHENA_II Parameters
     AII = model_parameters()
     
-    #my magnet model
-    basemagnet = wrd.wradObjThckPgn(0, AII.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], AII.direction)
+    #magnet Material
+    mat1 = wradMat.wradMatLin(AII.ksi,[0,1,0])
     
-    a = appleMagnet(AII,4,[10,20,30])
+    #my magnet model
+    
+    a = appleMagnet(AII,4,mat1,[10,20,30])
+    
     #my beam model
     
     #my apple model
-    print(basemagnet.radobj)
     print(AII.origin)
     print(a.objectlist)
     
     rd.ObjDrwOpenGL(a.radobj)
     input("Press Enter to continue...")
+    
+    # All examples built from
+    #basemagnet = wrd.wradObjThckPgn(0, AII.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], AII.direction)
