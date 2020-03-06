@@ -2,6 +2,17 @@
 Created on 3 Mar 2020
 
 @author: oqb
+
+NOTE on ORIENTATION.
+
+Dimensions given as three element list relative to direction of extrusion:
+[z,y,x] when extrusion direction is y,
+[y,x,z] when extrusion direction is x,
+[x,z,y] when extrusion direction is z.
+
+Holds for 2d coordinates in perpendicular plane.
+
+For This Model, y is electron direction, x is transverse, z is vertical
 '''
 from wRadia import wradObj as wrd
 import radia as rd
@@ -18,13 +29,26 @@ class model_parameters():
     
 
 
-def appleMagnet(parameter_class, mag_center):
+def appleMagnet(parameter_class, mag_center, loc_offset = [0,0,0]):
+    '''orientation order z,y,x'''
     a = wrd.wradObjCnt([])
-    p1 = wrd.wradObjThckPgn(0, parameter_class.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], parameter_class.direction)
-    p2 = wrd.wradObjThckPgn(10, parameter_class.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], parameter_class.direction)
-    p3 = wrd.wradObjThckPgn(20, parameter_class.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], parameter_class.direction)
+    p1 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2]], 
+                                                              parameter_class.direction)
+    p2 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]-parameter_class.mainmagdimension/2,loc_offset[2]-parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]-parameter_class.mainmagdimension/2,loc_offset[2]+parameter_class.mainmagdimension/2 - parameter_class.clampcut],
+                                                              [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2 - parameter_class.clampcut],
+                                                              [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2]], 
+                                                              parameter_class.direction)
+    p3 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]+parameter_class.mainmagdimension/2,loc_offset[2]-parameter_class.mainmagdimension/2 + parameter_class.clampcut],
+                                                              [loc_offset[0]+parameter_class.mainmagdimension/2,loc_offset[2]+parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
+                                                              [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2 + parameter_class.clampcut]], 
+                                                              parameter_class.direction)
     
-    a = wrd.wradObjAddToCnt(a.radobj, [p1.radobj,p2.radobj,p3.radobj])
+    a = wrd.wradObjAddToCnt(a, [p1,p2,p3])
     return a
 
 def appleArray():
@@ -48,7 +72,7 @@ if __name__ == '__main__':
     #my magnet model
     basemagnet = wrd.wradObjThckPgn(0, AII.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], AII.direction)
     
-    a = appleMagnet(AII,4)
+    a = appleMagnet(AII,4,[10,20,30])
     #my beam model
     
     #my apple model
@@ -57,6 +81,4 @@ if __name__ == '__main__':
     print(a.objectlist)
     
     rd.ObjDrwOpenGL(a.radobj)
-    
-    print(a.objectlist)
-    pass
+    input("Press Enter to continue...")
