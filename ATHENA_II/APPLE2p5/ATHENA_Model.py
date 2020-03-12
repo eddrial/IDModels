@@ -29,7 +29,7 @@ class model_parameters():
 
         
         #Undulator
-        self.applePeriods = 10;
+        self.applePeriods = 2;
         self.appleMagnets = self.applePeriods*4 + 1;
         self.minimumgap = 2
         self.rowtorowgap = 0.5
@@ -54,7 +54,7 @@ class model_parameters():
 def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
     '''orientation order z,y,x'''
     a = wrd.wradObjCnt([])
-    a.magnet_material = magnet_material
+#    a.magnet_material = magnet_material
     p1 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2],
                                                               [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
                                                               [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
@@ -72,15 +72,27 @@ def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,
                                                               parameter_class.direction)
     
     a.wradObjAddToCnt([p1,p2,p3])
-    a.wradMatAppl(a.magnet_material)
+    a.wradMatAppl(magnet_material)
     
     return a
 
-def appleArray(parameter_class,loc_offset, magnet_material):
+def appleArray(parameter_class,loc_offset, magnet_material, halbach_direction):
     a = wrd.wradObjCnt([])
+    
+    loc_offset[1] = -((parameter_class.appleMagnets-1)/2.0) * (parameter_class.mainmagthick+parameter_class.shim)
+    M = []
+    mat = []
+    for i in range(4):
+        M.append([0,-np.sin(i*np.pi/2.0)*AII.M,np.cos(i*np.pi/2.0)*AII.M])
+        mat.append(wradMat.wradMatLin(AII.ksi,M[i]))
+    
     for x in range(0,parameter_class.appleMagnets):
-        mag = appleMagnet(parameter_class, loc_offset[1], magnet_material, loc_offset) 
-        loc_offset[1] += 10
+        
+        mag = appleMagnet(parameter_class, loc_offset[1], mat[x%4], loc_offset) 
+        loc_offset[1] += parameter_class.mainmagthick + parameter_class.shim
+        magcol = [(2 + y) / 4.0 for y in M[x%4]]
+        mag.wradObjDrwAtr(magcol, 2) # [x / myInt for x in myList]
+        mag.wradObjDivMag([2,3,1])
         a.wradObjAddToCnt([mag])
         
     return a
@@ -110,13 +122,15 @@ if __name__ == '__main__':
     #my magnet model
     
     a = appleMagnet(AII,4,mat1,[10,20,30])
-    magcol = [x / 2.0 for x in [0,AII.M,0]]
-    a.wradObjDrwAtr([x / 2.0 for x in [1,AII.M,0]], 2)
+    magcol = [(2+x) / 4.0 for x in [0,AII.M,0]]
+    a.wradObjDrwAtr(magcol, 2)
     a.wradObjDivMag([3,2,1])
     
     #my beam model
-    
-    b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], mat1)
+    #halbach direction describes the relative rotation of magnetisation as you progress downstream. 
+    #1 = clockwise, -1 = anticlockwise
+    halbach_direction = 1
+    b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], mat1, halbach_direction)
     
     #my apple model
     print(AII.origin)
