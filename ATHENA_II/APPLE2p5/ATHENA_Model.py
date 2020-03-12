@@ -18,6 +18,8 @@ from wRadia import wradObj as wrd
 from wRadia import wradMat
 import radia as rd
 import numpy as np
+import matplotlib.pyplot as plt
+#from uti_plot import *
 
 class model_parameters():
     
@@ -102,8 +104,8 @@ if __name__ == '__main__':
     #ATHENA_II Parameters
     AII = model_parameters()
     
-    #magnet Material
-    mat1 = wradMat.wradMatLin(AII.ksi,[0,AII.M,0])
+    #magnet Material [Bx,By,Bz]
+    mat1 = wradMat.wradMatLin(AII.ksi,[0,0,AII.M])
     
     #my magnet model
     
@@ -123,6 +125,36 @@ if __name__ == '__main__':
     rd.ObjDrwOpenGL(a.radobj)
     rd.ObjDrwOpenGL(b.radobj)
     
+    
+    #######PLOT SOMETHING#######################
+    rd.Solve(b.radobj, .001, 1000)
+    z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2000
+    
+    Bz1 = rd.FldLst(b.radobj, 'bz', [x1,-ymax,z], [x1,ymax,z], nump, 'arg', 0)
+    Bz2 = rd.FldLst(b.radobj, 'bz', [x2,-ymax,z], [x2,ymax,z], nump, 'arg',0 )
+    
+    Bz1 = np.array(Bz1)
+    Bz2 = np.array(Bz2)
+    
+    #set up plot
+    # set width and height
+    width = 7
+    height = 9
+    
+    #create the figure with nice margins
+    fig, axs = plt.subplots(2,1, sharex = False, sharey = False)
+    fig.subplots_adjust(left=.15, bottom=.16, right=.85, top= 0.9, wspace = 0.7, hspace = 0.6)
+    fig.set_size_inches(width, height)
+    
+    
+    axs[0].plot(Bz1[:,0],Bz1[:,1])
+    axs[1].plot(Bz2[:,0],Bz2[:,1])
+    
+    plt.show()
+    
+#    uti_plot1d_m([Bz1,Bz2],
+#                 labels=['Y', 'Vertical Magnetic Field', 'Vertical Magnetic Field vs. Vertical Position'], units=['mm', 'T'],
+#                 styles=['-b.', '--r.'], legend=['X = {} mm'.format(x1), 'X = {} mm'.format(x2)])
     
     
     input("Press Enter to continue...")
