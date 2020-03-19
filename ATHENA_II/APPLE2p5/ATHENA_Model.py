@@ -83,8 +83,8 @@ def appleArray(parameter_class,loc_offset, magnet_material, halbach_direction):
     M = []
     mat = []
     for i in range(4):
-        M.append([0,-np.sin(i*np.pi/2.0)*AII.M,np.cos(i*np.pi/2.0)*AII.M])
-        mat.append(wradMat.wradMatLin(AII.ksi,M[i]))
+        M.append([0,-np.sin(i*np.pi/2.0)*parameter_class.M,np.cos(i*np.pi/2.0)*parameter_class.M])
+        mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
         
