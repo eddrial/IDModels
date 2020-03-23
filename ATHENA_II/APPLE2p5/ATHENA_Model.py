@@ -135,7 +135,7 @@ if __name__ == '__main__':
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
     rd.ObjDrwOpenGL(b.radobj)
     #rd.TrfOrnt(b.radobj,rota)
-    b.wradRotate([0,0,0],[0,0.1,0],np.pi/2)
+    b.wradRotate([0,0,0],[1,0,0],np.pi)
     
     #my apple model
     print(AII.origin)
