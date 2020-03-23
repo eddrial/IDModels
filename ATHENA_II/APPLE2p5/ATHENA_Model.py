@@ -121,7 +121,7 @@ if __name__ == '__main__':
     
     #my magnet model
     
-    a = appleMagnet(AII,4,mat1,[10,20,30])
+    a = appleMagnet(AII,4,mat1,[10,0,30])
     magcol = [(2+x) / 4.0 for x in [0,AII.M,0]]
     a.wradObjDrwAtr(magcol, 2)
     a.wradObjDivMag([3,2,1])
@@ -132,6 +132,11 @@ if __name__ == '__main__':
     halbach_direction = 1
     b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], mat1, halbach_direction)
     
+    #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
+    
+    #rd.TrfOrnt(b.radobj,rota)
+    b.wradRotate([0,0,0],[1,2,3],np.pi/7)
+    
     #my apple model
     print(AII.origin)
     print(a.objectlist)
@@ -141,8 +146,9 @@ if __name__ == '__main__':
     
     
     #######PLOT SOMETHING#######################
-    rd.Solve(b.radobj, .001, 1000)
-    z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2000
+    b.wradSolve(0.001, 1000)
+    
+    z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2001
     
     Bz1 = rd.FldLst(b.radobj, 'bz', [x1,-ymax,z], [x1,ymax,z], nump, 'arg', 0)
     Bz2 = rd.FldLst(b.radobj, 'bz', [x2,-ymax,z], [x2,ymax,z], nump, 'arg',0 )
