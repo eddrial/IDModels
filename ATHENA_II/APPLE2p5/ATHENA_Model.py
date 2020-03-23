@@ -133,15 +133,15 @@ if __name__ == '__main__':
     b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], mat1, halbach_direction)
     
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
-    
+    rd.ObjDrwOpenGL(b.radobj)
     #rd.TrfOrnt(b.radobj,rota)
-    b.wradRotate([0,0,0],[1,2,3],np.pi/7)
+    b.wradRotate([0,0,0],[0,0.1,0],np.pi/2)
     
     #my apple model
     print(AII.origin)
-    print(a.objectlist)
+    print(b.objectlist)
     
-    rd.ObjDrwOpenGL(a.radobj)
+    #rd.ObjDrwOpenGL(a.radobj)
     rd.ObjDrwOpenGL(b.radobj)
     
     
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     axs[0].plot(Bz1[:,0],Bz1[:,1])
     axs[1].plot(Bz2[:,0],Bz2[:,1])
     
-    plt.show()
+#    plt.show()
     
 #    uti_plot1d_m([Bz1,Bz2],
 #                 labels=['Y', 'Vertical Magnetic Field', 'Vertical Magnetic Field vs. Vertical Position'], units=['mm', 'T'],
