@@ -13,12 +13,24 @@ Dimensions given as three element list relative to direction of extrusion:
 Holds for 2d coordinates in perpendicular plane.
 
 For This Model, y is electron direction, x is transverse, z is vertical
+View from Downstream
+
+~~~~~~~~C1v~C2v~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~            ^z
+~~C1h~~~~Q1~Q2~~~~C2h~~            |
+~~~~~~~~~~~~~~~~~~~~~~~            __> x
+~~C3h~~~~Q3~Q4~~~~C4h~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~C3v~C4v~~~~~~~~
+
+
 '''
 from wRadia import wradObj as wrd
 from wRadia import wradMat
 import radia as rd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
 class model_parameters():
@@ -35,6 +47,7 @@ class model_parameters():
         self.rowtorowgap = 0.5
         self.shim = 0.05
         self.periodlength = 15
+        self.halbach_direction = 1
         
         #magnet shape
         self.mainmagthick = (self.periodlength-4 * self.shim) / 4.0
@@ -45,7 +58,7 @@ class model_parameters():
         #magnetmaterial
         self.ksi = [.019, .06]
         self.M = 1.21*1.344
-        self.magnet_material = wradMat.wradMatLin(self.ksi,self.M)
+        self.magnet_material = wradMat.wradMatLin(self.ksi,[0,0,self.M])
         
         #wrd.wradObj
     
@@ -76,14 +89,14 @@ def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,
     
     return a
 
-def appleArray(parameter_class,loc_offset, magnet_material, halbach_direction):
+def appleArray(parameter_class, loc_offset, halbach_direction = -1):
     a = wrd.wradObjCnt([])
     
     loc_offset[1] = -((parameter_class.appleMagnets-1)/2.0) * (parameter_class.mainmagthick+parameter_class.shim)
     M = []
     mat = []
     for i in range(4):
-        M.append([0,-np.sin(i*np.pi/2.0)*parameter_class.M,np.cos(i*np.pi/2.0)*parameter_class.M])
+        M.append([np.sin(i*np.pi/2.0)*parameter_class.M,np.sin(i*np.pi/2.0)*parameter_class.M,halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
@@ -101,8 +114,39 @@ def appleArray(parameter_class,loc_offset, magnet_material, halbach_direction):
     #mag apply magnetisation and colour
     #add to container
 
-def appleTotal():
-    pass
+def appleLowerBeam(parameter_class):
+    halbach_direction = - 1 ##Field ABOVE the Halbach array
+    q3 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap,0,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    q4 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap,0,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    
+    q4.wradReflect(parameter_class.origin, [1,0,0])
+    
+    a = wrd.wradObjCnt([])
+    a.wradObjAddToCnt([q3,q4])
+    
+    return a
+    
+
+def appleUpperBeam(parameter_class):
+    halbach_direction = 1 ##Field BELOW the Halbach array
+    q1 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap,0,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
+    q2 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap,0,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
+    
+    q1.wradReflect(parameter_class.origin, [1,0,0])
+    
+    a = wrd.wradObjCnt([])
+    a.wradObjAddToCnt([q1,q2])
+    
+    return a
+
+def appleComplete(parameter_class):
+    ub = appleUpperBeam(parameter_class)
+    lb = appleLowerBeam(parameter_class)
+    
+    ap = wrd.wradObjCnt([])
+    ap.wradObjAddToCnt([ub,lb])
+    
+    return ap
 
 if __name__ == '__main__':
     
@@ -130,19 +174,33 @@ if __name__ == '__main__':
     #halbach direction describes the relative rotation of magnetisation as you progress downstream. 
     #1 = clockwise, -1 = anticlockwise
     halbach_direction = 1
-    b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], mat1, halbach_direction)
+    b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
+    
+    c = appleLowerBeam(AII)
+    d = appleUpperBeam(AII)
+    
+    e = appleComplete(AII)
     
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
-    rd.ObjDrwOpenGL(b.radobj)
-    #rd.TrfOrnt(b.radobj,rota)
-    b.wradRotate([0,0,0],[1,0,0],np.pi)
+#    rd.ObjDrwOpenGL(c.radobj)
+#    rd.ObjDrwOpenGL(d.radobj)
+    rd.ObjDrwOpenGL(e.radobj)
+    #EXAMPLES OF TRANSFORMATIONS
+    #b.wradRotate([0,0,0],[1,0,0],np.pi)
+    
+    #b.wradTranslate([10,20,30])
+        
+    #b.wradReflect([0,0,0], [4,1,1])
+    
+    #Lower APPLE BEAM
+    
     
     #my apple model
     print(AII.origin)
     print(b.objectlist)
     
     #rd.ObjDrwOpenGL(a.radobj)
-    rd.ObjDrwOpenGL(b.radobj)
+    #rd.ObjDrwOpenGL(b.radobj)
     
     
     #######PLOT SOMETHING#######################
