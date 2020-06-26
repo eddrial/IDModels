@@ -41,7 +41,7 @@ class model_parameters():
 
         
         #Undulator
-        self.applePeriods = 12;
+        self.applePeriods = 13;
         self.appleMagnets = self.applePeriods*4 + 1;
         self.minimumgap = 2
         self.rowtorowgap = 0.5
@@ -49,7 +49,7 @@ class model_parameters():
         self.compappleseparation = 15.0
         self.periodlength = 15
         self.circlin = 1 # -1 is circ, 1 is linear
-        self.shift = 7.5
+        self.shift = 0
         self.halbach_direction = 1
         
         #magnet shape
@@ -64,7 +64,7 @@ class model_parameters():
         #magnetmaterial
         self.ksi = [.019, .06]
         self.M = 1.21*1.344
-        self.Mova = 0.0 #Off Vertial Angle of Vertical type magnet blocks
+        self.Mova = 45.0 #Off Vertial Angle of Vertical type magnet blocks
         self.magnet_material = wradMat.wradMatLin(self.ksi,[0,0,self.M])
         
         
@@ -166,14 +166,14 @@ def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,
     
     return a
 
-def appleArray(parameter_class, loc_offset, M_vertical_offset, halbach_direction = -1):
+def appleArray(parameter_class, loc_offset, halbach_direction = -1):
     a = wrd.wradObjCnt([])
     
     loc_offset[1] += -((parameter_class.appleMagnets-1)/2.0) * (parameter_class.mainmagthick+parameter_class.shim)
     M = []
     mat = []
     for i in range(4):
-        M.append([np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
+        M.append([halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0), np.cos(i*np.pi/2.0)*parameter_class.M])
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
@@ -269,8 +269,8 @@ if __name__ == '__main__':
     rd.ObjDrwOpenGL(b2.radobj)
 
     
-    #c = appleLowerBeam(AII)
-    #d = appleUpperBeam(AII)
+    c = appleLowerBeam(AII)
+    d = appleUpperBeam(AII)
     
     e = appleComplete(AII)
     
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     
     
     #######PLOT SOMETHING#######################
-    tmpob = e
+    tmpob = d
     tmpob.wradSolve(0.001, 1000)
     
     z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2001
