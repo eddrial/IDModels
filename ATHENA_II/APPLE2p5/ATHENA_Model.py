@@ -41,7 +41,7 @@ class model_parameters():
 
         
         #Undulator
-        self.applePeriods = 13;
+        self.applePeriods = 3;
         self.appleMagnets = self.applePeriods*4 + 1;
         self.minimumgap = 2
         self.rowtorowgap = 0.5
@@ -64,7 +64,7 @@ class model_parameters():
         #magnetmaterial
         self.ksi = [.019, .06]
         self.M = 1.21*1.344
-        self.Mova = 45.0 #Off Vertial Angle of Vertical type magnet blocks
+        self.Mova = 90.0 #Off Vertical Angle of Vertical type magnet blocks
         self.magnet_material = wradMat.wradMatLin(self.ksi,[0,0,self.M])
         
         
@@ -99,7 +99,7 @@ def compHArray(parameter_class, loc_offset, halbach_direction = -1):
     M = []
     mat = []
     for i in range(4):
-        M.append([np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
+        M.append([halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0)])
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
@@ -123,7 +123,8 @@ def compVArray(parameter_class, loc_offset, halbach_direction = -1):
     M = []
     mat = []
     for i in range(4):
-        M.append([np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
+        #M.append([np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
+        M.append([-halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M*np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.sin(2*np.pi*parameter_class.Mova/360.0)])
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
@@ -173,7 +174,9 @@ def appleArray(parameter_class, loc_offset, halbach_direction = -1):
     M = []
     mat = []
     for i in range(4):
-        M.append([halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0), np.cos(i*np.pi/2.0)*parameter_class.M])
+        #M.append([halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0), np.cos(i*np.pi/2.0)*parameter_class.M])
+        M.append([np.cos(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0)])
+        
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
@@ -181,7 +184,6 @@ def appleArray(parameter_class, loc_offset, halbach_direction = -1):
         mag = appleMagnet(parameter_class, loc_offset[1], mat[x%4], loc_offset) 
         loc_offset[1] += parameter_class.mainmagthick + parameter_class.shim
         magcol = [(2 + y) / 4.0 for y in M[x%4]]
-        print('Apple '+ str(magcol))
         mag.wradObjDrwAtr(magcol, 2) # [x / myInt for x in myList]
         mag.wradObjDivMag([2,3,1])
         a.wradObjAddToCnt([mag])
@@ -264,7 +266,7 @@ if __name__ == '__main__':
     
     b2 = compHArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     
-    rd.ObjDrwOpenGL(b.radobj)
+#    rd.ObjDrwOpenGL(b.radobj)
     rd.ObjDrwOpenGL(b1.radobj)
     rd.ObjDrwOpenGL(b2.radobj)
 
@@ -297,7 +299,7 @@ if __name__ == '__main__':
     
     
     #######PLOT SOMETHING#######################
-    tmpob = d
+    tmpob = e
     tmpob.wradSolve(0.001, 1000)
     
     z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2001
@@ -337,7 +339,7 @@ if __name__ == '__main__':
 #                 styles=['-b.', '--r.'], legend=['X = {} mm'.format(x1), 'X = {} mm'.format(x2)])
     
     
-    input("Press Enter to continue...")
+input("Press Enter to continue...")
     
     # All examples built from
     #basemagnet = wrd.wradObjThckPgn(0, AII.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], AII.direction)
