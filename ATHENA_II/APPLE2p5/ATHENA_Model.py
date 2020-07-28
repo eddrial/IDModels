@@ -263,12 +263,13 @@ if __name__ == '__main__':
     halbach_direction = 1
     b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     b1 = compVArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
+    b1i = compVArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], -halbach_direction)
     
     b2 = compHArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     
 #    rd.ObjDrwOpenGL(b.radobj)
     rd.ObjDrwOpenGL(b1.radobj)
-    rd.ObjDrwOpenGL(b2.radobj)
+    rd.ObjDrwOpenGL(b1i.radobj)
 
     
     c = appleLowerBeam(AII)
