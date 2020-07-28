@@ -263,7 +263,8 @@ if __name__ == '__main__':
     halbach_direction = 1
     b = appleArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     b1 = compVArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
-    b1i = compVArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], -halbach_direction)
+    b1i = compVArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
+    b1i.wradReflect([0,0,0], [1,0,0])
     
     b2 = compHArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     
@@ -280,7 +281,7 @@ if __name__ == '__main__':
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
 #    rd.ObjDrwOpenGL(c.radobj)
 #    rd.ObjDrwOpenGL(d.radobj)
-    rd.ObjDrwOpenGL(e.radobj)
+#    rd.ObjDrwOpenGL(e.radobj)
     #EXAMPLES OF TRANSFORMATIONS
     #b.wradRotate([0,0,0],[1,0,0],np.pi)
     
@@ -333,7 +334,7 @@ if __name__ == '__main__':
     axs[1].plot(Bz2[:,0],Bz2[:,1])
     axs[1].plot(Bx2[:,0],Bx2[:,1])
     
-    plt.show()
+#    plt.show()
     
 #    uti_plot1d_m([Bz1,Bz2],
 #                 labels=['Y', 'Vertical Magnetic Field', 'Vertical Magnetic Field vs. Vertical Position'], units=['mm', 'T'],
