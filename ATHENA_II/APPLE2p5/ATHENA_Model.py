@@ -33,38 +33,71 @@ import matplotlib.pyplot as plt
 from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
+'''class Neuron(object):
+
+    def __init__(self, **kwargs):
+        prop_defaults = {
+            "num_axon_segments": 0, 
+            "apical_bifibrications": "fancy default",
+            ...
+        }
+
+        for (prop, default) in prop_defaults.iteritems():
+            setattr(self, prop, kwargs.get(prop, default))
+            '''
+
 class model_parameters():
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         #general
-        self.origin = np.zeros(3)
-
+        prop_defaults = {
+            "origin": np.zeros(3), #set the origin of the device. Default is array([0., 0., 0.])
+            
+            ######  Undulator Parameters  ######
+            
+            "applePeriods" : 3, # Number of Periods of the APPLE Undulator
+            "minimumgap" : 2, # Gap used in calculation in mm
+            "rowtorowgap": 0.5, # for APPLE devices the distance between functional rows on the same jaw
+            "shim" : 0.05, # The gap between each magnet in a row / magnet array.
+            "compappleseparation" : 15.0, # The gap between functional magnets and compenation magnets
+            "periodlength" : 15, # The period length of the undulator
+            "circlin" : 1, # Polarisation mode of the undulator -1 is circ (parallel), 1 is linear (antiparallel)
+            "shift" : 0, # distance of row shift in mm
+            "halbach_direction" : 1,  # a value to determine the sense of magnet rotation along the axis. 1 = Field BELOW array. -1 Field ABOVE array 
+            
+            #####  Magnet Shape  #####
+            
+            "mainmagdimension" : 30, # The primary magnet dimension for the functional magnets [mm]
+            "clampcut" : 5, # The size of the square removed for clamping [mm]
+            "direction" : 'y', # The direction of extrusion - along the direction of travel of the electrons. Dimensions propogate in the order [z,y,x]
+        
+            #####  Compensation Magnets #####
+            
+            # "compmagdimensions" : [15.0,self.mainmagthick,30.0] # dimensions of the compensation magnets [mm]
+            
+            #####  Magnet Material #####
+            
+            "ksi" : [.019, .06], # Permeability - anisotropic
+            "M" : 1.21*1.344, # Block Remanence [T]
+            "Mova" : 0.0 # Off Vertical Angle of Vertical type magnet blocks [degrees]
+        }
+        
+        for (prop, default) in prop_defaults.items():
+            setattr(self, prop, kwargs.get(prop, default))
+        
+        ###Derived Attributes###
         
         #Undulator
-        self.applePeriods = 3;
-        self.appleMagnets = self.applePeriods*4 + 1;
-        self.minimumgap = 2
-        self.rowtorowgap = 0.5
-        self.shim = 0.05
-        self.compappleseparation = 15.0
-        self.periodlength = 15
-        self.circlin = 1 # -1 is circ, 1 is linear
-        self.shift = 0
-        self.halbach_direction = 1
+        self.appleMagnets = int(self.applePeriods*4 + 1);
         
         #magnet shape
         self.mainmagthick = (self.periodlength-4 * self.shim) / 4.0
-        self.mainmagdimension = 30
-        self.clampcut = 5
-        self.direction = 'y'
+
         
         #compensation magnets
         self.compmagdimensions = [15.0,self.mainmagthick,30.0]
         
         #magnetmaterial
-        self.ksi = [.019, .06]
-        self.M = 1.21*1.344
-        self.Mova = 90.0 #Off Vertical Angle of Vertical type magnet blocks
         self.magnet_material = wradMat.wradMatLin(self.ksi,[0,0,self.M])
         
         
@@ -141,6 +174,24 @@ def compVArray(parameter_class, loc_offset, halbach_direction = -1):
     
     return a
 
+def compUpperBeam(parameter_class):
+    a = wrd.wradObjCnt([])
+    
+    q1v = compVArray(parameter_class, [0,0,-parameter_class.compappleseparation], halbach_direction = -1)
+#    q1h
+#    q2v
+#    q2h
+    
+    a.wradObjAddToCnt([q1v])
+    
+    return a
+
+def compLowerBeam():
+    return
+
+def compBothBeams():
+    return
+
 
 def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
     '''orientation order z,y,x'''
@@ -179,11 +230,11 @@ def appleArray(parameter_class, loc_offset, halbach_direction = -1):
         
         mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
     
-    for x in range(0,parameter_class.appleMagnets):
+    for x in range(-int((parameter_class.appleMagnets-1)/2),int(1+(parameter_class.appleMagnets-1)/2)):#0,parameter_class.appleMagnets
         
-        mag = appleMagnet(parameter_class, loc_offset[1], mat[x%4], loc_offset) 
+        mag = appleMagnet(parameter_class, loc_offset[1], mat[(x)%4], loc_offset) 
         loc_offset[1] += parameter_class.mainmagthick + parameter_class.shim
-        magcol = [(2 + y) / 4.0 for y in M[x%4]]
+        magcol = [(2 + y) / 4.0 for y in M[(x)%4]]
         mag.wradObjDrwAtr(magcol, 2) # [x / myInt for x in myList]
         mag.wradObjDivMag([2,3,1])
         a.wradObjAddToCnt([mag])
@@ -228,6 +279,9 @@ def appleComplete(parameter_class):
     
     return ap
 
+def compensatedAppleComplete():
+    return
+
 if __name__ == '__main__':
     
     #my parameter list
@@ -269,8 +323,8 @@ if __name__ == '__main__':
     b2 = compHArray(AII, [-AII.mainmagdimension/2.0 - AII.minimumgap,0,-AII.mainmagdimension/2.0 - AII.rowtorowgap], halbach_direction)
     
 #    rd.ObjDrwOpenGL(b.radobj)
-    rd.ObjDrwOpenGL(b1.radobj)
-    rd.ObjDrwOpenGL(b1i.radobj)
+#    rd.ObjDrwOpenGL(b1.radobj)
+#    rd.ObjDrwOpenGL(b1i.radobj)
 
     
     c = appleLowerBeam(AII)
@@ -278,10 +332,16 @@ if __name__ == '__main__':
     
     e = appleComplete(AII)
     
+    #comp upper beam
+#    f = compUpperBeam(AII)
+    
+#    rd.ObjDrwOpenGL(f.radobj)
+    #comp lower beam
+    
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
 #    rd.ObjDrwOpenGL(c.radobj)
 #    rd.ObjDrwOpenGL(d.radobj)
-#    rd.ObjDrwOpenGL(e.radobj)
+    rd.ObjDrwOpenGL(e.radobj)
     #EXAMPLES OF TRANSFORMATIONS
     #b.wradRotate([0,0,0],[1,0,0],np.pi)
     
@@ -334,14 +394,14 @@ if __name__ == '__main__':
     axs[1].plot(Bz2[:,0],Bz2[:,1])
     axs[1].plot(Bx2[:,0],Bx2[:,1])
     
-#    plt.show()
+    plt.show()
     
 #    uti_plot1d_m([Bz1,Bz2],
 #                 labels=['Y', 'Vertical Magnetic Field', 'Vertical Magnetic Field vs. Vertical Position'], units=['mm', 'T'],
 #                 styles=['-b.', '--r.'], legend=['X = {} mm'.format(x1), 'X = {} mm'.format(x2)])
     
     
-input("Press Enter to continue...")
+#input("Press Enter to continue...")
     
     # All examples built from
     #basemagnet = wrd.wradObjThckPgn(0, AII.mainmagthick, [[-5,-5],[-5,5],[5,5],[5,-5]], AII.direction)
