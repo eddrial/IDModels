@@ -83,7 +83,6 @@ class Test_appleUpperBeam_magnetOrientation_TiltedField(unittest.TestCase):
     def test_q1_us_neighbourcentre_magnet_horizontal_ds(self):
         '''Test to check magnet upstream of central magnet upper structure side is a pointing upstream (decreasing s) magnet
         '''
-
         self.assertAlmostEqual(self.tc.objectlist[0].objectlist[int(-1+(self.tc.objectlist[0].objectlist.__len__()-1)/2)].objectlist[0].magnetisation[1], -1.62624, 8)
         
     def test_q1_2xus_neighbourcentre_magnet_vertical_down(self):

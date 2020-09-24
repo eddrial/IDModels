@@ -271,16 +271,111 @@ def appleUpperBeam(parameter_class):
     return a
 
 def appleComplete(parameter_class):
-    ub = appleUpperBeam(parameter_class)
-    lb = appleLowerBeam(parameter_class)
+    ##### UPPER BEAM #####
+    halbach_direction = 1 ##Field BELOW the Halbach array
+    q1 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap/2.0, parameter_class.circlin * parameter_class.shift,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
+    q2 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap/2.0, 0,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
     
-    ap = wrd.wradObjCnt([])
-    ap.wradObjAddToCnt([ub,lb])
+    q1.wradReflect(parameter_class.origin, [1,0,0])
     
-    return ap
+    ##### LOWER BEAM #####
+    halbach_direction = - 1 ##Field ABOVE the Halbach array
+    q3 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap/2.0,0,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    q4 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap/2.0, parameter_class.circlin * parameter_class.shift,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    
+    q4.wradReflect(parameter_class.origin, [1,0,0])
+    
+    a = wrd.wradObjCnt([])
+    a.wradObjAddToCnt([q1,q2,q3,q4])
+    
+    return a
 
-def compensatedAppleComplete():
-    return
+
+    ###Old Way
+#    ub = appleUpperBeam(parameter_class)
+#    lb = appleLowerBeam(parameter_class)
+#    
+#    ap = wrd.wradObjCnt([])
+#    ap.wradObjAddToCnt([ub,lb])
+    
+#    return ap
+
+def compensatedAppleComplete(parameter_class, style = "symmetric"):
+    ##### FUNCTIONAL MAGNETS #####
+    ##### UPPER BEAM #####
+    halbach_direction = 1 ##Field BELOW the Halbach array
+    q1 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap/2.0, parameter_class.circlin * parameter_class.shift,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
+    q2 = appleArray(parameter_class, [parameter_class.mainmagdimension/2.0 + parameter_class.minimumgap/2.0, 0,parameter_class.mainmagdimension/2.0 + parameter_class.rowtorowgap/2.0], halbach_direction)
+    
+    q1.wradReflect(parameter_class.origin, [1,0,0])
+    
+    ##### LOWER BEAM #####
+    halbach_direction = - 1 ##Field ABOVE the Halbach array
+    q3 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap/2.0,0,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    q4 = appleArray(parameter_class, [-parameter_class.mainmagdimension/2.0 - parameter_class.minimumgap/2.0, parameter_class.circlin * parameter_class.shift,-parameter_class.mainmagdimension/2.0 - parameter_class.rowtorowgap/2.0], halbach_direction)
+    
+    q4.wradReflect(parameter_class.origin, [1,0,0])
+    
+    ##### Q1 Compensation Magnets #####
+    q1v = compVArray(parameter_class, [-parameter_class.compmagdimensions[0]/2.0 - parameter_class.rowtorowgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.minimumgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation], 
+                                       halbach_direction = 1)
+    
+    q1h  = compHArray(parameter_class,[-parameter_class.compmagdimensions[0]/2.0 - parameter_class.minimumgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.rowtorowgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation],
+                                       halbach_direction = -1)
+    
+    q1h.wradReflect(parameter_class.origin, [0,0,1])
+    
+    ##### Q2 Compensation Magnets #####
+    q2v = compVArray(parameter_class, [-parameter_class.compmagdimensions[0]/2.0 - parameter_class.rowtorowgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.minimumgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation], 
+                                       halbach_direction = -1)
+    
+    q2h  = compHArray(parameter_class,[-parameter_class.compmagdimensions[0]/2.0 - parameter_class.minimumgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.rowtorowgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation],
+                                       halbach_direction = -1)
+    
+    q2v.wradReflect(parameter_class.origin, [1,0,0])
+    q2h.wradRotate(parameter_class.origin,[0,1,0],np.pi)
+    q2h.wradFieldInvert()
+    
+    ##### Q3 Compensation Magnets #####
+    q3v = compVArray(parameter_class, [-parameter_class.compmagdimensions[0]/2.0 - parameter_class.rowtorowgap/2.0,
+                                       0,
+                                       parameter_class.compmagdimensions[2]/2.0 + parameter_class.minimumgap/2.0 + parameter_class.mainmagdimension + parameter_class.compappleseparation], 
+                                       halbach_direction = -1)
+    
+    q3h  = compHArray(parameter_class,[-parameter_class.compmagdimensions[0]/2.0 - parameter_class.minimumgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.rowtorowgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation],
+                                       halbach_direction = -1)
+    
+    q3v.wradFieldInvert()
+    
+    ##### Q4 Compensation Magnets #####
+    q4v = compVArray(parameter_class, [-parameter_class.compmagdimensions[0]/2.0 - parameter_class.rowtorowgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.minimumgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation], 
+                                       halbach_direction = 1)
+    
+    q4h  = compHArray(parameter_class,[-parameter_class.compmagdimensions[0]/2.0 - parameter_class.minimumgap/2.0,
+                                       0,
+                                       -parameter_class.compmagdimensions[2]/2.0 - parameter_class.rowtorowgap/2.0 - parameter_class.mainmagdimension-parameter_class.compappleseparation],
+                                       halbach_direction = -1)
+    
+    q4h.wradReflect(parameter_class.origin, [1,0,0])
+    q4h.wradFieldInvert()
+    q4v.wradRotate(parameter_class.origin,[0,1,0],np.pi)
+    
+    a = wrd.wradObjCnt([])
+    a.wradObjAddToCnt([q1,q1h,q1v,q2,q2h,q2v,q3,q3h,q3v,q4,q4h,q4v])
+    
+    return a
 
 if __name__ == '__main__':
     
@@ -332,6 +427,8 @@ if __name__ == '__main__':
     
     e = appleComplete(AII)
     
+    f = compensatedAppleComplete(AII)
+    
     #comp upper beam
 #    f = compUpperBeam(AII)
     
@@ -341,7 +438,8 @@ if __name__ == '__main__':
     #rota = rd.TrfRot([0,0,0],[1,1,1],np.pi/7.0)
 #    rd.ObjDrwOpenGL(c.radobj)
 #    rd.ObjDrwOpenGL(d.radobj)
-    rd.ObjDrwOpenGL(e.radobj)
+#    rd.ObjDrwOpenGL(e.radobj)
+    rd.ObjDrwOpenGL(f.radobj)
     #EXAMPLES OF TRANSFORMATIONS
     #b.wradRotate([0,0,0],[1,0,0],np.pi)
     
@@ -361,7 +459,7 @@ if __name__ == '__main__':
     
     
     #######PLOT SOMETHING#######################
-    tmpob = e
+    tmpob = f
     tmpob.wradSolve(0.001, 1000)
     
     z = 0; x1 = -15; x2 = 0; ymax = 400; nump = 2001
