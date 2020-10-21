@@ -33,18 +33,6 @@ import matplotlib.pyplot as plt
 from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
-'''class Neuron(object):
-
-    def __init__(self, **kwargs):
-        prop_defaults = {
-            "num_axon_segments": 0, 
-            "apical_bifibrications": "fancy default",
-            ...
-        }
-
-        for (prop, default) in prop_defaults.iteritems():
-            setattr(self, prop, kwargs.get(prop, default))
-            '''
 
 class model_parameters():
     
