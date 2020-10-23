@@ -45,6 +45,7 @@ class model_parameters():
             #####  Compensation Magnets #####
             
             "nominal_cmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+            "comp_magnet_chamfer" : [5.0,0.0,5.0],
             
             #####  Magnet Material #####
             
@@ -61,12 +62,15 @@ class model_parameters():
         #Undulator
         self.totalmagnets = int(self.periods*self.magnets_per_period + 1);
         
-        #magnet shape
-        self.mainmagthick = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
-
-        
-        #compensation magnets
-        self.compmagdimensions = [15.0,self.mainmagthick,30.0]
+        #magnet thicknesses
+        self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
+        self.nominal_cmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
+        
+#TODO
+    #def read json
+    #def write json
+    #def write to h5
+    #def read h5

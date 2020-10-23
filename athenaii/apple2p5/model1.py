@@ -30,7 +30,8 @@ from wradia import wrad_mat as wrdm
 import radia as rd
 import numpy as np
 import matplotlib.pyplot as plt
-from idcomponents import magnet_shapes
+from idcomponents import parameters
+from idcomponents import magnet_shapes as ms
 from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
@@ -182,9 +183,9 @@ def compBothBeams():
     return
 
 
-def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
-    '''orientation order z,y,x'''
-    a = wrd.wradObjCnt([])
+'''def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):'''
+'''orientation order z,y,x'''
+'''    a = wrd.wradObjCnt([])
 #    a.magnet_material = magnet_material
     p1 = wrd.wradObjThckPgn(loc_offset[1], parameter_class.mainmagthick, [[loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2],
                                                               [loc_offset[0]-parameter_class.mainmagdimension/2 + parameter_class.clampcut,loc_offset[2]+parameter_class.mainmagdimension/2],
@@ -202,10 +203,10 @@ def appleMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,
                                                               [loc_offset[0]+parameter_class.mainmagdimension/2 - parameter_class.clampcut,loc_offset[2]-parameter_class.mainmagdimension/2 + parameter_class.clampcut]], 
                                                               parameter_class.direction)
     
-    a.wradObjAddToCnt([p1,p2,p3])
-    a.wradMatAppl(magnet_material)
+    a.cont.wradObjAddToCnt([p1,p2,p3])
+    a.cont.wradMatAppl(magnet_material)
     
-    return a
+    return a'''
 
 def appleArray(parameter_class, loc_offset, halbach_direction = -1):
     a = wrd.wradObjCnt([])
@@ -376,17 +377,17 @@ if __name__ == '__main__':
     direction = 'y'
     '''
     #ATHENA_II Parameters
-    AII = model_parameters()
+    AII = parameters.model_parameters()
     
     #magnet Material [Bx,By,Bz]
     mat1 = wrdm.wradMatLin(AII.ksi,[0,0,AII.M])
     
     #my magnet model
     
-    a = appleMagnet(AII,4,mat1,[0,0,0])
+    a = ms.appleMagnet(AII)
     magcol = [(2+x) / 4.0 for x in [0,AII.M,0]]
-    a.wradObjDrwAtr(magcol, 2)
-    a.wradObjDivMag([3,2,1])
+    a.cont.wradObjDrwAtr(magcol, 2)
+    a.cont.wradObjDivMag([3,2,1])
     
     a1 = compMagnet(AII,4,mat1,[0,0,0])
     a1.wradObjDrwAtr(magcol, 2)
