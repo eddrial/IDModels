@@ -4,9 +4,9 @@ Created on 3 Mar 2020
 @author: oqb
 '''
 import unittest
-import wRadia as wrd
+import wradia as wrd
 import radia as rd
-import ATHENA_II.APPLE2p5.ATHENA_Model as am
+import apple2p5.model1 as am
 
 
 class Test(unittest.TestCase):
@@ -15,7 +15,7 @@ class Test(unittest.TestCase):
         assert a==2
 
     def wradiaimports(self):
-        a = wrd.wradObj.wradObjCnt()
+        a = wrd.wrad_obj.wradObjCnt()
         print(a)
         self.assertFalse(False, 'msg')
         

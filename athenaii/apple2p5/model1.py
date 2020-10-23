@@ -25,12 +25,12 @@ View from Downstream
 
 
 '''
-from wRadia import wradObj as wrd
-from wRadia import wradMat
+from wradia import wrad_obj as wrd
+from wradia import wrad_mat as wrdm
 import radia as rd
 import numpy as np
 import matplotlib.pyplot as plt
-from IDComponents import MagnetsAndArrays
+from idcomponents import magnet_shapes
 from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
@@ -87,7 +87,7 @@ class model_parameters():
         self.compmagdimensions = [15.0,self.mainmagthick,30.0]
         
         #magnetmaterial
-        self.magnet_material = wradMat.wradMatLin(self.ksi,[0,0,self.M])
+        self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
         
         #wrd.wradObj
@@ -122,7 +122,7 @@ def compHArray(parameter_class, loc_offset, halbach_direction = -1):
     mat = []
     for i in range(4):
         M.append([halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0)])
-        mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
+        mat.append(wrdm.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
         
@@ -147,7 +147,7 @@ def compVArray(parameter_class, loc_offset, halbach_direction = -1):
     for i in range(4):
         #M.append([np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M])
         M.append([-halbach_direction * np.cos(i*np.pi/2.0)*parameter_class.M*np.cos(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.sin(2*np.pi*parameter_class.Mova/360.0)])
-        mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
+        mat.append(wrdm.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(0,parameter_class.appleMagnets):
         
@@ -217,7 +217,7 @@ def appleArray(parameter_class, loc_offset, halbach_direction = -1):
         #M.append([halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0), np.cos(i*np.pi/2.0)*parameter_class.M])
         M.append([np.cos(i*np.pi/2.0)*parameter_class.M*np.sin(2*np.pi*parameter_class.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*parameter_class.M, np.cos(i*np.pi/2.0)*parameter_class.M * np.cos(2*np.pi*parameter_class.Mova/360.0)])
         
-        mat.append(wradMat.wradMatLin(parameter_class.ksi,M[i]))
+        mat.append(wrdm.wradMatLin(parameter_class.ksi,M[i]))
     
     for x in range(-int((parameter_class.appleMagnets-1)/2),int(1+(parameter_class.appleMagnets-1)/2)):#0,parameter_class.appleMagnets
         
@@ -379,7 +379,7 @@ if __name__ == '__main__':
     AII = model_parameters()
     
     #magnet Material [Bx,By,Bz]
-    mat1 = wradMat.wradMatLin(AII.ksi,[0,0,AII.M])
+    mat1 = wrdm.wradMatLin(AII.ksi,[0,0,AII.M])
     
     #my magnet model
     
