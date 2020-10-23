@@ -30,6 +30,7 @@ from wRadia import wradMat
 import radia as rd
 import numpy as np
 import matplotlib.pyplot as plt
+from IDComponents import MagnetsAndArrays
 from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
