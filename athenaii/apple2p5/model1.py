@@ -94,7 +94,7 @@ class model_parameters():
         #wrd.wradObj
     
 
-def compMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
+'''def compMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0]):
     #[z,y,x]
     
     a = wrd.wradObjCnt([])
@@ -113,7 +113,7 @@ def compMagnet(parameter_class, mag_center, magnet_material, loc_offset = [0,0,0
     a.wradObjAddToCnt([p1,p2])
     a.wradMatAppl(magnet_material)
     
-    return a
+    return a'''
 
 def compHArray(parameter_class, loc_offset, halbach_direction = -1):
     a = wrd.wradObjCnt([])
@@ -222,7 +222,7 @@ def appleArray(parameter_class, loc_offset, halbach_direction = -1):
     
     for x in range(-int((parameter_class.appleMagnets-1)/2),int(1+(parameter_class.appleMagnets-1)/2)):#0,parameter_class.appleMagnets
         
-        mag = appleMagnet(parameter_class, loc_offset[1], mat[(x)%4], loc_offset) 
+        mag = ms.appleMagnet(parameter_class, loc_offset) 
         loc_offset[1] += parameter_class.mainmagthick + parameter_class.shim
         magcol = [(2 + y) / 4.0 for y in M[(x)%4]]
         mag.wradObjDrwAtr(magcol, 2) # [x / myInt for x in myList]
@@ -389,9 +389,9 @@ if __name__ == '__main__':
     a.cont.wradObjDrwAtr(magcol, 2)
     a.cont.wradObjDivMag([3,2,1])
     
-    a1 = compMagnet(AII,4,mat1,[0,0,0])
-    a1.wradObjDrwAtr(magcol, 2)
-    a1.wradObjDivMag([3,2,1])
+    a1 = ms.compMagnet(AII,[0,0,0])
+    a1.cont.wradObjDrwAtr(magcol, 2)
+    a1.cont.wradObjDivMag([3,2,1])
     
 #    rd.ObjDrwOpenGL(a.radobj)
 #    rd.ObjDrwOpenGL(a1.radobj)
