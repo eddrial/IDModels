@@ -76,8 +76,10 @@ class compensatedAPPLE():
                           'c4h' : ha.HalbachArray(model_parameters,cmagnet),
                           }
         
+        ##### Functional Magnets #####
+        
         ### Q1 ###
-        self.allarrays['q1'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[0] + mp.rowtorowgap)/2.0,
+        self.allarrays['q1'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
                                                  rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + gap)/2.0])
         self.allarrays['q1'].cont.wradFieldInvert()
@@ -85,7 +87,7 @@ class compensatedAPPLE():
         
         
         ### Q2 ###
-        self.allarrays['q2'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[0] + mp.rowtorowgap)/2.0,
+        self.allarrays['q2'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
                                                  rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + gap)/2.0])
         self.allarrays['q2'].cont.wradFieldInvert()
@@ -93,15 +95,77 @@ class compensatedAPPLE():
         self.allarrays['q2'].cont.wradReflect([0,0,0],[1,0,0])
         
         ### Q3 ###
-        self.allarrays['q3'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[0] + mp.rowtorowgap)/2.0,
+        self.allarrays['q3'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
                                                  rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + gap)/2.0])
         self.allarrays['q3'].cont.wradReflect([0,0,0],[1,0,0])
         
         ### Q4 ###
-        self.allarrays['q4'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[0] + mp.rowtorowgap)/2.0,
+        self.allarrays['q4'].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
                                                  rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + gap)/2.0])
+        
+        
+        ##### Compensation Magnets #####
+        
+        ### C1h ###
+        self.allarrays['c1h'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + gap)/2.0])
+        self.allarrays['c1h'].cont.wradFieldInvert()
+        self.allarrays['c1h'].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+        ### C2h ###
+        self.allarrays['c2h'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + gap)/2.0])
+        self.allarrays['c2h'].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+        ### C3h ###
+        self.allarrays['c3h'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + gap)/2.0])
+        self.allarrays['c3h'].cont.wradFieldInvert()
+        self.allarrays['c3h'].cont.wradReflect([0,0,0],[1,0,0])
+        
+        ### C4h ###
+        self.allarrays['c4h'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + gap)/2.0])
+        self.allarrays['c4h'].cont.wradReflect([0,0,0],[1,0,0])
+        
+        ### C1v ###
+        self.allarrays['c1v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c1v'].cont.wradFieldRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c1v'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 (mp.nominal_cmagnet_dimensions[2] + gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+
+        ### C2v ###
+        self.allarrays['c2v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c2v'].cont.wradFieldRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c2v'].cont.wradFieldInvert()
+        self.allarrays['c2v'].cont.wradReflect([0,0,0],[1,0,0])
+        self.allarrays['c2v'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 (mp.nominal_cmagnet_dimensions[2] + gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+
+        ### C3v ###
+        self.allarrays['c3v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c3v'].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarrays['c3v'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 (mp.nominal_cmagnet_dimensions[2] + gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+        self.allarrays['c3v'].cont.wradReflect([0,0,0],[0,0,1])
+        
+        ### C4v ###
+        self.allarrays['c4v'].cont.wradRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarrays['c4v'].cont.wradFieldRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarrays['c4v'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[2] + gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+        
+        
         
         for key in self.allarrays:
             self.cont.wradObjAddToCnt([self.allarrays[key].cont])
@@ -114,7 +178,7 @@ class compensatedAPPLE():
 
 if __name__ == '__main__':
     testparams = parameters.model_parameters(Mova = 20)
-    a = compensatedAPPLE(testparams)
+    a = compensatedAPPLE(testparams, gap = 3)
     
     rd.ObjDrwOpenGL(a.cont.radobj)
     
