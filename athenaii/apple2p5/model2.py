@@ -63,15 +63,7 @@ class plainAPPLE():
         self.allarrays = {'q1' : ha.HalbachArray(model_parameters,fmagnet),
                           'q2' : ha.HalbachArray(model_parameters,fmagnet),
                           'q3' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q4' : ha.HalbachArray(model_parameters,fmagnet),
-                          'c1v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c1h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4h' : ha.HalbachArray(model_parameters,cmagnet),
+                          'q4' : ha.HalbachArray(model_parameters,fmagnet)
                           }
         
         ##### Functional Magnets #####
@@ -109,8 +101,7 @@ class plainAPPLE():
         
         print('my APPLE calculated at a gap of {}mm'.format(gap))
 
-
-class compensatedAPPLE():
+class compensatedAPPLEv1():
     '''
     classdocs
     '''
@@ -243,7 +234,7 @@ class compensatedAPPLE():
             self.cont.wradObjAddToCnt([self.allarrays[key].cont])
         
         print('my compensated APPLE calculated at a gap of {}mm'.format(gap))
-        
+
 class compensatedAPPLEv2():
     '''
     classdocs
@@ -381,18 +372,83 @@ class compensatedAPPLEv2():
 
 
 if __name__ == '__main__':
-    testparams = parameters.model_parameters(Mova = 45, 
-                                             periods = 3, 
+    testparams = parameters.model_parameters(Mova = 14, 
+                                             periods = 15, 
+                                             periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              nominal_cmagnet_dimensions = [7.5,0.0,15.0], 
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0])
-    a = compensatedAPPLEv2(testparams, gap = 2, rowshift =-20, shiftmode = 'linear')
+    a = compensatedAPPLEv2(testparams, gap = 2, rowshift =7.5, shiftmode = 'circular')
     
+    #draw object
     rd.ObjDrwOpenGL(a.cont.radobj)
     
+    #solve object
+    a.cont.wradSolve()
     
+    #calculate field at a point
+    aa = rd.Fld(a.cont.radobj,'bxbybz',[0,0,10])
+    
+    #define line start and end points
+    linestart = [0,-60,0]
+    lineend = [0,60,0]
+    
+    #calculate field on a line
+    bb = rd.FldLst(a.cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+    
+    #make that list a numpy array
+    bbn = np.array(bb)
+    
+    #plot the calculated field
+    plt.plot(bbn[:,0],bbn[:,1:4])
+    plt.legend(['bx','by','bz'])
+    
+    #show it
+#    plt.show()
+    
+    #list of things to show (max 4)
+    quads = ['q1','q2','q3','q4']
+    #calculate the field on a line due to each element of list
+    qbfields = [[],[],[],[]]
+    i = 0 
+    for quadrant in quads:
+        qq = rd.FldLst(a.allarrays[quadrant].cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+        qbfields[i] = qq
+        i += 1
         
+    qbfieldsn = np.array(qbfields)
+    
+    #create subplots fig
+    
+    #set up plot
+    # set width and height
+    width = 7
+    height = 9
+    
+    #create the figure with nice margins
+    figqb, axsqb = plt.subplots(2,2, sharex = False, sharey = False)
+    figqb.subplots_adjust(left=.15, bottom=.16, right=.85, top= 0.9, wspace = 0.7, hspace = 0.6)
+    figqb.set_size_inches(width, height)
+    
+    #plot stuff
+    axsqb[0,0].plot(qbfieldsn[0,:,0],qbfieldsn[0,:,1:4])
+    axsqb[0,1].plot(qbfieldsn[1,:,0],qbfieldsn[1,:,1:4])
+    axsqb[1,0].plot(qbfieldsn[2,:,0],qbfieldsn[2,:,1:4])
+    axsqb[1,1].plot(qbfieldsn[3,:,0],qbfieldsn[3,:,1:4])
+    
+    #legends
+    axsqb[0,0].legend(['bx','by','bz'])
+    
+    #calculate field of a particular block in quadrant 1
+    
+    
+    #show them off
+    plt.show()
+    
+    print('read out the field {}'.format(aa))
+    
     input("Press Enter to continue...")
     print('{}'.format(a.cont.radobj))
+    #a.allarrays['q1'].cont.objectlist[4].objectlist[0].magnetisation

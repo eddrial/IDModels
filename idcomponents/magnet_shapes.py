@@ -15,7 +15,7 @@ class appleMagnet():
     '''
     classdocs
     '''
-    def __init__(self, model_parameters = parameters.model_parameters(), magnet_centre  = [0,0,0], this_magnet_material = 0):
+    def __init__(self, model_parameters = parameters.model_parameters(), magnet_centre  = [0,0,0], this_magnet_material = 0, colour = 'default'):
         
         '''
         Constructor
@@ -48,6 +48,7 @@ class appleMagnet():
         
         self.cont.wradObjAddToCnt([p1,p2,p3])
         self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
 class compMagnet():
     '''
@@ -79,6 +80,7 @@ class compMagnet():
         
         self.cont.wradObjAddToCnt([p1,p2])
         self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
         
 if __name__ == '__main__':
