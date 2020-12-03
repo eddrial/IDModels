@@ -17,6 +17,7 @@ class model_parameters():
         #general
         prop_defaults = {
             "origin": np.zeros(3), #set the origin of the device. Default is array([0., 0., 0.])
+            "block_subdivision" : [2,3,1],
             
             ######  Undulator Parameters  ######
             
@@ -31,6 +32,7 @@ class model_parameters():
             "rowtorowgap": 0.5, # for APPLE devices the distance between functional rows on the same jaw
             "circlin" : 1, # Polarisation mode of the undulator -1 is circ (parallel), 1 is linear (antiparallel)
             "shift" : 0, # distance of row shift in mm
+            "end_separation" : 2.5, #separation of end magnet in usual APPLE end constellation
             
             #####  Compensated APPLE Undulator Parameters  #####
             "compappleseparation" : 15.0, # The gap between functional magnets and compenation magnets
@@ -52,6 +54,8 @@ class model_parameters():
             "ksi" : [.019, .06], # Permeability - anisotropic
             "M" : 1.21*1.344, # Block Remanence [T]
             "Mova" : 0.0 # Off Vertical Angle of Vertical type magnet blocks [degrees]
+            
+            
         }
         
         for (prop, default) in prop_defaults.items():
@@ -65,6 +69,9 @@ class model_parameters():
         #magnet thicknesses
         self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
         self.nominal_cmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
+        
+        #end_magnet_thicknesses
+        self.end_magnet_thickness = [(self.periodlength / 8.0) - self.shim]
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])

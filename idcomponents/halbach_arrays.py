@@ -12,6 +12,7 @@ from wradia import wrad_mat as wrdm
 
 from idcomponents import parameters
 from idcomponents import magnet_shapes as ms
+from wradia.wrad_obj import wradObjCnt
 
 class HalbachArray():
     '''
@@ -41,9 +42,6 @@ class HalbachArray():
             
             mag = magnet(model_parameters, loc_offset,mat[(x)%model_parameters.magnets_per_period]) 
             loc_offset[1] += model_parameters.nominal_fmagnet_dimensions[1] + model_parameters.shim
-#            magcol = [(2 + y) / 4.0 for y in M[(x)%model_parameters.magnets_per_period]]
-#            mag.cont.wradObjDrwAtr(magcol, 2) # [x / myInt for x in myList]
-            mag.cont.wradObjDivMag([2,3,1])
             self.cont.wradObjAddToCnt([mag.cont])
             
         #return a
@@ -51,17 +49,88 @@ class HalbachArray():
     #mag = appleMagnet(AII,4,materiald,[z,y,x])
     #mag apply magnetisation and colour
     #add to container
+    
+class HalbachTermination_APPLE():
+    
+    def __init__(self, model_parameters = parameters.model_parameters(), magnet = ms.appleMagnet):
+        self.cont = wrd.wradObjCnt([])
+            
+        loc_offset = [0,0,0]
         
+        loc_offset[1] = -(((model_parameters.totalmagnets-1)/2.0) * 
+                          (model_parameters.nominal_fmagnet_dimensions[1] + 
+                           model_parameters.shim) + 
+                          model_parameters.nominal_fmagnet_dimensions[1]/2.0 + 2 *model_parameters.shim +
+                          model_parameters.end_magnet_thickness[0] * 2.5 +
+                          model_parameters.end_separation
+                          )
+        M = []
+        mat = []
+        
+        for i in range(model_parameters.magnets_per_period):
+            #M.append([halbach_direction * np.sin(i*np.pi/2.0)*model_parameters.M*np.sin(2*np.pi*model_parameters.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*model_parameters.M * np.cos(2*np.pi*model_parameters.Mova/360.0), np.cos(i*np.pi/2.0)*model_parameters.M])
+            M.append([np.cos(i*2*np.pi/model_parameters.magnets_per_period)*model_parameters.M*np.sin(2*np.pi*model_parameters.Mova/360.0),
+                      -1 * np.sin(i*2*np.pi/model_parameters.magnets_per_period)*model_parameters.M, 
+                      np.cos(i*2*np.pi/model_parameters.magnets_per_period)*model_parameters.M * np.cos(2*np.pi*model_parameters.Mova/360.0)])
+            
+            mat.append(wrdm.wradMatLin(model_parameters.ksi,M[i]))
+        
+        Mus = -int((model_parameters.totalmagnets-1)/2)#1st full magnet Upstream in row
+        Mds = int((model_parameters.totalmagnets-1)/2)#1st full magnet Downstreamin row
+        
+        mag1 = magnet(model_parameters, loc_offset,mat[(Mus-3)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        loc_offset[1] += model_parameters.end_magnet_thickness[0] + model_parameters.end_separation
+        
+        mag2 = magnet(model_parameters, loc_offset,mat[(Mus-2)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        
+        loc_offset[1] += model_parameters.end_magnet_thickness[0] + model_parameters.shim
+        
+        mag3 = magnet(model_parameters, loc_offset,mat[(Mus-1)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        
+        
+        loc_offset[1] = (((model_parameters.totalmagnets-1)/2.0) * 
+                          (model_parameters.nominal_fmagnet_dimensions[1] + 
+                           model_parameters.shim) + 
+                          model_parameters.nominal_fmagnet_dimensions[1]/2.0 + 
+                          model_parameters.shim +
+                          model_parameters.end_magnet_thickness[0]/2.0
+                          )
+        
+        mag4 = magnet(model_parameters, loc_offset,mat[(Mds+1)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        loc_offset[1] += model_parameters.end_magnet_thickness[0] + model_parameters.shim
+        
+        mag5 = magnet(model_parameters, loc_offset,mat[(Mds+2)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        loc_offset[1] += model_parameters.end_magnet_thickness[0] + model_parameters.end_separation
+        
+        mag6 = magnet(model_parameters, loc_offset,mat[(Mds+3)%model_parameters.magnets_per_period], magnet_thickness = model_parameters.end_magnet_thickness[0]) 
+        
+        
+        self.cont.wradObjAddToCnt([mag1.cont, mag2.cont, mag3.cont, mag4.cont, mag5.cont, mag6.cont])
+            
+    
+class MagnetRow():
+    def __init__(self,Body = HalbachArray(), Termination = HalbachTermination_APPLE()):
+        self.cont = wrd.wradObjCnt([])
+        self.cont.wradObjAddToCnt([Body.cont, Termination.cont])
+    
+
+    
 if __name__ == '__main__':
-    mymodelparams = parameters.model_parameters(magnets_per_period = 2, periods = 10)
+    mymodelparams = parameters.model_parameters(magnets_per_period = 6, periods = 1)
     
     a = HalbachArray(mymodelparams)
-    b = 2
+    b = HalbachTermination_APPLE(mymodelparams)
+    
+    c = MagnetRow(a,b)
     
     a.cont.wradSolve(0.001, 1000)
     
     print('{}{}'.format(a.cont.radobj,b))
-    rd.ObjDrwOpenGL(a.cont.radobj)
+#    rd.ObjDrwOpenGL(a.cont.radobj)
+    rd.ObjDrwOpenGL(b.cont.radobj)
+    rd.ObjDrwOpenGL(c.cont.radobj)
+    
+    
     
     z = 17.5; x1 = 15.25; x2 = 0; ymax = 400; nump = 2001
     
@@ -93,6 +162,6 @@ if __name__ == '__main__':
     axs[1].plot(Bz2[:,0],Bz2[:,1])
     axs[1].plot(Bx2[:,0],Bx2[:,1])
     
-    plt.show()
+    #plt.show()
     
     input("Press Enter to continue...")

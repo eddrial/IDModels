@@ -60,7 +60,8 @@ class plainAPPLE():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.HalbachArray(model_parameters,fmagnet),
+        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
                           'q2' : ha.HalbachArray(model_parameters,fmagnet),
                           'q3' : ha.HalbachArray(model_parameters,fmagnet),
                           'q4' : ha.HalbachArray(model_parameters,fmagnet)
@@ -125,7 +126,8 @@ class compensatedAPPLEv1():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.HalbachArray(model_parameters,fmagnet),
+        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
                           'q2' : ha.HalbachArray(model_parameters,fmagnet),
                           'q3' : ha.HalbachArray(model_parameters,fmagnet),
                           'q4' : ha.HalbachArray(model_parameters,fmagnet),
@@ -259,18 +261,30 @@ class compensatedAPPLEv2():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q2' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q3' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q4' : ha.HalbachArray(model_parameters,fmagnet),
-                          'c1v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c1h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4h' : ha.HalbachArray(model_parameters,cmagnet),
+        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
+                          'q2' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
+                          'q3' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
+                          'q4' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
+                          'c1v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c1h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c2v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c2h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c3v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c3h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c4v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
+                          'c4h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
                           }
         
         ##### Functional Magnets #####
@@ -373,14 +387,15 @@ class compensatedAPPLEv2():
 
 if __name__ == '__main__':
     testparams = parameters.model_parameters(Mova = 14, 
-                                             periods = 15, 
+                                             periods = 1, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              nominal_cmagnet_dimensions = [7.5,0.0,15.0], 
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
-                                             comp_magnet_chamfer = [3.0,0.0,3.0])
-    a = compensatedAPPLEv2(testparams, gap = 2, rowshift =7.5, shiftmode = 'circular')
+                                             comp_magnet_chamfer = [3.0,0.0,3.0],
+                                             magnets_per_period =4)
+    a = compensatedAPPLEv2(testparams, gap = 2, rowshift =0, shiftmode = 'circular')
     
     #draw object
     rd.ObjDrwOpenGL(a.cont.radobj)
