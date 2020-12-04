@@ -12,12 +12,12 @@ class Test(unittest.TestCase):
     def setUp(self):
         rd.UtiDelAll()
         #ATHENA_II Parameters
-        AII = ma.model_parameters(applePeriods = 3, Mova = 0.0)
+        AII = ma.model_hyper_parameters(applePeriods = 3, Mova = 0.0)
 
 
     def test_appleMagnet(self):
         a = ma.appleMagnets(self.AII)
-        self.assertEqual(a.model_parameters.applePeriods, 3, 'hello, error')
+        self.assertEqual(a.model_hyper_parameters.applePeriods, 3, 'hello, error')
 
 
 if __name__ == "__main__":

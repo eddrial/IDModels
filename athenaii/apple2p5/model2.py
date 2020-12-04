@@ -41,7 +41,7 @@ class plainAPPLE():
     classdocs
     '''
     def __init__(self, 
-                 model_parameters = parameters.model_parameters(),
+                 model_hyper_parameters = parameters.model_parameters(),
                  fmagnet = ms.appleMagnet, 
                  cmagnet = ms.compMagnet, 
                  gap = 50, 
@@ -51,7 +51,7 @@ class plainAPPLE():
         
         self.cont = wrd.wradObjCnt([])
         
-        mp = model_parameters
+        mp = model_hyper_parameters
         
         if shiftmode == 'circular':
             shiftmodesign = 1
@@ -60,11 +60,11 @@ class plainAPPLE():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'q2' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q3' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q4' : ha.HalbachArray(model_parameters,fmagnet)
+        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_hyper_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_hyper_parameters,fmagnet)),
+                          'q2' : ha.HalbachArray(model_hyper_parameters,fmagnet),
+                          'q3' : ha.HalbachArray(model_hyper_parameters,fmagnet),
+                          'q4' : ha.HalbachArray(model_hyper_parameters,fmagnet)
                           }
         
         ##### Functional Magnets #####
@@ -107,7 +107,7 @@ class compensatedAPPLEv1():
     classdocs
     '''
     def __init__(self, 
-                 model_parameters = parameters.model_parameters(),
+                 model_hyper_parameters = parameters.model_parameters(),
                  fmagnet = ms.appleMagnet, 
                  cmagnet = ms.compMagnet, 
                  gap = 2, 
@@ -117,7 +117,7 @@ class compensatedAPPLEv1():
         
         self.cont = wrd.wradObjCnt([])
         
-        mp = model_parameters
+        mp = model_hyper_parameters
         
         if shiftmode == 'circular':
             shiftmodesign = 1
@@ -126,19 +126,19 @@ class compensatedAPPLEv1():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'q2' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q3' : ha.HalbachArray(model_parameters,fmagnet),
-                          'q4' : ha.HalbachArray(model_parameters,fmagnet),
-                          'c1v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c1h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c2h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c3h' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4v' : ha.HalbachArray(model_parameters,cmagnet),
-                          'c4h' : ha.HalbachArray(model_parameters,cmagnet),
+        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_hyper_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_hyper_parameters,fmagnet)),
+                          'q2' : ha.HalbachArray(model_hyper_parameters,fmagnet),
+                          'q3' : ha.HalbachArray(model_hyper_parameters,fmagnet),
+                          'q4' : ha.HalbachArray(model_hyper_parameters,fmagnet),
+                          'c1v' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c1h' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c2v' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c2h' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c3v' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c3h' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c4v' : ha.HalbachArray(model_hyper_parameters,cmagnet),
+                          'c4h' : ha.HalbachArray(model_hyper_parameters,cmagnet),
                           }
         
         ##### Functional Magnets #####
@@ -252,7 +252,8 @@ class compensatedAPPLEv2():
         
         self.cont = wrd.wradObjCnt([])
         
-        mp = model_parameters
+        self.model_parameters = model_parameters
+        mp = self.model_parameters
         
         if shiftmode == 'circular':
             shiftmodesign = 1
@@ -387,7 +388,7 @@ class compensatedAPPLEv2():
 
 if __name__ == '__main__':
     testparams = parameters.model_parameters(Mova = 14, 
-                                             periods = 1, 
+                                             periods = 10, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              nominal_cmagnet_dimensions = [7.5,0.0,15.0], 

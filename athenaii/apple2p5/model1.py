@@ -36,7 +36,7 @@ from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
 
-class model_parameters():
+class model_hyper_parameters():
     
     def __init__(self, **kwargs):
         #general
@@ -377,7 +377,7 @@ if __name__ == '__main__':
     direction = 'y'
     '''
     #ATHENA_II Parameters
-    AII = parameters.model_parameters()
+    AII = parameters.model_hyper_parameters()
     
     #magnet Material [Bx,By,Bz]
     mat1 = wrdm.wradMatLin(AII.ksi,[0,0,AII.M])

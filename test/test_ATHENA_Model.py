@@ -28,7 +28,7 @@ class Test_appleUpperBeam_magnetOrientation_VerticalField(unittest.TestCase):
     def setUp(self):
         rd.UtiDelAll()
         #ATHENA_II Parameters
-        AII = am.model_parameters(applePeriods = 3, Mova = 0.0)
+        AII = am.model_hyper_parameters(applePeriods = 3, Mova = 0.0)
         self.tc = am.appleUpperBeam(AII) #tc test_container
         
 #q1 is upper quadrant structure side
@@ -65,7 +65,7 @@ class Test_appleUpperBeam_magnetOrientation_TiltedField(unittest.TestCase):
     def setUp(self):
         rd.UtiDelAll()
         #ATHENA_II Parameters
-        AII = am.model_parameters(applePeriods = 3, Mova = 10.0)
+        AII = am.model_hyper_parameters(applePeriods = 3, Mova = 10.0)
         self.tc = am.appleUpperBeam(AII) #tc test_container
         
 #q1 is upper quadrant bench side q2 is upper structure side, q2 is structure side
