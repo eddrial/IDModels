@@ -79,8 +79,25 @@ class model_parameters():
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
+        
+
 #TODO
     #def read json
     #def write json
     #def write to h5
     #def read h5
+    
+    
+class scan_parameters():
+    
+    def __init__(self, **kwargs):
+        #general
+        prop_defaults = {
+            "gaprange" : np.arange(2,10.1,4),
+            "shiftrange" : np.arange(-2,2.1,2),
+            "shiftmoderange" : ['linear','circular']
+            }
+            
+        for (prop, default) in prop_defaults.items():
+            setattr(self, prop, kwargs.get(prop, default))
+        

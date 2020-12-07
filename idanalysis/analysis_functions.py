@@ -153,8 +153,30 @@ class Solution():
         
 class HyperSolution():
     '''solves a hypersolution - hyperparameters can be varied'''
-    def __init__(self):
-        pass
+    def __init__(self,test_hyper_params, solution_parameters, hyper_solution_variables, method = 'random'):
+        
+        if method == 'systematic':
+            pass
+            #time one solution
+            #offer estimate
+            #offer random
+        
+        if method == 'random':
+            #for key in disctionary
+                #if key is list
+                    #for element in list
+                        #pick random and assign to test_hyper_params
+                #else
+                    #pick random and assign to test hyperparams
+                    
+            
+            pass
+            #for element of dict
+            #randomly select value
+            #Solution
+            
+        
+        #when 
         #recursively for each hyperparameter argumment given
     
     def save(self):
@@ -195,7 +217,21 @@ if __name__ == '__main__':
     shiftrange = np.arange(-2,2.1,2)
     shiftmoderange = ['linear','circular']
     
-    sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
+    #sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
+    
+    ### Developing model Hypersolution
+    
+    #test_hyper_params is a params object
+    #solution_parameters is a list of two iterators and a list
+    
+    solution_parameters = parameters.scan_parameters(gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
+    #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
+    hyper_solution_variables = {
+        "block_subdivision" : [np.arange(1,6),np.arange(1,6),np.arange(1,6)]
+        }
+    
+    #create hypersolution object
+    hypersol1 = HyperSolution(test_hyper_params, solution_parameters, hyper_solution_variables)
     
     print(1)
     
