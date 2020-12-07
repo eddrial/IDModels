@@ -17,6 +17,7 @@ class model_parameters():
         #general
         prop_defaults = {
             "origin": np.zeros(3), #set the origin of the device. Default is array([0., 0., 0.])
+            "pointsperperiod" : 20,
             "block_subdivision" : [2,3,1],
             
             ######  Undulator Parameters  ######

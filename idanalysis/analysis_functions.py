@@ -32,7 +32,7 @@ class CaseSolution():
             axis = [[0,-limit,0],[0,limit,0]]
         self.axis = axis
         #solve for the fieldlist
-        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+(axis[1][1]-axis[0][1])/0.1),'arg',axis[0][1])
+        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',axis[0][1])
     
     #make that list a numpy array
         self.bfield = np.array(tempb)
@@ -99,24 +99,40 @@ class Solution():
     '''
     
 
-    def __init__(self, hyper_params, gaprange = np.arange(5,6,5), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular']):
+    def __init__(self, hyper_params, gaprange = np.arange(5,6,5), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular'], property = ['B']):
         '''
         Constructor
         '''
         self.a = 1
         self.results = {}
+        #build results dict
+        if 'B' in property:
+            self.results['Bmax'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),3])
+            self.results['Bfield'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),int(1+hyper_params.pointsperperiod*2),4])
+            self.results['Beff'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),3])
+        
         #should solve through parameters
-        for shiftmode in shiftmoderange:
-            for shift in shiftrange:
-                for gap in gaprange:
-                    print ('Calculating stuff for model at gap {} mm, shift {} mm, mode {}'.format(gap, shift, shiftmode))
-                    hyper_params.gap = gap
-                    hyper_params.rowshift = shift
-                    hyper_params.shiftmode = shiftmode
+        for shiftmode in range(len(shiftmoderange)):
+            for gap in range(len(gaprange)):
+                for shift in range(len(shiftrange)):
+                    #set the specific case solution
+                    print ('Calculating stuff for model at gap {} mm, shift {} mm, mode {}'.format(gaprange[gap], shiftrange[shift], shiftmoderange[shiftmode]))
+                    hyper_params.gap = gaprange[gap]
+                    hyper_params.rowshift = shiftrange[shift]
+                    hyper_params.shiftmode = shiftmoderange[shiftmode]
+                    
+                    #build the case models
                     casemodel = id.compensatedAPPLEv2(hyper_params)
+                    
+                    #solve the case model
                     casesol = CaseSolution(casemodel)
-                    casesol.calculate_B_field()
-                    print ('The peak field of this arrangement is {}'.format(casesol.bmax))
+                    
+                    #solve each type of calculation
+                    if 'B' in property:
+                        casesol.calculate_B_field()
+                        print ('The peak field of this arrangement is {}'.format(casesol.bmax))
+                        self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
+                        self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
             #for loop on gap
                 #for loop on shift
                     #CaseSolution
