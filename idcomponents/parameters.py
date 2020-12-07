@@ -22,7 +22,8 @@ class model_parameters():
             ######  Undulator Parameters  ######
             
             "periods" : 3, # Number of Periods of the APPLE Undulator
-            "minimumgap" : 2, # Gap used in calculation in mm
+            "minimumgap" : 2, # Minimum designed gap in mm
+            "gap" : 5, #Default Gap to calculate at
             "shim" : 0.05, # The gap between each magnet in a row / magnet array.
             "periodlength" : 15, # The period length of the undulator
             "halbach_direction" : 1,  # a value to determine the sense of magnet rotation along the axis. 1 = Field BELOW array. -1 Field ABOVE array 
@@ -30,8 +31,9 @@ class model_parameters():
             
             #####  APPLE Undulator Parameters  #####
             "rowtorowgap": 0.5, # for APPLE devices the distance between functional rows on the same jaw
-            "circlin" : 1, # Polarisation mode of the undulator -1 is circ (parallel), 1 is linear (antiparallel)
-            "shift" : 0, # distance of row shift in mm
+            "shiftmode" : 'circular', # Polarisation mode of the undulator ; 'circular' (parallel) or 'linear' (antiparallel)
+            "rowshift" : 0, # distance of row shift in mm
+            "jawshift" : 0, #distance of jawshift in mm
             "end_separation" : 2.5, #separation of end magnet in usual APPLE end constellation
             
             #####  Compensated APPLE Undulator Parameters  #####

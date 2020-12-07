@@ -32,7 +32,7 @@ class CaseSolution():
             axis = [[0,-limit,0],[0,limit,0]]
         self.axis = axis
         #solve for the fieldlist
-        tempb = rd.FldLst(a.cont.radobj,'bxbybz',axis[0],axis[1],int(1+(axis[1][1]-axis[0][1])/0.1),'arg',axis[0][1])
+        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+(axis[1][1]-axis[0][1])/0.1),'arg',axis[0][1])
     
     #make that list a numpy array
         self.bfield = np.array(tempb)
@@ -99,17 +99,32 @@ class Solution():
     '''
     
 
-    def __init__(self, params):
+    def __init__(self, hyper_params, gaprange = np.arange(5,6,5), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular']):
         '''
         Constructor
         '''
         self.a = 1
+        self.results = {}
         #should solve through parameters
-        #for loop on mode
+        for shiftmode in shiftmoderange:
+            for shift in shiftrange:
+                for gap in gaprange:
+                    print ('Calculating stuff for model at gap {} mm, shift {} mm, mode {}'.format(gap, shift, shiftmode))
+                    hyper_params.gap = gap
+                    hyper_params.rowshift = shift
+                    hyper_params.shiftmode = shiftmode
+                    casemodel = id.compensatedAPPLEv2(hyper_params)
+                    casesol = CaseSolution(casemodel)
+                    casesol.calculate_B_field()
+                    print ('The peak field of this arrangement is {}'.format(casesol.bmax))
             #for loop on gap
                 #for loop on shift
                     #CaseSolution
                     #calculations on casesolution
+                    #If B
+                    #If Integrals
+                    #If Force
+                    #If Torque
                     #write to hdf5 file
                     #delete object... actually can just be written over then object is out of reference
         
@@ -130,7 +145,9 @@ class HyperSolution():
         pass
     
 if __name__ == '__main__':
-    testparams = parameters.model_parameters(Mova = 14, 
+    ### developing Case Solution ###
+    
+    test_hyper_params = parameters.model_parameters(Mova = 14, 
                                              periods = 3, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
@@ -138,8 +155,11 @@ if __name__ == '__main__':
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
-                                             magnets_per_period =4)
-    a = id.compensatedAPPLEv2(testparams, gap = 2, rowshift =0, shiftmode = 'circular')
+                                             magnets_per_period =4,
+                                             gap = 2, 
+                                             rowshift = 4,
+                                             shiftmode = 'circular')
+    a = id.compensatedAPPLEv2(test_hyper_params)
     
     
     case1 = CaseSolution(a)
@@ -153,5 +173,13 @@ if __name__ == '__main__':
     
     #show it
     plt.show()
+    
+    ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
+    gaprange = np.arange(2,10.1,4)
+    shiftrange = np.arange(-2,2.1,2)
+    shiftmoderange = ['linear','circular']
+    
+    sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
+    
     print(1)
     
