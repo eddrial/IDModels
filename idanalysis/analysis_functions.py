@@ -7,6 +7,8 @@ Created on 24 Nov 2020
 import numpy as np
 import radia as rd
 import random
+import copy
+from numbers import Number
 import matplotlib.pyplot as plt
 from apple2p5 import model2 as id
 from idcomponents import parameters
@@ -100,12 +102,15 @@ class Solution():
     '''
     
 
-    def __init__(self, hyper_params, gaprange = np.arange(5,6,5), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular'], property = ['B']):
+    def __init__(self, hyper_params, gaprange = np.arange(2,6,6), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular'], property = ['B']):
         '''
         Constructor
         '''
         self.a = 1
+        self.hyper_params = hyper_params
         self.results = {}
+        
+        
         #build results dict
         if 'B' in property:
             self.results['Bmax'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),3])
@@ -144,6 +149,7 @@ class Solution():
                     #If Torque
                     #write to hdf5 file
                     #delete object... actually can just be written over then object is out of reference
+        print(1)
         
     def save(self):
         pass
@@ -154,9 +160,27 @@ class Solution():
         
 class HyperSolution():
     '''solves a hypersolution - hyperparameters can be varied'''
-    def __init__(self,test_hyper_params, solution_parameters, hyper_solution_variables, hyper_solution_property = ['B'], method = 'random'):
+    def __init__(self,
+                 base_hyper_params,  
+                 hyper_solution_variables,
+                 scan_parameters = 'default', 
+                 hyper_solution_properties = ['B'], 
+                 method = 'random',
+                 iterations = 20):
         
+        
+        if scan_parameters == 'default':
+            self.scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength)
+        else:
+            self.scan_parameters = scan_parameters
         solvecount = 0
+        
+        self.base_hyper_parameters = copy.deepcopy(base_hyper_params)  #what is the fundamental model
+        self.hyper_solution_variables = copy.deepcopy(hyper_solution_variables) #what parameters in the hyperparameters are being varied and their ranges
+        self.hyper_solution_properties = copy.deepcopy(hyper_solution_properties) # 
+        self.hyper_inputs = []
+        self.hyper_results = []
+        
         
         if method == 'systematic':
             pass
@@ -165,29 +189,48 @@ class HyperSolution():
             #offer random
         
         if method == 'random':
-            #for key in dictionary
-            for key in hyper_solution_variables:
-                #if key is list
-                if type(hyper_solution_variables[key]) is list:
-                    tmp_list = [0 for x in range(len(hyper_solution_variables[key]))]
-                    for i in range(len(hyper_solution_variables[key])):
-                        tmp_list[i] = random.choice(hyper_solution_variables[key][i])
-                    setattr(test_hyper_params,key, tmp_list)
-                    #for element in list
-                        #pick random and assign to test_hyper_params
-                #else
-                    #pick random and assign to test hyperparams
+            #for n in iterations - build hyperparameter cases
+            for n in range(iterations):
+                new_hyper_params = copy.deepcopy(base_hyper_params)
+                #for key in dictionary
+                for key in self.hyper_solution_variables:
+                    #if key is list
+                    a = self.randomise_hyper_input(self.hyper_solution_variables[key])
+                    
+                    setattr(new_hyper_params,key, copy.copy(a))
+                    
+                self.hyper_inputs.append(new_hyper_params)
+                
+                    
+                        
+            
                     
             
-            pass
+        
             #for element of dict
             #randomly select value
             #Solution
+            #extract hyperresults
             
         
         #when 
         #recursively for each hyperparameter argumment given
     
+    def randomise_hyper_input(self, input):
+        if type(input) is list:
+            tmp = [0 for x in range(len(input))]
+            #for element in list
+            for i in range(len(input)):
+                #pick random 
+                tmp[i] = random.choice(input[i])
+            #and assign to test_hyper_params
+            
+        else:
+            tmp = random.choice(input)
+            
+        return tmp
+            
+
     def save(self):
         pass
     
@@ -213,36 +256,39 @@ if __name__ == '__main__':
     case1.calculate_B_field()
     
     #draw object
-    rd.ObjDrwOpenGL(a.cont.radobj)
+#    rd.ObjDrwOpenGL(a.cont.radobj)
     
-    plt.plot(case1.bfield[:,0],case1.bfield[:,1:4])
-    plt.legend(['bx','by','bz'])
+#    plt.plot(case1.bfield[:,0],case1.bfield[:,1:4])
+#    plt.legend(['bx','by','bz'])
     
     #show it
-    plt.show()
+#    plt.show()
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
     shiftrange = np.arange(-2,2.1,2)
     shiftmoderange = ['linear','circular']
     
-    #sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
+#    sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
     
     ### Developing model Hypersolution
     
     #test_hyper_params is a params object
     #solution_parameters is a list of two iterators and a list
     
-    solution_parameters = parameters.scan_parameters(gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
+    solution_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        "block_subdivision" : [np.arange(1,6),np.arange(1,6),np.arange(1,6)]
+        "block_subdivision" : [np.arange(1,6),np.arange(1,6),np.arange(1,6)],
+        "Mova": np.arange(91)
         }
     
     hyper_solution_properties = ['B']
     
     #create hypersolution object
-    hypersol1 = HyperSolution(test_hyper_params, solution_parameters, hyper_solution_variables, hyper_solution_properties)
+    hypersol1 = HyperSolution(base_hyper_params = test_hyper_params, 
+                              hyper_solution_variables = hyper_solution_variables, 
+                              hyper_solution_properties = hyper_solution_properties)
     
     print(1)
     

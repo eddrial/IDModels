@@ -90,12 +90,12 @@ class model_parameters():
     
 class scan_parameters():
     
-    def __init__(self, **kwargs):
+    def __init__(self, periodlength, **kwargs):
         #general
         prop_defaults = {
-            "gaprange" : np.arange(2,10.1,4),
-            "shiftrange" : np.arange(-2,2.1,2),
-            "shiftmoderange" : ['linear','circular']
+            "gaprange" : np.arange(2,3,4),
+            "shiftrange" : np.arange(-periodlength/2.0,periodlength/2.0 +0.1,periodlength/2.0),
+            "shiftmoderange" : ['circular']
             }
             
         for (prop, default) in prop_defaults.items():
