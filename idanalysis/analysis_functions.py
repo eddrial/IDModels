@@ -10,6 +10,8 @@ import random
 import copy
 from numbers import Number
 import matplotlib.pyplot as plt
+import pickle
+
 from apple2p5 import model2 as id
 from idcomponents import parameters
 
@@ -102,43 +104,35 @@ class Solution():
     '''
     
 
-    def __init__(self, hyper_params, gaprange = np.arange(2,6,6), shiftrange = np.arange(0,1,10), shiftmoderange = ['circular'], property = ['B']):
+    def __init__(self, hyper_params, scan_parameters, property = ['B']):
         '''
         Constructor
         '''
-        self.a = 1
         self.hyper_params = hyper_params
+        self.scan_parameters = scan_parameters
+        self.property = property
         self.results = {}
         
         
         #build results dict
         if 'B' in property:
-            self.results['Bmax'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),3])
-            self.results['Bfield'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),int(1+hyper_params.pointsperperiod*2),4])
-            self.results['Beff'] = np.zeros([len(shiftmoderange),len(gaprange),len(shiftrange),3])
+            self.results['Bmax'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             3])
+            
+            self.results['Bfield'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                               len(self.scan_parameters.gaprange),
+                                               len(self.scan_parameters.shiftrange),
+                                               int(1+hyper_params.pointsperperiod*2),
+                                               4])
+            
+            self.results['Beff'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             3])
         
-        #should solve through parameters
-        for shiftmode in range(len(shiftmoderange)):
-            for gap in range(len(gaprange)):
-                for shift in range(len(shiftrange)):
-                    #set the specific case solution
-                    print ('Calculating stuff for model at gap {} mm, shift {} mm, mode {}'.format(gaprange[gap], shiftrange[shift], shiftmoderange[shiftmode]))
-                    hyper_params.gap = gaprange[gap]
-                    hyper_params.rowshift = shiftrange[shift]
-                    hyper_params.shiftmode = shiftmoderange[shiftmode]
-                    
-                    #build the case models
-                    casemodel = id.compensatedAPPLEv2(hyper_params)
-                    
-                    #solve the case model
-                    casesol = CaseSolution(casemodel)
-                    
-                    #solve each type of calculation
-                    if 'B' in property:
-                        casesol.calculate_B_field()
-                        print ('The peak field of this arrangement is {}'.format(casesol.bmax))
-                        self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
-                        self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
+        
             #for loop on gap
                 #for loop on shift
                     #CaseSolution
@@ -151,6 +145,33 @@ class Solution():
                     #delete object... actually can just be written over then object is out of reference
         print(1)
         
+    def solve(self):
+        #should solve through parameters
+        for shiftmode in range(len(self.scan_parameters.shiftmoderange)):
+            for gap in range(len(self.scan_parameters.gaprange)):
+                for shift in range(len(self.scan_parameters.shiftrange)):
+                    #set the specific case solution
+                    print ('Calculating stuff for model at gap {} mm, shift {} mm, mode {}'.format(
+                        self.scan_parameters.gaprange[gap], 
+                        self.scan_parameters.shiftrange[shift], 
+                        self.scan_parameters.shiftmoderange[shiftmode]))
+                    self.hyper_params.gap = gaprange[gap]
+                    self.hyper_params.rowshift = shiftrange[shift]
+                    self.hyper_params.shiftmode = shiftmoderange[shiftmode]
+                    
+                    #build the case models
+                    casemodel = id.compensatedAPPLEv2(self.hyper_params)
+                    
+                    #solve the case model
+                    casesol = CaseSolution(casemodel)
+                    
+                    #solve each type of calculation
+                    if 'B' in self.property:
+                        casesol.calculate_B_field()
+                        print ('The peak field of this arrangement is {}'.format(casesol.bmax))
+                        self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
+                        self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
+    
     def save(self):
         pass
     
@@ -215,6 +236,16 @@ class HyperSolution():
         
         #when 
         #recursively for each hyperparameter argumment given
+    def solve(self):
+        for input in self.hyper_inputs:
+            tmp_sol = Solution(input, self.scan_parameters, property = ['B'])
+            print('Solving for slices of {}'.format(input.block_subdivision))
+            tmp_sol.solve()
+            
+            self.hyper_results.append(tmp_sol.results)
+    
+    def sequence_hyper_input(self,input):
+        pass
     
     def randomise_hyper_input(self, input):
         if type(input) is list:
@@ -237,7 +268,7 @@ class HyperSolution():
 if __name__ == '__main__':
     ### developing Case Solution ###
     
-    test_hyper_params = parameters.model_parameters(Mova = 14, 
+    test_hyper_params = parameters.model_parameters(Mova = 0, 
                                              periods = 3, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
@@ -269,18 +300,20 @@ if __name__ == '__main__':
     shiftrange = np.arange(-2,2.1,2)
     shiftmoderange = ['linear','circular']
     
-#    sol1 = Solution(test_hyper_params, gaprange, shiftrange, shiftmoderange)
+    #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
+    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength)
+    
+    sol1 = Solution(test_hyper_params, scan_parameters)
+    #sol1.solve()
     
     ### Developing model Hypersolution
     
     #test_hyper_params is a params object
     #solution_parameters is a list of two iterators and a list
     
-    solution_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        "block_subdivision" : [np.arange(1,6),np.arange(1,6),np.arange(1,6)],
-        "Mova": np.arange(91)
+        "block_subdivision" : [np.arange(1,5),np.arange(1,5),np.arange(1,5)]
         }
     
     hyper_solution_properties = ['B']
@@ -288,7 +321,15 @@ if __name__ == '__main__':
     #create hypersolution object
     hypersol1 = HyperSolution(base_hyper_params = test_hyper_params, 
                               hyper_solution_variables = hyper_solution_variables, 
-                              hyper_solution_properties = hyper_solution_properties)
+                              hyper_solution_properties = hyper_solution_properties,
+                              scan_parameters = scan_parameters,
+                              method = 'random',
+                              iterations = 6)
+    
+    hypersol1.solve()
+    
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\test_data.dat','wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
     print(1)
     
