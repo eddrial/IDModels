@@ -6,6 +6,7 @@ Created on 24 Nov 2020
 '''
 import numpy as np
 import radia as rd
+import random
 import matplotlib.pyplot as plt
 from apple2p5 import model2 as id
 from idcomponents import parameters
@@ -153,7 +154,9 @@ class Solution():
         
 class HyperSolution():
     '''solves a hypersolution - hyperparameters can be varied'''
-    def __init__(self,test_hyper_params, solution_parameters, hyper_solution_variables, method = 'random'):
+    def __init__(self,test_hyper_params, solution_parameters, hyper_solution_variables, hyper_solution_property = ['B'], method = 'random'):
+        
+        solvecount = 0
         
         if method == 'systematic':
             pass
@@ -162,8 +165,14 @@ class HyperSolution():
             #offer random
         
         if method == 'random':
-            #for key in disctionary
+            #for key in dictionary
+            for key in hyper_solution_variables:
                 #if key is list
+                if type(hyper_solution_variables[key]) is list:
+                    tmp_list = [0 for x in range(len(hyper_solution_variables[key]))]
+                    for i in range(len(hyper_solution_variables[key])):
+                        tmp_list[i] = random.choice(hyper_solution_variables[key][i])
+                    setattr(test_hyper_params,key, tmp_list)
                     #for element in list
                         #pick random and assign to test_hyper_params
                 #else
@@ -230,8 +239,10 @@ if __name__ == '__main__':
         "block_subdivision" : [np.arange(1,6),np.arange(1,6),np.arange(1,6)]
         }
     
+    hyper_solution_properties = ['B']
+    
     #create hypersolution object
-    hypersol1 = HyperSolution(test_hyper_params, solution_parameters, hyper_solution_variables)
+    hypersol1 = HyperSolution(test_hyper_params, solution_parameters, hyper_solution_variables, hyper_solution_properties)
     
     print(1)
     
