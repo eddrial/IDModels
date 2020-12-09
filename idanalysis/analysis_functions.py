@@ -7,6 +7,7 @@ Created on 24 Nov 2020
 import numpy as np
 import radia as rd
 import random
+import itertools
 import copy
 import matplotlib.pyplot as plt
 import pickle
@@ -206,9 +207,26 @@ class HyperSolution():
         
         
         if method == 'systematic':
-            nkeys = len(self.hyper_solution_variables.keys)
+            tmp = []
+            for key in self.hyper_solution_variables.keys():
+                if type(self.hyper_solution_variables[key]) is list:
+                    for i in range(len(self.hyper_solution_variables[key])):
+                        tmp.append(self.hyper_solution_variables[key][i])
+                
+                else:
+                    tmp.append(self.hyper_solution_variables[key])
             
-            pass
+            tmp1 = list(itertools.product(*tmp))
+            
+            print(tmp1)
+            #while depth:
+                #iterate variables (hypervariables, 
+                #depth = sum (for variabel in hypervariables len(variable))
+                
+                #depth-=1
+                
+            
+            
             #time one solution
             #offer estimate
             #offer random
@@ -219,7 +237,7 @@ class HyperSolution():
                 new_hyper_params = copy.deepcopy(base_hyper_params)
                 #for key in dictionary
                 for key in self.hyper_solution_variables:
-                    #if key is list
+                    #if key is list... or even if it's not
                     a = self.randomise_hyper_input(self.hyper_solution_variables[key])
                     
                     setattr(new_hyper_params,key, copy.copy(a))
@@ -317,7 +335,8 @@ if __name__ == '__main__':
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        "block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)]
+        "block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
+        "Mova" : np.arange(91)        
         }
     
     hyper_solution_properties = ['B']
@@ -327,7 +346,7 @@ if __name__ == '__main__':
                               hyper_solution_variables = hyper_solution_variables, 
                               hyper_solution_properties = hyper_solution_properties,
                               scan_parameters = scan_parameters,
-                              method = 'random',
+                              method = 'systematic',
                               iterations = 60)
     
     hypersol1.solve()
