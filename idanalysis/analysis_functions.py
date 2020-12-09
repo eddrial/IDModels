@@ -8,9 +8,11 @@ import numpy as np
 import radia as rd
 import random
 import copy
-from numbers import Number
 import matplotlib.pyplot as plt
 import pickle
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
 
 from apple2p5 import model2 as id
 from idcomponents import parameters
@@ -155,9 +157,9 @@ class Solution():
                         self.scan_parameters.gaprange[gap], 
                         self.scan_parameters.shiftrange[shift], 
                         self.scan_parameters.shiftmoderange[shiftmode]))
-                    self.hyper_params.gap = gaprange[gap]
-                    self.hyper_params.rowshift = shiftrange[shift]
-                    self.hyper_params.shiftmode = shiftmoderange[shiftmode]
+                    self.hyper_params.gap = self.scan_parameters.gaprange[gap]
+                    self.hyper_params.rowshift = self.scan_parameters.shiftrange[shift]
+                    self.hyper_params.shiftmode = self.scan_parameters.shiftmoderange[shiftmode]
                     
                     #build the case models
                     casemodel = id.compensatedAPPLEv2(self.hyper_params)
@@ -204,6 +206,8 @@ class HyperSolution():
         
         
         if method == 'systematic':
+            nkeys = len(self.hyper_solution_variables.keys)
+            
             pass
             #time one solution
             #offer estimate
@@ -301,7 +305,7 @@ if __name__ == '__main__':
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
-    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength)
+    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, shiftrange = np.arange(0,1,10))
     
     sol1 = Solution(test_hyper_params, scan_parameters)
     #sol1.solve()
@@ -313,7 +317,7 @@ if __name__ == '__main__':
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        "block_subdivision" : [np.arange(1,5),np.arange(1,5),np.arange(1,5)]
+        "block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)]
         }
     
     hyper_solution_properties = ['B']
@@ -324,12 +328,34 @@ if __name__ == '__main__':
                               hyper_solution_properties = hyper_solution_properties,
                               scan_parameters = scan_parameters,
                               method = 'random',
-                              iterations = 6)
+                              iterations = 60)
     
     hypersol1.solve()
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\test_data.dat','wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    
+#    with open('M:\Work\Athena_APPLEIII\Python\Results\\test_data.dat','rb') as fp:
+#        hypersol1 = pickle.load(fp)
+    
+    mynumpyarray = np.zeros([60,4])
+    
+    for i in range(60):
+        mynumpyarray[i] = [hypersol1.hyper_inputs[i].block_subdivision[0],
+                           hypersol1.hyper_inputs[i].block_subdivision[1],
+                           hypersol1.hyper_inputs[i].block_subdivision[2],
+                           hypersol1.hyper_results[i]['Bmax'][0,0,0,2]]
+        
+    eddf = pd.DataFrame(data = mynumpyarray, index = range(60), columns = ['Slice X', 'Slice Y', 'Slice Z', 'Bmax'])
+
+    fig = px.parallel_coordinates(eddf, color="Bmax", labels={"Bmax": "Bmax",
+            "Slice X": "Slice X", "Slice Y": "Slice Y",
+            "Slice Z": "Slice Z", },
+                         color_continuous_scale=px.colors.diverging.Tealrose,
+                         color_continuous_midpoint=1.58)
+        
+    fig.show()
+        
     
     print(1)
     
