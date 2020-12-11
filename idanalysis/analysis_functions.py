@@ -206,9 +206,10 @@ class HyperSolution():
         self.hyper_results = []
         
         
+        keylist = list(self.hyper_solution_variables.keys())
         if method == 'systematic':
             tmp = []
-            for key in self.hyper_solution_variables.keys():
+            for key in keylist:
                 if type(self.hyper_solution_variables[key]) is list:
                     for i in range(len(self.hyper_solution_variables[key])):
                         tmp.append(self.hyper_solution_variables[key][i])
@@ -218,7 +219,21 @@ class HyperSolution():
             
             tmp1 = list(itertools.product(*tmp))
             
-            print(tmp1)
+            for j in tmp1:
+                i = 0
+                new_hyper_params = copy.deepcopy(base_hyper_params)
+                for key in keylist:
+                    if type(self.hyper_solution_variables[key]) is list:
+                        setattr(new_hyper_params,key,list(j[i:len(getattr(new_hyper_params,key))]))
+                        i += len(getattr(new_hyper_params,key))
+                    else:
+                        setattr(new_hyper_params,key,j[i])
+                        i+=1
+                    
+                self.hyper_inputs.append(new_hyper_params)
+                
+                ###   
+                ###
             #while depth:
                 #iterate variables (hypervariables, 
                 #depth = sum (for variabel in hypervariables len(variable))
