@@ -42,6 +42,7 @@ class model_parameters():
             
             #####  Magnet Shape  #####
             
+            "square_magnet" : False,
             "nominal_fmagnet_dimensions" : [30.0,0.0,30.0], # The nominal maximal magnet dimension for the functional magnets [mm]
             "apple_clampcut" : 5.0, # The size of the square removed for clamping an APPLE magnet [mm]
             "magnet_chamfer" : [5.0,0.0,5.0], # Dimensions of chamfer for a rectangular magnet (to make it octagonal) [mm]
@@ -73,13 +74,32 @@ class model_parameters():
         self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
         self.nominal_cmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
         
+        #square magnet dimensions
+        if self.square_magnet is not False:
+            self.nominal_fmagnet_dimensions[0] = self.square_magnet
+            self.nominal_fmagnet_dimensions[2] = self.square_magnet
+            self.nominal_cmagnet_dimensions[0] = self.square_magnet
+            self.nominal_cmagnet_dimensions[2] = self.square_magnet/2.0
+        
         #end_magnet_thicknesses
         self.end_magnet_thickness = [(self.periodlength / 8.0) - self.shim]
+        
+        
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
         
+        
+    def resize_square_blocks(self, square):
+        self.nominal_fmagnet_dimensions[0] = square
+        self.nominal_fmagnet_dimensions[2] = square
+        self.nominal_cmagnet_dimensions[0] = square
+        self.nominal_cmagnet_dimensions[2] = square/2.0
+        
+        self.square_magnet = square
+        
+        return True
 
 #TODO
     #def read json

@@ -227,7 +227,10 @@ class HyperSolution():
                         setattr(new_hyper_params,key,list(j[i:len(getattr(new_hyper_params,key))]))
                         i += len(getattr(new_hyper_params,key))
                     else:
-                        setattr(new_hyper_params,key,j[i])
+                        if key == 'square_magnet':
+                            new_hyper_params.resize_square_blocks(j[i])
+                        else:
+                            setattr(new_hyper_params,key,j[i])
                         i+=1
                     
                 self.hyper_inputs.append(new_hyper_params)
@@ -274,12 +277,15 @@ class HyperSolution():
         #when 
         #recursively for each hyperparameter argumment given
     def solve(self):
-        for input in self.hyper_inputs:
-            tmp_sol = Solution(input, self.scan_parameters, property = ['B'])
-            print('Solving for slices of {}'.format(input.block_subdivision))
+        i = 0
+        for hpset in self.hyper_inputs: #hpset = hyperparameter set
+            print("Solving HyperParameter Set {} of {}".format(i, len(self.hyper_inputs)))
+            tmp_sol = Solution(hpset, self.scan_parameters, property = ['B'])
+            print('Solving for slices of {}'.format(hpset.block_subdivision))
             tmp_sol.solve()
             
             self.hyper_results.append(tmp_sol.results)
+            i+=1
     
     def sequence_hyper_input(self,input):
         pass
@@ -305,7 +311,7 @@ class HyperSolution():
 if __name__ == '__main__':
     ### developing Case Solution ###
     
-    test_hyper_params = parameters.model_parameters(Mova = 0, 
+    test_hyper_params = parameters.model_parameters(Mova = 20, 
                                              periods = 3, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
@@ -334,11 +340,11 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-2,2.1,2)
+    shiftrange = np.arange(-7.5,0.1, 7.5)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
-    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, shiftrange = np.arange(0,1,10))
+    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, shiftrange = shiftrange)
     
     sol1 = Solution(test_hyper_params, scan_parameters)
     #sol1.solve()
@@ -350,8 +356,9 @@ if __name__ == '__main__':
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        "block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
-        "Mova" : np.arange(91)        
+        #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
+#        "Mova" : np.arange(0,91,5),
+        "square_magnet" : np.arange(5,25.1,2)
         }
     
     hyper_solution_properties = ['B']
@@ -364,13 +371,21 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-    hypersol1.solve()
+#    hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\test_data.dat','wb') as fp:
-        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+#    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data.dat','wb') as fp:
+#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\test_data.dat','rb') as fp:
-#        hypersol1 = pickle.load(fp)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data.dat','rb') as fp:
+        hypersol1 = pickle.load(fp)
+    
+    mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
+    
+    for i in range(len(hypersol1.hyper_results)):
+        mynumpyarray[i] = [hypersol1.hyper_inputs[i].square_magnet,
+                           hypersol1.hyper_results[i]['Bmax'][0,0,0,0]]
+        
+    plt.plot(mynumpyarray[:,0],mynumpyarray[:,1])
     
     mynumpyarray = np.zeros([60,4])
     
