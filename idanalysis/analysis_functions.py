@@ -348,7 +348,8 @@ class HyperSolution():
         #save info on hyperspace search
         #what name? HS1, HS2, HS3 etc - HyperSolution1
         #saves hyperspace inputs and outputs (are there any sensible HyperSpace outputs?)
-        hf.create_group('Hypersolution1')
+        hf.create_group('HyperSolution1')
+        hf.create_group('HyperSolution1/HyperParamaters')
         #pop iterated hyperparamaters to new dict... actually can they be binned?
         
         #iterate keys in base_hypersolution_variables to create dataset
@@ -359,38 +360,38 @@ class HyperSolution():
                 print ('{} is not fixed in this hypersolution'.format(fixed_parameter))
             #if is a class
             elif hasattr(self.base_hyper_parameters.__dict__[fixed_parameter],'__dict__'):
-                hf.create_group('Hypersolution1/'+fixed_parameter)
+                hf.create_group('HyperSolution1/HyperParamaters/'+fixed_parameter)
                 for fixed_sub_parameter in self.base_hyper_parameters.__dict__[fixed_parameter].__dict__.keys():
-                    hf.create_dataset('Hypersolution1/'+fixed_parameter+'/'+fixed_sub_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter].__dict__[fixed_sub_parameter])
+                    hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter+'/'+fixed_sub_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter].__dict__[fixed_sub_parameter])
             #if just a supported type, write.
             else:
-                hf.create_dataset('Hypersolution1/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
+                hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
         
         # write varied hyperparameters
         for varied_parameter in self.hyper_solution_variables.keys():
-            hf.create_dataset('Hypersolution1/'+varied_parameter, data = self.hyper_solution_variables[varied_parameter])
+            hf.create_dataset('HyperSolution1/HyperVariables/'+varied_parameter, data = self.hyper_solution_variables[varied_parameter])
             #result_array = [len(self.hyper_solution_variables[varied_parameter])]
             
             
-        hf.create_group('Hypersolution1/Hyperresults')
+        hf.create_group('HyperSolution1/HyperResults')
         
         for result in self.hyper_results.keys():
             
-            hf.create_dataset('Hypersolution1/Hyperresults/' + result, data = self.hyper_results[result])
+            hf.create_dataset('HyperSolution1/HyperResults/' + result, data = self.hyper_results[result])
             #need to add attribute of min/max etc
         
         #for each solution, creat group SolutionX
         #has results and inputs and search spaces (gap, shift scan etc(
         for sol in range(len(self.solutions)):
 #            this solution = 
-            hf.create_group('Solution_'+ str(sol))
+            hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol))
         #for each case, create group CaseX
         #has results and inputs for eache case
             for case in range(len(self.solutions[sol].case_solutions)):
                 thiscase = 'Case_'+str(case)
-                hf.create_group('Solution_'+ str(sol) + '/' +thiscase)
+                hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
                 
-                hf.create_dataset('Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
+                hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
                 
         
         #does this leave a lot of duplicated data? Yes
