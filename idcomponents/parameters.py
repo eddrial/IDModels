@@ -120,4 +120,6 @@ class scan_parameters():
             
         for (prop, default) in prop_defaults.items():
             setattr(self, prop, kwargs.get(prop, default))
-        
+            
+        # shape is [#modes, #gaps, #shifts, 3 (= Bx, By, Bz)
+        self.shape = [len(self.shiftmoderange),len(self.gaprange),len(self.shiftrange),3]

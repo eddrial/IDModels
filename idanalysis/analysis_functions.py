@@ -6,6 +6,7 @@ Created on 24 Nov 2020
 '''
 import numpy as np
 import radia as rd
+import h5py as h5
 import random
 import itertools
 import copy
@@ -17,6 +18,7 @@ import plotly.graph_objects as go
 
 from apple2p5 import model2 as id
 from idcomponents import parameters
+from ipywidgets.widgets.interaction import fixed
 
 class CaseFullSolution():
     '''solves along full axis'''
@@ -115,6 +117,7 @@ class Solution():
         self.scan_parameters = scan_parameters
         self.property = property
         self.results = {}
+        self.case_solutions = []
         
         
         #build results dict
@@ -174,6 +177,8 @@ class Solution():
                         print ('The peak field of this arrangement is {}'.format(casesol.bmax))
                         self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
                         self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
+                        
+                    self.case_solutions.append(casesol)
     
     def save(self):
         pass
@@ -203,8 +208,8 @@ class HyperSolution():
         self.hyper_solution_variables = copy.deepcopy(hyper_solution_variables) #what parameters in the hyperparameters are being varied and their ranges
         self.hyper_solution_properties = copy.deepcopy(hyper_solution_properties) # 
         self.hyper_inputs = []
-        self.hyper_results = []
-        
+        self.hyper_results = {}
+        self.solutions = []
         
         keylist = list(self.hyper_solution_variables.keys())
         if method == 'systematic':
@@ -234,8 +239,24 @@ class HyperSolution():
                         i+=1
                     
                 self.hyper_inputs.append(new_hyper_params)
-                
-                ###   
+    
+        #build hyper_results dict
+        
+        #what shape of results array needed (i.e. steps in hyper_solution_variables)
+        list_of_hyper_vars = list(self.hyper_solution_variables.keys())
+        hyper_result_shape = []
+        
+        for var in list_of_hyper_vars:
+            hyper_result_shape.append(len(self.hyper_solution_variables[var]))
+        
+        if 'B' in self.hyper_solution_properties:
+            self.hyper_results['Bmax'] = np.zeros(np.append(hyper_result_shape,3))
+            
+            #self.hyper_results['Bfieldharmonics'] = np.zeros(np.append(hyper_result_shape,[2,10]))
+            
+            self.hyper_results['Beff'] = np.zeros(np.append(hyper_result_shape,3))
+        
+                    ###   
                 ###
             #while depth:
                 #iterate variables (hypervariables, 
@@ -284,8 +305,24 @@ class HyperSolution():
             print('Solving for slices of {}'.format(hpset.block_subdivision))
             tmp_sol.solve()
             
-            self.hyper_results.append(tmp_sol.results)
+            
+            
+            #self.hyper_results.append(tmp_sol.results)
+            
+            self.solutions.append(tmp_sol)
+            
             i+=1
+            
+        self.extract_hyper_results(tmp_sol)
+            
+    def extract_hyper_results(self,solution):
+        for attribute in self.hyper_results:
+            i = 0
+            for soln in range(len(self.hyper_results[attribute])):
+                self.hyper_results[attribute][soln] = np.amax(self.solutions[soln].results[attribute],2)
+        
+        print(1)
+        pass
     
     def sequence_hyper_input(self,input):
         pass
@@ -305,8 +342,61 @@ class HyperSolution():
         return tmp
             
 
-    def save(self):
-        pass
+    def save(self,savefile):
+        hf = h5.File(savefile, 'w')
+        
+        #save info on hyperspace search
+        #what name? HS1, HS2, HS3 etc - HyperSolution1
+        #saves hyperspace inputs and outputs (are there any sensible HyperSpace outputs?)
+        hf.create_group('Hypersolution1')
+        #pop iterated hyperparamaters to new dict... actually can they be binned?
+        
+        #iterate keys in base_hypersolution_variables to create dataset
+        for fixed_parameter in self.base_hyper_parameters.__dict__.keys():
+            print('saving fixed parameter {}'.format(fixed_parameter))
+            #skip varied parameters
+            if fixed_parameter in self.hyper_solution_variables.keys():
+                print ('{} is not fixed in this hypersolution'.format(fixed_parameter))
+            #if is a class
+            elif hasattr(self.base_hyper_parameters.__dict__[fixed_parameter],'__dict__'):
+                hf.create_group('Hypersolution1/'+fixed_parameter)
+                for fixed_sub_parameter in self.base_hyper_parameters.__dict__[fixed_parameter].__dict__.keys():
+                    hf.create_dataset('Hypersolution1/'+fixed_parameter+'/'+fixed_sub_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter].__dict__[fixed_sub_parameter])
+            #if just a supported type, write.
+            else:
+                hf.create_dataset('Hypersolution1/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
+        
+        # write varied hyperparameters
+        for varied_parameter in self.hyper_solution_variables.keys():
+            hf.create_dataset('Hypersolution1/'+varied_parameter, data = self.hyper_solution_variables[varied_parameter])
+            #result_array = [len(self.hyper_solution_variables[varied_parameter])]
+            
+            
+        hf.create_group('Hypersolution1/Hyperresults')
+        
+        for result in self.hyper_results.keys():
+            
+            hf.create_dataset('Hypersolution1/Hyperresults/' + result, data = self.hyper_results[result])
+            #need to add attribute of min/max etc
+        
+        #for each solution, creat group SolutionX
+        #has results and inputs and search spaces (gap, shift scan etc(
+        for sol in range(len(self.solutions)):
+#            this solution = 
+            hf.create_group('Solution_'+ str(sol))
+        #for each case, create group CaseX
+        #has results and inputs for eache case
+            for case in range(len(self.solutions[sol].case_solutions)):
+                thiscase = 'Case_'+str(case)
+                hf.create_group('Solution_'+ str(sol) + '/' +thiscase)
+                
+                hf.create_dataset('Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
+                
+        
+        #does this leave a lot of duplicated data? Yes
+        
+        hf.close()
+        
     
 if __name__ == '__main__':
     ### developing Case Solution ###
@@ -376,8 +466,10 @@ if __name__ == '__main__':
 #    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data.dat','wb') as fp:
 #        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data.dat','rb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
         hypersol1 = pickle.load(fp)
+    
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\developsave_v0.2.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
