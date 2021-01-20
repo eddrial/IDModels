@@ -300,7 +300,7 @@ class HyperSolution():
     def solve(self):
         i = 0
         for hpset in self.hyper_inputs: #hpset = hyperparameter set
-            print("Solving HyperParameter Set {} of {}".format(i, len(self.hyper_inputs)))
+            print("Solving HyperParameter Set {} of {}".format(i+1, len(self.hyper_inputs)))
             tmp_sol = Solution(hpset, self.scan_parameters, property = ['B'])
             print('Solving for slices of {}'.format(hpset.block_subdivision))
             tmp_sol.solve()
@@ -317,12 +317,20 @@ class HyperSolution():
             
     def extract_hyper_results(self,solution):
         for attribute in self.hyper_results:
-            i = 0
-            for soln in range(len(self.hyper_results[attribute])):
-                self.hyper_results[attribute][soln] = np.amax(self.solutions[soln].results[attribute],2)
+            a = 0
+            #reshape solutions into numpy array
+            tmpsols = np.reshape(np.array(self.solutions),self.hyper_results[attribute].shape[:-1])
+            for idx, value in np.ndenumerate(self.hyper_results[attribute]):
+                if a != idx[:-1]: 
+                    self.hyper_results[attribute][idx[:-1]] = np.amax(tmpsols[idx[:-1]].results[attribute],2)
+                    print (idx[:-1])
+                a = idx[:-1]
+            
+            #for soln in range(len(self.hyper_results[attribute])):
+                #self.hyper_results[attribute][soln] = np.amax(self.solutions[soln].results[attribute],2)
         
         print(1)
-        pass
+        
     
     def sequence_hyper_input(self,input):
         pass
@@ -367,12 +375,12 @@ class HyperSolution():
             else:
                 hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
         
-        # write varied hyperparameters
+        # write varied hyperparameters = Hypervariables
         for varied_parameter in self.hyper_solution_variables.keys():
             hf.create_dataset('HyperSolution1/HyperVariables/'+varied_parameter, data = self.hyper_solution_variables[varied_parameter])
-            #result_array = [len(self.hyper_solution_variables[varied_parameter])]
             
-            
+        
+        # write hyperresults
         hf.create_group('HyperSolution1/HyperResults')
         
         for result in self.hyper_results.keys():
@@ -386,7 +394,7 @@ class HyperSolution():
 #            this solution = 
             hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol))
         #for each case, create group CaseX
-        #has results and inputs for eache case
+        #has results and inputs for each case
             for case in range(len(self.solutions[sol].case_solutions)):
                 thiscase = 'Case_'+str(case)
                 hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
@@ -449,7 +457,8 @@ if __name__ == '__main__':
     hyper_solution_variables = {
         #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
 #        "Mova" : np.arange(0,91,5),
-        "square_magnet" : np.arange(5,25.1,2)
+        "square_magnet" : np.arange(10,20.1,5),
+        "rowtorowgap" : np.arange(0.4,1.81,1.4)
         }
     
     hyper_solution_properties = ['B']
@@ -462,15 +471,15 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-#    hypersol1.solve()
+    hypersol1.solve()
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data.dat','wb') as fp:
-#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_row2row_data.dat','wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
-        hypersol1 = pickle.load(fp)
+#    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
+#        hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\developsave_v0.2.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\developsave_v0.3.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
