@@ -239,6 +239,9 @@ class HyperSolution():
         self.solutions = []
         
         keylist = list(self.hyper_solution_variables.keys())
+        
+        #Build Hyper_Inputs
+        
         if method == 'systematic':
             tmp = []
             for key in keylist:
@@ -258,52 +261,7 @@ class HyperSolution():
                 new_hyper_params = parameters.model_parameters(**base_hyper_parameters)
                 self.hyper_inputs.append(new_hyper_params)
             
-#            for j in tmp1:
-#                i = 0
-#                new_hyper_params = copy.deepcopy(base_hyper_params)
-#                for key in keylist:
-#                    if type(self.hyper_solution_variables[key]) is list:
-#                        setattr(new_hyper_params,key,list(j[i:len(getattr(new_hyper_params,key))]))
-#                        i += len(getattr(new_hyper_params,key))
-#                    else:
-#                        if key == 'square_magnet':
-#                            new_hyper_params.resize_square_blocks(j[i])
-#                        else:
-#                            setattr(new_hyper_params,key,j[i])
-#                        i+=1
-#                    
-#                self.hyper_inputs.append(new_hyper_params)
     
-        #build hyper_results dict
-        
-        #what shape of results array needed (i.e. steps in hyper_solution_variables)
-        list_of_hyper_vars = list(self.hyper_solution_variables.keys())
-        hyper_result_shape = []
-        
-        for var in list_of_hyper_vars:
-            hyper_result_shape.append(len(self.hyper_solution_variables[var]))
-        
-        if 'B' in self.hyper_solution_properties:
-            self.hyper_results['Bmax'] = np.zeros(np.append(hyper_result_shape,3))
-            
-            #self.hyper_results['Bfieldharmonics'] = np.zeros(np.append(hyper_result_shape,[2,10]))
-            
-            self.hyper_results['Beff'] = np.zeros(np.append(hyper_result_shape,3))
-        
-                    ###   
-                ###
-            #while depth:
-                #iterate variables (hypervariables, 
-                #depth = sum (for variabel in hypervariables len(variable))
-                
-                #depth-=1
-                
-            
-            
-            #time one solution
-            #offer estimate
-            #offer random
-        
         if method == 'random':
             #for n in iterations - build hyperparameter cases
             for n in range(iterations):
@@ -328,6 +286,43 @@ class HyperSolution():
             
                     
             
+        #build hyper_results dict
+        
+        #what shape of results array needed (i.e. steps in hyper_solution_variables)
+        list_of_hyper_vars = list(self.hyper_solution_variables.keys())
+        hyper_result_shape = []
+        
+        for var in list_of_hyper_vars:
+            hyper_result_shape.append(len(self.hyper_solution_variables[var]))
+        
+        if 'B' in self.hyper_solution_properties:
+            self.hyper_results['Bmax'] = np.zeros(np.append(hyper_result_shape,3))
+            
+            #self.hyper_results['Bfieldharmonics'] = np.zeros(np.append(hyper_result_shape,[2,10]))
+            
+            self.hyper_results['Beff'] = np.zeros(np.append(hyper_result_shape,3))
+        
+        if 'Integrals' in self.hyper_solution_properties:
+            self.hyper_results['1st_Integral_Max_Harmonic'] = np.zeros(np.append(hyper_result_shape,11,2))
+            self.hyper_results['2nd_Integral_Max_Harmonic'] = np.zeros(np.append(hyper_result_shape,11,2))
+          
+        if 'Forces' in self.hyper_solution_properties:
+            self.hyper_results['Max_Single_Magnet_Force'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Row_Force'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Quadrant_Force'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Beam_Force'] = np.zeros(np.append(hyper_result_shape,3))
+            
+        if 'Torques' in self.hyper_solution_properties:
+            self.hyper_results['Max_Single_Magnet_Torque'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Row_Torque'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Quadrant_Torque'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Max_Single_Beam_Torque'] = np.zeros(np.append(hyper_result_shape,3))
+            
+            #time one solution
+            #offer estimate
+            #offer random
+        
+        
         
             #for element of dict
             #randomly select value
