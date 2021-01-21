@@ -139,7 +139,71 @@ class Solution():
                                              len(self.scan_parameters.shiftrange),
                                              3])
         
-        
+        if 'Integrals' in property:
+            
+            self.results['1st_Integral'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             81,
+                                             2])
+            
+            self.results['2nd_Integral'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             81,
+                                             2])
+            
+        if 'Forces' in property:
+            
+            self.results['Force_Per_Magnet_Type'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             self.hyper_params.magnets_per_period * self.magnet_rows,
+                                             3])
+            
+            self.results['Force_Per_Row'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             self.magnet_rows,
+                                             3])
+            
+            self.results['Force_Per_Quadrant'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             4,
+                                             3])
+            
+            self.results['Force_Per_Beam'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             2,
+                                             3])
+            
+        if 'Torques' in property:
+            
+            self.results['Torque_Per_Magnet_Type'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             self.hyper_params.magnets_per_period * self.magnet_rows,
+                                             3])
+            
+            self.results['Torque_Per_Row'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             self.magnet_rows,
+                                             3])
+            
+            self.results['Torque_Per_Quadrant'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             4,
+                                             3])
+            
+            self.results['Torque_Per_Beam'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                             len(self.scan_parameters.gaprange),
+                                             len(self.scan_parameters.shiftrange),
+                                             2,
+                                             3])
             #for loop on gap
                 #for loop on shift
                     #CaseSolution

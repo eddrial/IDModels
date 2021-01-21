@@ -22,6 +22,7 @@ class model_parameters():
             
             ######  Undulator Parameters  ######
             
+            "type" : "Compensated_APPLE",
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm
             "gap" : 5, #Default Gap to calculate at
@@ -88,6 +89,10 @@ class model_parameters():
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
+        
+        #core undulator parameters
+        if self.type = 'Compensated_APPLE':
+            self.magnet_rows = 12
         
         
         
