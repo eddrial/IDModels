@@ -15,6 +15,7 @@ import pickle
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import tracemalloc
 
 from apple2p5 import model2 as id
 from idcomponents import parameters
@@ -165,19 +166,45 @@ class Solution():
                     self.hyper_params.rowshift = self.scan_parameters.shiftrange[shift]
                     self.hyper_params.shiftmode = self.scan_parameters.shiftmoderange[shiftmode]
                     
+                    time1 = tracemalloc.take_snapshot()
                     #build the case models
                     casemodel = id.compensatedAPPLEv2(self.hyper_params)
-                    
+                    time2 = tracemalloc.take_snapshot()
                     #solve the case model
                     casesol = CaseSolution(casemodel)
-                    
+                    time3 = tracemalloc.take_snapshot()
                     #solve each type of calculation
                     if 'B' in self.property:
                         casesol.calculate_B_field()
                         print ('The peak field of this arrangement is {}'.format(casesol.bmax))
                         self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
                         self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
+                    
+                    rd.UtiDel(casesol.model.cont.radobj)
+                    time4 = tracemalloc.take_snapshot()
+                    
+                    print(1)#?delete wradia reference
+                    
+                    stats2 = time2.compare_to(time1, 'lineno') 
+                    stats3 = time3.compare_to(time2, 'lineno') 
+                    stats4 = time4.compare_to(time3, 'lineno') 
+                    
+                    print('printing stat2')
+                    for stat in stats2[:3]:
+                        print(stat)
+                    
+                    print('printing stat3')
+                    for stat in stats3[:3]:
+                        print(stat)
                         
+                    print('printing stat4')
+                    for stat in stats4[:3]:
+                        print(stat)
+                    
+                    print(1)
+                    
+                    
+                    
                     self.case_solutions.append(casesol)
     
     def save(self):
@@ -190,7 +217,7 @@ class Solution():
 class HyperSolution():
     '''solves a hypersolution - hyperparameters can be varied'''
     def __init__(self,
-                 base_hyper_params,  
+                 base_hyper_parameters,
                  hyper_solution_variables,
                  scan_parameters = 'default', 
                  hyper_solution_properties = ['B'], 
@@ -204,7 +231,7 @@ class HyperSolution():
             self.scan_parameters = scan_parameters
         solvecount = 0
         
-        self.base_hyper_parameters = copy.deepcopy(base_hyper_params)  #what is the fundamental model
+        self.base_hyper_parameters = parameters.model_parameters(**base_hyper_parameters)  #what is the fundamental model
         self.hyper_solution_variables = copy.deepcopy(hyper_solution_variables) #what parameters in the hyperparameters are being varied and their ranges
         self.hyper_solution_properties = copy.deepcopy(hyper_solution_properties) # 
         self.hyper_inputs = []
@@ -225,20 +252,27 @@ class HyperSolution():
             tmp1 = list(itertools.product(*tmp))
             
             for j in tmp1:
-                i = 0
-                new_hyper_params = copy.deepcopy(base_hyper_params)
-                for key in keylist:
-                    if type(self.hyper_solution_variables[key]) is list:
-                        setattr(new_hyper_params,key,list(j[i:len(getattr(new_hyper_params,key))]))
-                        i += len(getattr(new_hyper_params,key))
-                    else:
-                        if key == 'square_magnet':
-                            new_hyper_params.resize_square_blocks(j[i])
-                        else:
-                            setattr(new_hyper_params,key,j[i])
-                        i+=1
-                    
+                for key in range(len(keylist)):
+                    base_hyper_parameters[keylist[key]] = j[key]
+                
+                new_hyper_params = parameters.model_parameters(**base_hyper_parameters)
                 self.hyper_inputs.append(new_hyper_params)
+            
+#            for j in tmp1:
+#                i = 0
+#                new_hyper_params = copy.deepcopy(base_hyper_params)
+#                for key in keylist:
+#                    if type(self.hyper_solution_variables[key]) is list:
+#                        setattr(new_hyper_params,key,list(j[i:len(getattr(new_hyper_params,key))]))
+#                        i += len(getattr(new_hyper_params,key))
+#                    else:
+#                        if key == 'square_magnet':
+#                            new_hyper_params.resize_square_blocks(j[i])
+#                        else:
+#                            setattr(new_hyper_params,key,j[i])
+#                        i+=1
+#                    
+#                self.hyper_inputs.append(new_hyper_params)
     
         #build hyper_results dict
         
@@ -273,14 +307,20 @@ class HyperSolution():
         if method == 'random':
             #for n in iterations - build hyperparameter cases
             for n in range(iterations):
-                new_hyper_params = copy.deepcopy(base_hyper_params)
+                
+                
+                
+                
+#                new_hyper_params = copy.deepcopy(base_hyper_params)
                 #for key in dictionary
                 for key in self.hyper_solution_variables:
                     #if key is list... or even if it's not
                     a = self.randomise_hyper_input(self.hyper_solution_variables[key])
+                    base_hyper_parameters[key] = a
                     
-                    setattr(new_hyper_params,key, copy.copy(a))
-                    
+#                    setattr(new_hyper_params,key, copy.copy(a))
+
+                new_hyper_params = parameters.model_parameters(**base_hyper_parameters)
                 self.hyper_inputs.append(new_hyper_params)
                 
                     
@@ -300,6 +340,11 @@ class HyperSolution():
     def solve(self):
         i = 0
         for hpset in self.hyper_inputs: #hpset = hyperparameter set
+            
+            #memory tracing
+            tracemalloc.start(5)
+            time1 = tracemalloc.take_snapshot()
+            
             print("Solving HyperParameter Set {} of {}".format(i+1, len(self.hyper_inputs)))
             tmp_sol = Solution(hpset, self.scan_parameters, property = ['B'])
             print('Solving for slices of {}'.format(hpset.block_subdivision))
@@ -311,7 +356,18 @@ class HyperSolution():
             
             self.solutions.append(tmp_sol)
             
+            
+            
             i+=1
+            
+            #print malloc output here
+            time2 = tracemalloc.take_snapshot()
+            
+            stats = time2.compare_to(time1, 'lineno') 
+            for stat in stats[:3]:
+                print(stat)
+                
+
             
         self.extract_hyper_results(tmp_sol)
             
@@ -424,7 +480,6 @@ if __name__ == '__main__':
                                              shiftmode = 'circular')
     a = id.compensatedAPPLEv2(test_hyper_params)
     
-    
     case1 = CaseSolution(a)
     case1.calculate_B_field()
     
@@ -453,18 +508,34 @@ if __name__ == '__main__':
     #test_hyper_params is a params object
     #solution_parameters is a list of two iterators and a list
     
+    #create test hyper params as dict
+    test_hyper_params_dict = {'Mova': 20,
+                              'periods' : 3,
+                              'periodlength' : 15,
+                              #'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
+                              #'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
+                              'compappleseparation' : 7.5,
+                              'apple_clampcut' : 3.0,
+                              'comp_magnet_chamfer' : [3.0,0.0,3.0],
+                              'magnets_per_period' :4,
+                              'gap' : 2, 
+                              'rowshift' : 4,
+                              'shiftmode' : 'circular',
+                              'square_magnet' : 15.0}
+    
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
 #        "Mova" : np.arange(0,91,5),
-        "square_magnet" : np.arange(10,20.1,5),
-        "rowtorowgap" : np.arange(0.4,1.81,1.4)
+        #"square_magnet" : np.arange(10,20.1,5),
+        #"rowtorowgap" : np.arange(0.4,.81,0.1),
+        "magnets_per_period" : np.arange(4,12,2)
         }
     
     hyper_solution_properties = ['B']
     
     #create hypersolution object
-    hypersol1 = HyperSolution(base_hyper_params = test_hyper_params, 
+    hypersol1 = HyperSolution(base_hyper_parameters = test_hyper_params_dict, 
                               hyper_solution_variables = hyper_solution_variables, 
                               hyper_solution_properties = hyper_solution_properties,
                               scan_parameters = scan_parameters,
@@ -473,13 +544,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_row2row_data.dat','wb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\MagnetPerPeriod_data.dat','wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
 #    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
 #        hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\developsave_v0.3.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\MagnetPerPeriod.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
