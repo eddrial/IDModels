@@ -91,7 +91,7 @@ class model_parameters():
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
         #core undulator parameters
-        if self.type = 'Compensated_APPLE':
+        if self.type == 'Compensated_APPLE':
             self.magnet_rows = 12
         
         
