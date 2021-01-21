@@ -237,7 +237,7 @@ class compensatedAPPLEv2():
                  model_parameters = parameters.model_parameters(),
                  fmagnet = ms.appleMagnet, 
                  cmagnet = ms.compMagnet):
-        
+        rd.UtiDelAll()
         self.cont = wrd.wradObjCnt([])
         
         self.model_parameters = model_parameters

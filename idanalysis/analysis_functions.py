@@ -16,7 +16,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import tracemalloc
+import time
 
+from wradia import wrad_obj as wrd
 from apple2p5 import model2 as id
 from idcomponents import parameters
 from ipywidgets.widgets.interaction import fixed
@@ -63,8 +65,15 @@ class CaseSolution():
         '''solve for M over central 2 periods or minimum distance'''
         pass
     
-    def calculate_first_integral(self):
+    def calculate_first_integral(self, plane = 'default'):
         '''solve for the first integral across a sensible width'''
+        if plane == 'default':
+            plane = []
+        self.plane = plane
+        #solve for the 1st integral
+        for x in range(plane):
+            print(1)
+        
         pass
     
     def calculate_second_integral(self):
@@ -85,7 +94,34 @@ class CaseSolution():
     
     def calculate_force_per_beam(self):
         '''solve for the force on the beam'''
-        pass
+        if self.model.model_parameters.type == 'Compensated_APPLE':
+            #create upper wrad object
+            upper_beam = wrd.wradObjCnt()
+            upper_beam.wradObjAddToCnt([self.model.allarrays['q1'].cont,
+                                       self.model.allarrays['q2'].cont,
+                                       self.model.allarrays['c1h'].cont,
+                                       self.model.allarrays['c1v'].cont,
+                                       self.model.allarrays['c2h'].cont,
+                                       self.model.allarrays['c2v'].cont])
+            
+            
+            #create lower rad object
+            lower_beam = wrd.wradObjCnt()
+            lower_beam.wradObjAddToCnt([self.model.allarrays['q3'].cont,
+                                       self.model.allarrays['q4'].cont,
+                                       self.model.allarrays['c3h'].cont,
+                                       self.model.allarrays['c3v'].cont,
+                                       self.model.allarrays['c4h'].cont,
+                                       self.model.allarrays['c4v'].cont])
+            
+            #solve force lower due to all the rest
+            a = rd.FldEnrFrc(upper_beam.radobj,lower_beam.radobj,"fxfyfz")
+            #solve force on upper due to all the rest
+            b = rd.FldEnrFrc(lower_beam.radobj,upper_beam.radobj,"fxfyfz")
+            
+            self.forceonlower = a
+            self.forceonupper = b
+        
     
     def calculate_torque_per_magnet(self):
         '''solve for an individual magnet in the model'''
@@ -158,13 +194,13 @@ class Solution():
             self.results['Force_Per_Magnet_Type'] = np.zeros([len(self.scan_parameters.shiftmoderange),
                                              len(self.scan_parameters.gaprange),
                                              len(self.scan_parameters.shiftrange),
-                                             self.hyper_params.magnets_per_period * self.magnet_rows,
+                                             self.hyper_params.magnets_per_period * self.hyper_params.magnet_rows,
                                              3])
             
             self.results['Force_Per_Row'] = np.zeros([len(self.scan_parameters.shiftmoderange),
                                              len(self.scan_parameters.gaprange),
                                              len(self.scan_parameters.shiftrange),
-                                             self.magnet_rows,
+                                             self.hyper_params.magnet_rows,
                                              3])
             
             self.results['Force_Per_Quadrant'] = np.zeros([len(self.scan_parameters.shiftmoderange),
@@ -230,13 +266,13 @@ class Solution():
                     self.hyper_params.rowshift = self.scan_parameters.shiftrange[shift]
                     self.hyper_params.shiftmode = self.scan_parameters.shiftmoderange[shiftmode]
                     
-                    time1 = tracemalloc.take_snapshot()
+                    time1 = time.time()
                     #build the case models
                     casemodel = id.compensatedAPPLEv2(self.hyper_params)
-                    time2 = tracemalloc.take_snapshot()
+                    time2 = time.time()
                     #solve the case model
                     casesol = CaseSolution(casemodel)
-                    time3 = tracemalloc.take_snapshot()
+                    time3 = time.time()
                     #solve each type of calculation
                     if 'B' in self.property:
                         casesol.calculate_B_field()
@@ -244,29 +280,21 @@ class Solution():
                         self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
                         self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
                     
-                    rd.UtiDel(casesol.model.cont.radobj)
-                    time4 = tracemalloc.take_snapshot()
-                    
-                    print(1)#?delete wradia reference
-                    
-                    stats2 = time2.compare_to(time1, 'lineno') 
-                    stats3 = time3.compare_to(time2, 'lineno') 
-                    stats4 = time4.compare_to(time3, 'lineno') 
-                    
-                    print('printing stat2')
-                    for stat in stats2[:3]:
-                        print(stat)
-                    
-                    print('printing stat3')
-                    for stat in stats3[:3]:
-                        print(stat)
+                    if 'Integrals' in self.property:
+                        casesol.calculate_first_integral()
+                        casesol.calculate_second_integral()
                         
-                    print('printing stat4')
-                    for stat in stats4[:3]:
-                        print(stat)
+                    if 'Forces' in self.property:
+                        casesol.calculate_force_per_beam()
+                        print ('The force on this arrangement is {}'.format(casesol.forceonlower))
+                        #load results into the solution
+                        self.results['Force_Per_Beam'][shiftmode,gap,shift] = np.array([casesol.forceonlower,casesol.forceonupper])
                     
-                    print(1)
+                    time4 = time.time()
                     
+                    print('time to build case model is {}'.format(time2-time1))
+                    print('time to solve case model is {}'.format(time3-time2))
+                    print('time to calculate case model is {}'.format(time4-time3))
                     
                     
                     self.case_solutions.append(casesol)
@@ -405,7 +433,7 @@ class HyperSolution():
             time1 = tracemalloc.take_snapshot()
             
             print("Solving HyperParameter Set {} of {}".format(i+1, len(self.hyper_inputs)))
-            tmp_sol = Solution(hpset, self.scan_parameters, property = ['B'])
+            tmp_sol = Solution(hpset, self.scan_parameters, property = self.hyper_solution_properties)
             print('Solving for slices of {}'.format(hpset.block_subdivision))
             tmp_sol.solve()
             
@@ -414,8 +442,6 @@ class HyperSolution():
             #self.hyper_results.append(tmp_sol.results)
             
             self.solutions.append(tmp_sol)
-            
-            
             
             i+=1
             
@@ -553,7 +579,7 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-7.5,0.1, 7.5)
+    shiftrange = np.arange(-7.5,7.51, 3.25)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -569,7 +595,7 @@ if __name__ == '__main__':
     
     #create test hyper params as dict
     test_hyper_params_dict = {'Mova': 20,
-                              'periods' : 3,
+                              'periods' : 5,
                               'periodlength' : 15,
                               #'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
                               #'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
@@ -587,11 +613,11 @@ if __name__ == '__main__':
         #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
 #        "Mova" : np.arange(0,91,5),
         #"square_magnet" : np.arange(10,20.1,5),
-        #"rowtorowgap" : np.arange(0.4,.81,0.1),
-        "magnets_per_period" : np.arange(4,12,2)
+        "rowtorowgap" : np.arange(0.4,0.81,0.1),
+        #"magnets_per_period" : np.arange(4,12,2)
         }
     
-    hyper_solution_properties = ['B']
+    hyper_solution_properties = ['B','Forces']
     
     #create hypersolution object
     hypersol1 = HyperSolution(base_hyper_parameters = test_hyper_params_dict, 
@@ -603,13 +629,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\MagnetPerPeriod_data.dat','wb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
-#        hypersol1 = pickle.load(fp)
+    #with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
+    #    hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\MagnetPerPeriod.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     

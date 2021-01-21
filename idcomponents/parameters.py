@@ -79,8 +79,8 @@ class model_parameters():
         if self.square_magnet is not False:
             self.nominal_fmagnet_dimensions[0] = self.square_magnet
             self.nominal_fmagnet_dimensions[2] = self.square_magnet
-            self.nominal_cmagnet_dimensions[0] = self.square_magnet
-            self.nominal_cmagnet_dimensions[2] = self.square_magnet/2.0
+            self.nominal_cmagnet_dimensions[0] = self.square_magnet/2.0
+            self.nominal_cmagnet_dimensions[2] = self.square_magnet
         
         #end_magnet_thicknesses
         self.end_magnet_thickness = [(self.periodlength / 8.0) - self.shim]
