@@ -399,10 +399,11 @@ class HyperSolution():
             self.hyper_results['2nd_Integral_Max_Harmonic'] = np.zeros(np.append(hyper_result_shape,11,2))
           
         if 'Forces' in self.hyper_solution_properties:
-            self.hyper_results['Max_Single_Magnet_Force'] = np.zeros(np.append(hyper_result_shape,3))
-            self.hyper_results['Max_Single_Row_Force'] = np.zeros(np.append(hyper_result_shape,3))
-            self.hyper_results['Max_Single_Quadrant_Force'] = np.zeros(np.append(hyper_result_shape,3))
-            self.hyper_results['Max_Single_Beam_Force'] = np.zeros(np.append(hyper_result_shape,3))
+            self.hyper_results['Force_Per_Magnet_Type'] = np.zeros(np.append(hyper_result_shape,[self.base_hyper_parameters.magnet_rows*self.base_hyper_parameters.magnets_per_period, 3]))
+            self.hyper_results['Force_Per_Row'] = np.zeros(np.append(hyper_result_shape,[self.base_hyper_parameters.magnet_rows,3]))
+            self.hyper_results['Force_Per_Quadrant'] = np.zeros(np.append(hyper_result_shape,[4,3]))
+            self.hyper_results['Force_Per_Beam'] = np.zeros(np.append(hyper_result_shape,[2,3]))
+            
             
         if 'Torques' in self.hyper_solution_properties:
             self.hyper_results['Max_Single_Magnet_Torque'] = np.zeros(np.append(hyper_result_shape,3))
@@ -460,18 +461,43 @@ class HyperSolution():
         for attribute in self.hyper_results:
             a = 0
             #reshape solutions into numpy array
-            tmpsols = np.reshape(np.array(self.solutions),self.hyper_results[attribute].shape[:-1])
+            tmpsolshape = []
+            for i in range(len(list(self.hyper_solution_variables.keys()))):
+                tmpsolshape.append(len(list(self.hyper_solution_variables.values())[i]))
+            
+            #tmpsols = np.reshape(np.array(self.solutions),self.hyper_results[attribute].shape[:-1])
+            tmpsols = np.reshape(np.array(self.solutions),tmpsolshape)
+            
             for idx, value in np.ndenumerate(self.hyper_results[attribute]):
-                if a != idx[:-1]: 
-                    self.hyper_results[attribute][idx[:-1]] = np.amax(tmpsols[idx[:-1]].results[attribute],2)
-                    print (idx[:-1])
-                a = idx[:-1]
+
+                if a != idx[:len(tmpsolshape)]: 
+                    #self.hyper_results[attribute][idx[:len(tmpsolshape)]] = np.amax(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
+                    self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
+                    print (idx[:len(tmpsolshape)])
+                a = idx[:len(tmpsolshape)]
             
             #for soln in range(len(self.hyper_results[attribute])):
                 #self.hyper_results[attribute][soln] = np.amax(self.solutions[soln].results[attribute],2)
         
         print(1)
         
+    
+    def maxabs(self, a, axis=None):
+        """Return slice of a, keeping only those values that are furthest away
+        from 0 along axis"""
+        maxa = a.max(axis=axis)
+        mina = a.min(axis=axis)
+        p = abs(maxa) > abs(mina) # bool, or indices where +ve values win
+        n = abs(mina) > abs(maxa) # bool, or indices where -ve values win
+        if axis == None:
+            if p: return maxa
+            else: return mina
+        shape = list(a.shape)
+        shape.pop(axis)
+        out = np.zeros(shape, dtype=a.dtype)
+        out[p] = maxa[p]
+        out[n] = mina[n]
+        return out
     
     def sequence_hyper_input(self,input):
         pass
@@ -518,15 +544,21 @@ class HyperSolution():
         
         # write varied hyperparameters = Hypervariables
         for varied_parameter in self.hyper_solution_variables.keys():
-            hf.create_dataset('HyperSolution1/HyperVariables/'+varied_parameter, data = self.hyper_solution_variables[varied_parameter])
+            dname = 'HyperSolution1/HyperVariables/{}'.format(varied_parameter)
+            hf.create_dataset(dname, data = self.hyper_solution_variables[varied_parameter])
+#            hf[dname].make_scale(varied_parameter)
             
+        dscalnames = list(self.hyper_solution_variables.keys())
         
         # write hyperresults
         hf.create_group('HyperSolution1/HyperResults')
         
         for result in self.hyper_results.keys():
-            
-            hf.create_dataset('HyperSolution1/HyperResults/' + result, data = self.hyper_results[result])
+            dname = 'HyperSolution1/HyperResults/{}'.format(result)
+            hf.create_dataset(dname, data = self.hyper_results[result])
+            for i in range(len(dscalnames)):
+                hf[dname].dims[0].label = dscalnames[0]
+            print (1)
             #need to add attribute of min/max etc
         
         #for each solution, creat group SolutionX
@@ -579,7 +611,7 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-7.5,7.51, 3.25)
+    shiftrange = np.arange(-7.5,0.01, 7.5)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -611,9 +643,9 @@ if __name__ == '__main__':
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
-#        "Mova" : np.arange(0,91,5),
+        "Mova" : np.arange(15,21,5),
         #"square_magnet" : np.arange(10,20.1,5),
-        "rowtorowgap" : np.arange(0.4,0.81,0.1),
+        "rowtorowgap" : np.arange(0.4,0.51,0.1),
         #"magnets_per_period" : np.arange(4,12,2)
         }
     
@@ -627,13 +659,13 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-    hypersol1.solve()
+    #hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','wb') as fp:
-        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','wb') as fp:
+    #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    #with open('M:\Work\Athena_APPLEIII\Python\Results\\BlockSize_data_v0.2.dat','rb') as fp:
-    #    hypersol1 = pickle.load(fp)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','rb') as fp:
+        hypersol1 = pickle.load(fp)
     
     hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap.h5')
     
