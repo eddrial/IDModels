@@ -90,7 +90,28 @@ class CaseSolution():
     
     def calculate_force_per_quadrant(self):
         '''solve for force on quarant'''
-        pass
+        '''solve for the force on the beam'''
+        if self.model.model_parameters.type == 'Compensated_APPLE':
+            self.forceonquadrants = {}
+            #create upper wrad object
+            for quad in range(1,5,1):
+                self.forceonquadrants['quad{}'.format(quad)] = wrd.wradObjCnt()
+                self.forceonquadrants['notquad{}'.format(quad)] = wrd.wradObjCnt()
+                self.forceonquadrants['quad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(quad)].cont,
+                                       self.model.allarrays['c{}v'.format(quad)].cont,
+                                       self.model.allarrays['c{}h'.format(quad)].cont])
+                for notquad in range(1,5,1):
+                    if notquad != quad:
+                        self.forceonquadrants['notquad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(notquad)].cont,
+                                       self.model.allarrays['c{}v'.format(notquad)].cont,
+                                       self.model.allarrays['c{}h'.format(notquad)].cont])
+                
+            #solve forces on each due to the rest
+            for quadsol in range(1,5,1):
+                self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)] = rd.FldEnrFrc(self.forceonquadrants['quad{}'.format(quadsol)].radobj,self.forceonquadrants['notquad{}'.format(quadsol)].radobj,"fxfyfz")
+                
+            #solve force lower due to all the rest
+
     
     def calculate_force_per_beam(self):
         '''solve for the force on the beam'''
@@ -285,11 +306,16 @@ class Solution():
                         casesol.calculate_second_integral()
                         
                     if 'Forces' in self.property:
+                        casesol.calculate_force_per_quadrant()
                         casesol.calculate_force_per_beam()
+                        
                         print ('The force on this arrangement is {}'.format(casesol.forceonlower))
                         #load results into the solution
                         self.results['Force_Per_Beam'][shiftmode,gap,shift] = np.array([casesol.forceonlower,casesol.forceonupper])
-                    
+                        self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = np.array([casesol.forceonquadrants['force_on_quadrant_1'],
+                                                                                        casesol.forceonquadrants['force_on_quadrant_2'],
+                                                                                        casesol.forceonquadrants['force_on_quadrant_3'],
+                                                                                        casesol.forceonquadrants['force_on_quadrant_4']])
                     time4 = time.time()
                     
                     print('time to build case model is {}'.format(time2-time1))
@@ -659,7 +685,7 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-    #hypersol1.solve()
+    hypersol1.solve()
     
     #with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','wb') as fp:
     #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
