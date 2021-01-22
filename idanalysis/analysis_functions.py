@@ -82,15 +82,47 @@ class CaseSolution():
     
     def calculate_force_per_magnet(self):
         '''solve for an individual magnet in the model'''
-        pass
-    
+        if self.model.model_parameters.type == 'Compensated_APPLE':
+            self.forceonmagnets = {}
+            rowlist = list(self.model.allarrays)
+            mag_list = []
+            
+            for i in range(self.model.model_parameters.magnets_per_period):
+                mag_list.append('mag_{}'.format(i))
+            
+            rowmaglist = []
+            
+            for row in rowlist:
+                for mag in mag_list:
+                    rowmaglist.append('{}_{}'.format(row,mag))
+                    
+                    self.forceonmagnets['{}_{}'.format(row,mag)] = wrd.wradObjCnt()
+                    self.forceonmagnets['not{}_{}'.format(row,mag)] = wrd.wradObjCnt()
+                    
+                    for i in range(self.model.model_parameters.magnets_per_period):
+                        #stuff here
+                    
+            
+            print(1)
+            
     def calculate_force_per_row(self):
         ''' solve for force on row'''
-        pass
+        if self.model.model_parameters.type == 'Compensated_APPLE':
+            self.forceonrows = {}
+            rowlist = list(self.model.allarrays)
+            for row in rowlist:
+                self.forceonrows[row] = wrd.wradObjCnt()
+                self.forceonrows['not{}'.format(row)] = wrd.wradObjCnt()
+                self.forceonrows[row].wradObjAddToCnt([self.model.allarrays[row].cont])
+                for notrow in rowlist:
+                    if row != notrow:
+                        self.forceonrows['not{}'.format(row)].wradObjAddToCnt([self.model.allarrays[notrow].cont])
+                
+                self.forceonrows['force_on_row_{}'.format(row)] = rd.FldEnrFrc(self.forceonrows[row].radobj,self.forceonrows['not{}'.format(row)].radobj,"fxfyfz")    
+        
     
     def calculate_force_per_quadrant(self):
-        '''solve for force on quarant'''
-        '''solve for the force on the beam'''
+        '''solve for force on quadrant'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
             self.forceonquadrants = {}
             #create upper wrad object
@@ -105,6 +137,7 @@ class CaseSolution():
                         self.forceonquadrants['notquad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(notquad)].cont,
                                        self.model.allarrays['c{}v'.format(notquad)].cont,
                                        self.model.allarrays['c{}h'.format(notquad)].cont])
+                
                 
             #solve forces on each due to the rest
             for quadsol in range(1,5,1):
@@ -306,11 +339,26 @@ class Solution():
                         casesol.calculate_second_integral()
                         
                     if 'Forces' in self.property:
+                        casesol.calculate_force_per_magnet()
+                        casesol.calculate_force_per_row()
                         casesol.calculate_force_per_quadrant()
                         casesol.calculate_force_per_beam()
                         
                         print ('The force on this arrangement is {}'.format(casesol.forceonlower))
                         #load results into the solution
+                        
+                        self.results['Force_Per_Row'][shiftmode,gap,shift] = np.array([[casesol.forceonrows['force_on_row_q1'],
+                                                                                        casesol.forceonrows['force_on_row_q2'],
+                                                                                        casesol.forceonrows['force_on_row_q3'],
+                                                                                        casesol.forceonrows['force_on_row_q4'],
+                                                                                        casesol.forceonrows['force_on_row_c1v'],
+                                                                                        casesol.forceonrows['force_on_row_c1h'],
+                                                                                        casesol.forceonrows['force_on_row_c2v'],
+                                                                                        casesol.forceonrows['force_on_row_c2h'],
+                                                                                        casesol.forceonrows['force_on_row_c3v'],
+                                                                                        casesol.forceonrows['force_on_row_c3h'],
+                                                                                        casesol.forceonrows['force_on_row_c4v'],
+                                                                                        casesol.forceonrows['force_on_row_c4h']]])
                         self.results['Force_Per_Beam'][shiftmode,gap,shift] = np.array([casesol.forceonlower,casesol.forceonupper])
                         self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = np.array([casesol.forceonquadrants['force_on_quadrant_1'],
                                                                                         casesol.forceonquadrants['force_on_quadrant_2'],
@@ -687,10 +735,10 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    #with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','wb') as fp:
-    #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\develop_data_v0.4.dat','wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap_data.dat','rb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\develop_data_v0.4.dat','rb') as fp:
         hypersol1 = pickle.load(fp)
     
     hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap.h5')
