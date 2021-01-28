@@ -93,14 +93,24 @@ class CaseSolution():
             rowmaglist = []
             
             for row in rowlist:
-                for mag in mag_list:
-                    rowmaglist.append('{}_{}'.format(row,mag))
+                for i in range(self.model.model_parameters.magnets_per_period):
+                    for mag in range(len(mag_list)):
+                        rowmaglist.append('{}_{}'.format(row,mag))
+                        self.forceonmagnets['{}_{}'.format(row,mag_list[mag])] = wrd.wradObjCnt()
+                        self.forceonmagnets['not{}_{}'.format(row,mag_list[mag])] = wrd.wradObjCnt()
+                        
+                        
+                        #i = 0 => central magnet
+                        #i = 2 => next magnet downstream
+                        if (mag - i) == (len(mag_list) - 1)/2:
+                            self.forceonmagnets['{}_{}'.format(row,mag_list[mag])].wradObjAddToCnt(mag_list[mag])
+                            
                     
-                    self.forceonmagnets['{}_{}'.format(row,mag)] = wrd.wradObjCnt()
-                    self.forceonmagnets['not{}_{}'.format(row,mag)] = wrd.wradObjCnt()
+                        else:
+                            self.forceonmagnets['not{}_{}'.format(row,mag_list[mag])].wradObjAddToCnt(mag_list[mag])
+                            
                     
-                    for i in range(self.model.model_parameters.magnets_per_period):
-                        #stuff here
+
                     
             
             print(1)
@@ -339,7 +349,7 @@ class Solution():
                         casesol.calculate_second_integral()
                         
                     if 'Forces' in self.property:
-                        casesol.calculate_force_per_magnet()
+                        #casesol.calculate_force_per_magnet()
                         casesol.calculate_force_per_row()
                         casesol.calculate_force_per_quadrant()
                         casesol.calculate_force_per_beam()
@@ -700,7 +710,7 @@ if __name__ == '__main__':
     #solution_parameters is a list of two iterators and a list
     
     #create test hyper params as dict
-    test_hyper_params_dict = {'Mova': 20,
+    test_hyper_params_dict = {'Mova': 0,
                               'periods' : 5,
                               'periodlength' : 15,
                               #'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
@@ -712,14 +722,15 @@ if __name__ == '__main__':
                               'gap' : 2, 
                               'rowshift' : 4,
                               'shiftmode' : 'circular',
-                              'square_magnet' : 15.0}
+                              'square_magnet' : 15.0,
+                              'block_subdivision' : [1,1,1]}
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
-        "Mova" : np.arange(15,21,5),
+        "Mova" : np.arange(0,46,20),
         #"square_magnet" : np.arange(10,20.1,5),
-        "rowtorowgap" : np.arange(0.4,0.51,0.1),
+        #"rowtorowgap" : np.arange(0.4,0.51,0.1),
         #"magnets_per_period" : np.arange(4,12,2)
         }
     
@@ -735,13 +746,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\develop_data_v0.4.dat','wb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.dat','wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\develop_data_v0.4.dat','rb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.dat','rb') as fp:
         hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\rowtorowgap.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     

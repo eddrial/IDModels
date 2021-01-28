@@ -334,31 +334,44 @@ class compensatedAPPLEv2():
                                                  -(mp.nominal_cmagnet_dimensions[0] + mp.gap)/2.0])
         
         ### C1v ###
-        self.allarrays['c1v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c1v'].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarrays['c1v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c1v'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
                                                  mp.rowshift,
                                                  (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
-
+        ###feildrotatedebugtest###
+        axisq1 = [[10,-20,10],[10,20,10]]
+        rd.Solve(self.allarrays['q1'].cont.objectlist[0].objectlist[0].radobj,0.001,1000)
+        q1m = np.array(rd.FldLst(self.allarrays['q1'].cont.objectlist[0].objectlist[0].radobj,'mxmymz',axisq1[0],axisq1[1],101,'arg',-20))
+        plt.plot(q1m[:,0],q1m[:,3])
+        
+        axisc1v = [[4,-20,30],[4,20,30]]
+        rd.Solve(self.allarrays['c1v'].cont.objectlist[0].objectlist[0].radobj,0.001,1000)
+        c1vm = np.array(rd.FldLst(self.allarrays['c1v'].cont.objectlist[0].objectlist[0].radobj,'mxmymz',axisc1v[0],axisc1v[1],101,'arg',-20))
+        plt.plot(c1vm[:,0],c1vm[:,3])
+        
+        print(1)
+        
         ### C2v ###
+        
+        self.allarrays['c2v'].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
         self.allarrays['c2v'].cont.wradRotate([0,0,0],[0,1,0],np.pi/2)
-        self.allarrays['c2v'].cont.wradFieldRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c2v'].cont.wradReflect([0,0,0],[0,0,1])
         self.allarrays['c2v'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
                                                  0.0,
                                                  (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
 
         ### C3v ###
-        self.allarrays['c3v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c3v'].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarrays['c3v'].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c3v'].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
                                                  0.0,
                                                  (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
         self.allarrays['c3v'].cont.wradReflect([0,0,0],[0,0,1])
         
         ### C4v ###
+        self.allarrays['c4v'].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
         self.allarrays['c4v'].cont.wradRotate([0,0,0],[0,1,0],np.pi/2)
-        self.allarrays['c4v'].cont.wradFieldRotate([0,0,0],[0,1,0],-np.pi/2)
         self.allarrays['c4v'].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
                                                  mp.rowshift*shiftmodesign,
                                                  -(mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
@@ -375,8 +388,8 @@ class compensatedAPPLEv2():
 
 
 if __name__ == '__main__':
-    testparams = parameters.model_parameters(Mova = 14, 
-                                             periods = 10, 
+    testparams = parameters.model_parameters(Mova = 0, 
+                                             periods = 1, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              nominal_cmagnet_dimensions = [7.5,0.0,15.0], 
@@ -459,3 +472,6 @@ if __name__ == '__main__':
     input("Press Enter to continue...")
     print('{}'.format(a.cont.radobj))
     #a.allarrays['q1'].cont.objectlist[4].objectlist[0].magnetisation
+    
+    #for debugging
+    #print('magnetisation is {} and \n material.M is   {}'.format(self.allarrays['c1v'].cont.objectlist[0].objectlist[0].objectlist[0].magnetisation,self.allarrays['c1v'].cont.objectlist[0].objectlist[0].objectlist[0].material.M)) 
