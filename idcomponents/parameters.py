@@ -80,8 +80,8 @@ class model_parameters():
             self.nominal_fmagnet_dimensions[0] = self.square_magnet
             self.nominal_fmagnet_dimensions[2] = self.square_magnet
             self.nominal_cmagnet_dimensions[0] = self.square_magnet/2.0
-            self.nominal_cmagnet_dimensions[2] = self.square_magnet
-        
+            self.nominal_cmagnet_dimensions[2] = self.square_magnet+self.comp_magnet_chamfer[2]
+                    
         #end_magnet_thicknesses
         self.end_magnet_thickness = [(self.periodlength / 8.0) - self.shim]
         
