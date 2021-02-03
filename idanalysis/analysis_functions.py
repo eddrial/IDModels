@@ -120,6 +120,8 @@ class CaseSolution():
         if self.model.model_parameters.type == 'Compensated_APPLE':
             self.forceonrows = {}
             rowlist = list(self.model.allarrays)
+            self.forceonrowsarray = np.zeros([3,len(rowlist)])
+            i = 0
             for row in rowlist:
                 self.forceonrows[row] = wrd.wradObjCnt()
                 self.forceonrows['not{}'.format(row)] = wrd.wradObjCnt()
@@ -129,12 +131,14 @@ class CaseSolution():
                         self.forceonrows['not{}'.format(row)].wradObjAddToCnt([self.model.allarrays[notrow].cont])
                 
                 self.forceonrows['force_on_row_{}'.format(row)] = rd.FldEnrFrc(self.forceonrows[row].radobj,self.forceonrows['not{}'.format(row)].radobj,"fxfyfz")    
-        
+                self.forceonrowsarray[:,i] = self.forceonrows['force_on_row_{}'.format(row)]
+                i+=1
     
     def calculate_force_per_quadrant(self):
         '''solve for force on quadrant'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
             self.forceonquadrants = {}
+            self.forceonquadrantsarray = np.zeros([3,4])
             #create upper wrad object
             for quad in range(1,5,1):
                 self.forceonquadrants['quad{}'.format(quad)] = wrd.wradObjCnt()
@@ -152,6 +156,7 @@ class CaseSolution():
             #solve forces on each due to the rest
             for quadsol in range(1,5,1):
                 self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)] = rd.FldEnrFrc(self.forceonquadrants['quad{}'.format(quadsol)].radobj,self.forceonquadrants['notquad{}'.format(quadsol)].radobj,"fxfyfz")
+                self.forceonquadrantsarray[:,quadsol-1] = self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)]
                 
             #solve force lower due to all the rest
 
@@ -657,6 +662,7 @@ class HyperSolution():
                 hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
                 
                 hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
+                #hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/B/Per_Beam', data = self.solutions[sol].case_solutions[case].
                 
         
         #does this leave a lot of duplicated data? Yes
@@ -746,13 +752,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.dat','wb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.dat','wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.dat','rb') as fp:
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.dat','rb') as fp:
         hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\Mova210125.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
