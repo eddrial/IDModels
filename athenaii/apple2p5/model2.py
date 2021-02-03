@@ -250,29 +250,154 @@ class compensatedAPPLEv2():
         else:
             shiftmodesign = 0
         
-        self.allarrays = {'q1' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+        self.rownames = ['q1','q2','q3','q4','c1v','c1h','c2v','c2h','c3v','c3h','c4v','c4h']
+        self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet),ha.HalbachTermination_APPLE(model_parameters,fmagnet)) for _ in range(12)])
+        
+        for r in range(4):
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+        for r in range(4,12,1):
+            if r < 8:
+                be = 0
+                
+            else:
+                be = 1
+            
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,cmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,cmagnet), beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+        
+        ##### Functional Magnets #####
+        
+        ### Q1 ###
+        self.allarraytabs[0].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[0].cont.wradFieldInvert()
+        self.allarraytabs[0].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+        
+        ### Q2 ###
+        self.allarraytabs[1].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[1].cont.wradFieldInvert()
+        self.allarraytabs[1].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        self.allarraytabs[1].cont.wradReflect([0,0,0],[1,0,0])
+        
+        ### 2 ###
+        self.allarraytabs[2].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[2].cont.wradReflect([0,0,0],[1,0,0])
+        
+        ### Q4 ###
+        self.allarraytabs[3].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        
+        
+        ##### Compensation Magnets #####
+        
+        ### C1h ###
+        self.allarraytabs[5].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 mp.rowshift,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[5].cont.wradFieldInvert()
+        self.allarraytabs[5].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+        ### C2h ###
+        self.allarraytabs[7].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[7].cont.wradReflect([0,0,0],[0,0,1])
+        
+        ### C3h ###
+        self.allarraytabs[9].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[9].cont.wradFieldInvert()
+        self.allarraytabs[9].cont.wradReflect([0,0,0],[1,0,0])
+        
+        ### C4h ###
+        self.allarraytabs[11].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2] + mp.rowtorowgap + 2 * (mp.nominal_fmagnet_dimensions[0] + mp.compappleseparation))/2.0,
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[0] + mp.gap)/2.0])
+        
+        ### C1v ###
+        self.allarraytabs[4].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        #self.allarraytabs[4].cont.wradFieldInvert()
+        self.allarraytabs[4].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarraytabs[4].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift,
+                                                 (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+        ###feildrotatedebugtest###
+        axisq1 = [[10,-20,10],[10,20,10]]
+        rd.Solve(self.allarraytabs[0].cont.objectlist[0].objectlist[0].radobj,0.001,1000)
+        q1m = np.array(rd.FldLst(self.allarraytabs[0].cont.objectlist[0].objectlist[0].radobj,'mxmymz',axisq1[0],axisq1[1],101,'arg',-20))
+        plt.plot(q1m[:,0],q1m[:,3])
+        
+        axisc1v = [[4,-20,30],[4,20,30]]
+        rd.Solve(self.allarraytabs[4].cont.objectlist[0].objectlist[0].radobj,0.001,1000)
+        c1vm = np.array(rd.FldLst(self.allarraytabs[4].cont.objectlist[0].objectlist[0].radobj,'mxmymz',axisc1v[0],axisc1v[1],101,'arg',-20))
+        plt.plot(c1vm[:,0],c1vm[:,3])
+        
+        print(1)
+        
+        ### C2v ###
+        
+        self.allarraytabs[6].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        #self.allarraytabs[6].cont.wradFieldInvert()
+        self.allarraytabs[6].cont.wradRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarraytabs[6].cont.wradReflect([0,0,0],[0,0,1])
+        self.allarraytabs[6].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+
+        ### C3v ###
+        self.allarraytabs[8].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        #self.allarraytabs[8].cont.wradFieldInvert()
+        self.allarraytabs[8].cont.wradRotate([0,0,0],[0,1,0],-np.pi/2)
+        self.allarraytabs[8].cont.wradTranslate([(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 (mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])
+        self.allarraytabs[8].cont.wradReflect([0,0,0],[0,0,1])
+        
+        ### C4v ###
+        self.allarraytabs[10].cont.wradFieldRotate([0,0,0],[0,1,0],np.pi/2)
+        #self.allarraytabs[10].cont.wradFieldInvert()
+        self.allarraytabs[10].cont.wradRotate([0,0,0],[0,1,0],np.pi/2)
+        self.allarraytabs[10].cont.wradTranslate([-(mp.nominal_cmagnet_dimensions[2]/2.0 + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_cmagnet_dimensions[2] + mp.gap + 2 * (mp.nominal_fmagnet_dimensions[2] + mp.compappleseparation))/2.0])        
+        
+        for row in range(len(self.allarraytabs)):
+            self.cont.wradObjAddToCnt([self.allarraytabs[row].cont])
+        
+        ##as dict##########################
+        
+        self.allarrays = {'q1' : ha.MagnetRow('q1', ha.HalbachArray(model_parameters,fmagnet),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet), beam = 0, quadrant = 0, row = 0),
+                          'q2' : ha.MagnetRow('q2', ha.HalbachArray(model_parameters,fmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'q2' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                          'q3' : ha.MagnetRow('q3', ha.HalbachArray(model_parameters,fmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'q3' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
+                          'q4' : ha.MagnetRow('q4', ha.HalbachArray(model_parameters,fmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'q4' : ha.MagnetRow(ha.HalbachArray(model_parameters,fmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet)),
-                          'c1v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c1v' : ha.MagnetRow('c1v', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c1h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c1h' : ha.MagnetRow('c1h', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c2v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c2v' : ha.MagnetRow('c2v', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c2h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c2h' : ha.MagnetRow('c2h', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c3v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c3v' : ha.MagnetRow('c3v', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c3h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c3h' : ha.MagnetRow('c3h', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c4v' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c4v' : ha.MagnetRow('c4v', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
-                          'c4h' : ha.MagnetRow(ha.HalbachArray(model_parameters,cmagnet),
+                          'c4h' : ha.MagnetRow('c4h', ha.HalbachArray(model_parameters,cmagnet),
                                               ha.HalbachTermination_APPLE(model_parameters,cmagnet)),
                           }
         

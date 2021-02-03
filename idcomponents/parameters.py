@@ -26,6 +26,7 @@ class model_parameters():
             "beams" : 2,
             "quadrants" : 4,
             "rows_per_quadrant" : 3,
+            "rows" : 12, 
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm
             "gap" : 5, #Default Gap to calculate at

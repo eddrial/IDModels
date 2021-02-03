@@ -22,6 +22,7 @@ from wradia import wrad_obj as wrd
 from apple2p5 import model2 as id
 from idcomponents import parameters
 from ipywidgets.widgets.interaction import fixed
+from wradia.wrad_obj import wradObjCnt
 
 class CaseFullSolution():
     '''solves along full axis'''
@@ -118,79 +119,146 @@ class CaseSolution():
     def calculate_force_per_row(self):
         ''' solve for force on row'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
-            self.forceonrows = {}
-            rowlist = list(self.model.allarrays)
-            self.forceonrowsarray = np.zeros([3,len(rowlist)])
-            i = 0
-            for row in rowlist:
-                self.forceonrows[row] = wrd.wradObjCnt()
-                self.forceonrows['not{}'.format(row)] = wrd.wradObjCnt()
-                self.forceonrows[row].wradObjAddToCnt([self.model.allarrays[row].cont])
-                for notrow in rowlist:
-                    if row != notrow:
-                        self.forceonrows['not{}'.format(row)].wradObjAddToCnt([self.model.allarrays[notrow].cont])
-                
-                self.forceonrows['force_on_row_{}'.format(row)] = rd.FldEnrFrc(self.forceonrows[row].radobj,self.forceonrows['not{}'.format(row)].radobj,"fxfyfz")    
-                self.forceonrowsarray[:,i] = self.forceonrows['force_on_row_{}'.format(row)]
-                i+=1
+                          #"General Solution Method"
+            rows = []
+            for i in range(self.model.model_parameters.rows):
+                #append to the list, a list of two containers. 
+                #The Container we chack the force on, 
+                #and the container for objects 'creating rest of field 
+                rows.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
+            
+            self.rownames = self.model.rownames
+            
+            #for each magnet row
+            for i in range(self.model.model_parameters.rows):
+                #for each beam option
+                for j in range(self.model.model_parameters.rows):
+                    #if the row is the desired row
+                    if self.model.allarraytabs[i].row == j:
+                        #put it in the 'is this' container
+                        rows[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                    else:
+                        #put it in the 'is not this' container
+                        rows[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+            
+            
+            self.rowforces = np.zeros([len(rows),3])
+            
+            #calculate forces on 'this' due to 'not this' in model
+            for i in range(len(self.rowforces)):
+                self.rowforces[i] = np.array(rd.FldEnrFrc(rows[i][0].radobj,rows[i][1].radobj,"fxfyfz"))
     
     def calculate_force_per_quadrant(self):
         '''solve for force on quadrant'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
-            self.forceonquadrants = {}
-            self.forceonquadrantsarray = np.zeros([3,4])
-            #create upper wrad object
-            for quad in range(1,5,1):
-                self.forceonquadrants['quad{}'.format(quad)] = wrd.wradObjCnt()
-                self.forceonquadrants['notquad{}'.format(quad)] = wrd.wradObjCnt()
-                self.forceonquadrants['quad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(quad)].cont,
-                                       self.model.allarrays['c{}v'.format(quad)].cont,
-                                       self.model.allarrays['c{}h'.format(quad)].cont])
-                for notquad in range(1,5,1):
-                    if notquad != quad:
-                        self.forceonquadrants['notquad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(notquad)].cont,
-                                       self.model.allarrays['c{}v'.format(notquad)].cont,
-                                       self.model.allarrays['c{}h'.format(notquad)].cont])
+#            self.forceonquadrants = {}
+#            self.forceonquadrantsarray = np.zeros([3,4])
+#            #create upper wrad object
+#            for quad in range(1,5,1):
+#                self.forceonquadrants['quad{}'.format(quad)] = wrd.wradObjCnt()
+#                self.forceonquadrants['notquad{}'.format(quad)] = wrd.wradObjCnt()
+#                self.forceonquadrants['quad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(quad)].cont,
+#                                       self.model.allarrays['c{}v'.format(quad)].cont,
+#                                       self.model.allarrays['c{}h'.format(quad)].cont])
+#                for notquad in range(1,5,1):
+#                    if notquad != quad:
+#                        self.forceonquadrants['notquad{}'.format(quad)].wradObjAddToCnt([self.model.allarrays['q{}'.format(notquad)].cont,
+#                                       self.model.allarrays['c{}v'.format(notquad)].cont,
+#                                       self.model.allarrays['c{}h'.format(notquad)].cont])
                 
                 
             #solve forces on each due to the rest
-            for quadsol in range(1,5,1):
-                self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)] = rd.FldEnrFrc(self.forceonquadrants['quad{}'.format(quadsol)].radobj,self.forceonquadrants['notquad{}'.format(quadsol)].radobj,"fxfyfz")
-                self.forceonquadrantsarray[:,quadsol-1] = self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)]
+#            for quadsol in range(1,5,1):
+#                self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)] = rd.FldEnrFrc(self.forceonquadrants['quad{}'.format(quadsol)].radobj,self.forceonquadrants['notquad{}'.format(quadsol)].radobj,"fxfyfz")
+#                self.forceonquadrantsarray[:,quadsol-1] = self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)]
                 
-            #solve force lower due to all the rest
+            #"General Solution Method"
+            quadrants = []
+            for i in range(self.model.model_parameters.quadrants):
+                #append to the list, a list of two containers. 
+                #The Container we chack the force on, 
+                #and the container for objects 'creating rest of field 
+                quadrants.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
+            
+            self.quadrantnames = ['q1','q2','q3','q4']
+            
+            #for each magnet row
+            for i in range(self.model.model_parameters.rows):
+                #for each beam option
+                for j in range(self.model.model_parameters.quadrants):
+                    #if the row is in the quadrant option
+                    if self.model.allarraytabs[i].quadrant == j:
+                        #put it in the 'is this' container
+                        quadrants[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                    else:
+                        #put it in the 'is not this' container
+                        quadrants[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+            
+            
+            self.quadrantforces = np.zeros([len(quadrants),3])
+            
+            #calculate forces on 'this' due to 'not this' in model
+            for i in range(len(self.quadrantforces)):
+                self.quadrantforces[i] = np.array(rd.FldEnrFrc(quadrants[i][0].radobj,quadrants[i][1].radobj,"fxfyfz"))
 
     
     def calculate_force_per_beam(self):
         '''solve for the force on the beam'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
             #create upper wrad object
-            upper_beam = wrd.wradObjCnt()
-            upper_beam.wradObjAddToCnt([self.model.allarrays['q1'].cont,
-                                       self.model.allarrays['q2'].cont,
-                                       self.model.allarrays['c1h'].cont,
-                                       self.model.allarrays['c1v'].cont,
-                                       self.model.allarrays['c2h'].cont,
-                                       self.model.allarrays['c2v'].cont])
+            #upper_beam = wrd.wradObjCnt()
+            #upper_beam.wradObjAddToCnt([self.model.allarrays['q1'].cont,
+            #                           self.model.allarrays['q2'].cont,
+            #                           self.model.allarrays['c1h'].cont,
+            #                           self.model.allarrays['c1v'].cont,
+            #                           self.model.allarrays['c2h'].cont,
+            #                           self.model.allarrays['c2v'].cont])
             
             
             #create lower rad object
-            lower_beam = wrd.wradObjCnt()
-            lower_beam.wradObjAddToCnt([self.model.allarrays['q3'].cont,
-                                       self.model.allarrays['q4'].cont,
-                                       self.model.allarrays['c3h'].cont,
-                                       self.model.allarrays['c3v'].cont,
-                                       self.model.allarrays['c4h'].cont,
-                                       self.model.allarrays['c4v'].cont])
+            #lower_beam = wrd.wradObjCnt()
+            #lower_beam.wradObjAddToCnt([self.model.allarrays['q3'].cont,
+            #                           self.model.allarrays['q4'].cont,
+            #                           self.model.allarrays['c3h'].cont,
+            #                           self.model.allarrays['c3v'].cont,
+            #                           self.model.allarrays['c4h'].cont,
+            #                           self.model.allarrays['c4v'].cont])
+            
+            beams = []
+            for i in range(self.model.model_parameters.beams):
+                #append to the list, a list of two containers. 
+                #The Container we chack the force on, 
+                #and the container for objects 'creating rest of field 
+                beams.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
+            
+            self.beamnames = ['upper','lower']
+            
+            #for each magnet row
+            for i in range(self.model.model_parameters.rows):
+                #for each beam option
+                for j in range(self.model.model_parameters.beams):
+                    #if the row is in the beam option
+                    if self.model.allarraytabs[i].beam == j:
+                        #put it in the 'is this' container
+                        beams[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                    else:
+                        #put it in the 'is not this' container
+                        beams[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
             
             #solve force lower due to all the rest
-            a = rd.FldEnrFrc(upper_beam.radobj,lower_beam.radobj,"fxfyfz")
+            #a = rd.FldEnrFrc(upper_beam.radobj,lower_beam.radobj,"fxfyfz")
             #solve force on upper due to all the rest
-            b = rd.FldEnrFrc(lower_beam.radobj,upper_beam.radobj,"fxfyfz")
+            #b = rd.FldEnrFrc(lower_beam.radobj,upper_beam.radobj,"fxfyfz")
             
-            self.forceonlower = a
-            self.forceonupper = b
-        
+            #self.forceonlower = a
+            #self.forceonupper = b
+            
+            self.beamforces = np.zeros([len(beams),3])
+            
+            for i in range(len(self.beamforces)):
+                self.beamforces[i] = np.array(rd.FldEnrFrc(beams[i][0].radobj,beams[i][1].radobj,"fxfyfz"))
+            
+            
     
     def calculate_torque_per_magnet(self):
         '''solve for an individual magnet in the model'''
@@ -359,26 +427,16 @@ class Solution():
                         casesol.calculate_force_per_quadrant()
                         casesol.calculate_force_per_beam()
                         
-                        print ('The force on this arrangement is {}'.format(casesol.forceonlower))
+                        print ('The force on this arrangement is {}'.format(casesol.beamforces[0]))
                         #load results into the solution
                         
-                        self.results['Force_Per_Row'][shiftmode,gap,shift] = np.array([[casesol.forceonrows['force_on_row_q1'],
-                                                                                        casesol.forceonrows['force_on_row_q2'],
-                                                                                        casesol.forceonrows['force_on_row_q3'],
-                                                                                        casesol.forceonrows['force_on_row_q4'],
-                                                                                        casesol.forceonrows['force_on_row_c1v'],
-                                                                                        casesol.forceonrows['force_on_row_c1h'],
-                                                                                        casesol.forceonrows['force_on_row_c2v'],
-                                                                                        casesol.forceonrows['force_on_row_c2h'],
-                                                                                        casesol.forceonrows['force_on_row_c3v'],
-                                                                                        casesol.forceonrows['force_on_row_c3h'],
-                                                                                        casesol.forceonrows['force_on_row_c4v'],
-                                                                                        casesol.forceonrows['force_on_row_c4h']]])
-                        self.results['Force_Per_Beam'][shiftmode,gap,shift] = np.array([casesol.forceonlower,casesol.forceonupper])
-                        self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = np.array([casesol.forceonquadrants['force_on_quadrant_1'],
-                                                                                        casesol.forceonquadrants['force_on_quadrant_2'],
-                                                                                        casesol.forceonquadrants['force_on_quadrant_3'],
-                                                                                        casesol.forceonquadrants['force_on_quadrant_4']])
+                        self.results['Force_Per_Row'][shiftmode,gap,shift] = casesol.rowforces
+                        self.results['Force_Per_Beam'][shiftmode,gap,shift] = casesol.beamforces
+                        self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = casesol.quadrantforces
+                        #np.array([casesol.forceonquadrants['force_on_quadrant_1'],
+                        #                                                                casesol.forceonquadrants['force_on_quadrant_2'],
+                        #                                                                casesol.forceonquadrants['force_on_quadrant_3'],
+                        #                                                                casesol.forceonquadrants['force_on_quadrant_4']])
                     time4 = time.time()
                     
                     print('time to build case model is {}'.format(time2-time1))

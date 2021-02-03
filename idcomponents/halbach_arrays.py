@@ -109,12 +109,13 @@ class HalbachTermination_APPLE():
             
     
 class MagnetRow():
-    def __init__(self,Body = HalbachArray(), Termination = HalbachTermination_APPLE(),beam = 0, quadrant = 0):
+    def __init__(self,name = 'default_name', Body = HalbachArray(), Termination = HalbachTermination_APPLE(),beam = 0, quadrant = 0, row = 0):
         self.cont = wrd.wradObjCnt([])
         self.cont.wradObjAddToCnt([Body.cont, Termination.cont])
         self.beam = beam
         self.quadrant = quadrant
-    
+        self.row = row
+        self.name = name
 
     
 if __name__ == '__main__':
