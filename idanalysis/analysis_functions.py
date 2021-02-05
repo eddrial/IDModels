@@ -494,8 +494,16 @@ class HyperSolution():
             tmp1 = list(itertools.product(*tmp))
             
             for j in tmp1:
+                jlist = list(j)
                 for key in range(len(keylist)):
-                    base_hyper_parameters[keylist[key]] = j[key]
+                    keylen = 1
+                    if isinstance(base_hyper_parameters[keylist[key]],list):
+                        keylen = len(base_hyper_parameters[keylist[key]])
+                        base_hyper_parameters[keylist[key]] = jlist[0:keylen]
+                    else:
+                        base_hyper_parameters[keylist[key]] = jlist[0]
+                    del jlist[0:keylen]
+                    #check exisitng length
                 
                 new_hyper_params = parameters.model_parameters(**base_hyper_parameters)
                 self.hyper_inputs.append(new_hyper_params)
@@ -531,8 +539,16 @@ class HyperSolution():
         list_of_hyper_vars = list(self.hyper_solution_variables.keys())
         hyper_result_shape = []
         
+#        for var in list_of_hyper_vars:
+#            hyper_result_shape.append(len(self.hyper_solution_variables[var]))
+            
         for var in list_of_hyper_vars:
-            hyper_result_shape.append(len(self.hyper_solution_variables[var]))
+            if isinstance(self.hyper_solution_variables[var], list):
+                for i in range(len(self.hyper_solution_variables[var])):
+                    hyper_result_shape.append(self.hyper_solution_variables[var][i].__len__())
+                
+            else:
+                hyper_result_shape.append(self.hyper_solution_variables[var].__len__())
         
         if 'B' in self.hyper_solution_properties:
             self.hyper_results['Bmax'] = np.zeros(np.append(hyper_result_shape,3))
@@ -609,13 +625,26 @@ class HyperSolution():
             a = 0
             #reshape solutions into numpy array
             tmpsolshape = []
-            for i in range(len(list(self.hyper_solution_variables.keys()))):
-                tmpsolshape.append(len(list(self.hyper_solution_variables.values())[i]))
+            #workaround beacuase some attributes are lists of np arrays, others are just np arrays.
+            #must be a better way of doing this!
+            
+            for key in self.hyper_solution_variables:
+                if isinstance(self.hyper_solution_variables[key], list):
+                    for i in range(len(self.hyper_solution_variables[key])):
+                        tmpsolshape.append(self.hyper_solution_variables[key][i].__len__())
+                
+                else:
+                    tmpsolshape.append(self.hyper_solution_variables[key].__len__())
+
+            
+            #for i in range(len(list(self.hyper_solution_variables.keys()))):
+            #    tmpsolshape.append(len(list(self.hyper_solution_variables.values())[i]))
             
             #tmpsols = np.reshape(np.array(self.solutions),self.hyper_results[attribute].shape[:-1])
             tmpsols = np.reshape(np.array(self.solutions),tmpsolshape)
             
             for idx, value in np.ndenumerate(self.hyper_results[attribute]):
+            #for idx, value in np.ndenumerate(tmpsols):
 
                 if a != idx[:len(tmpsolshape)]: 
                     #self.hyper_results[attribute][idx[:len(tmpsolshape)]] = np.amax(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
@@ -692,7 +721,12 @@ class HyperSolution():
         # write varied hyperparameters = Hypervariables
         for varied_parameter in self.hyper_solution_variables.keys():
             dname = 'HyperSolution1/HyperVariables/{}'.format(varied_parameter)
-            hf.create_dataset(dname, data = self.hyper_solution_variables[varied_parameter])
+            if isinstance(self.hyper_solution_variables[varied_parameter],list):
+                for i in range(len(self.hyper_solution_variables[varied_parameter])):
+                    dnamei = '{}_{}'.format(dname,i)
+                    hf.create_dataset(dnamei, data = self.hyper_solution_variables[varied_parameter][i])
+            else:
+                hf.create_dataset(dname, data = self.hyper_solution_variables[varied_parameter])
 #            hf[dname].make_scale(varied_parameter)
             
         dscalnames = list(self.hyper_solution_variables.keys())
@@ -774,11 +808,11 @@ if __name__ == '__main__':
     #solution_parameters is a list of two iterators and a list
     
     #create test hyper params as dict
-    test_hyper_params_dict = {'Mova': 0,
+    test_hyper_params_dict = {'Mova': 20,
                               'periods' : 5,
                               'periodlength' : 15,
-                              #'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
-                              #'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
+                              'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
+                              'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
                               'compappleseparation' : 7.5,
                               'apple_clampcut' : 3.0,
                               'comp_magnet_chamfer' : [3.0,0.0,3.0],
@@ -786,13 +820,14 @@ if __name__ == '__main__':
                               'gap' : 2, 
                               'rowshift' : 4,
                               'shiftmode' : 'circular',
-                              'square_magnet' : 15.0,
+                              #'square_magnet' : 15.0,
                               'block_subdivision' : [1,1,1]}
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
-        #"block_subdivision" : [np.arange(1,4),np.arange(1,4),np.arange(1,4)],
-        "Mova" : np.arange(0,46,20),
+        #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
+        #"Mova" : np.arange(0,46,15),
+        "nominal_cmagnet_dimensions": [np.array([7.5,10.1,0.5]),np.array([0.0]),np.arange(15.0,20.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
         #"magnets_per_period" : np.arange(4,12,2)
@@ -810,13 +845,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.dat','wb') as fp:
-        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('M:\Work\Athena_APPLEIII\Python\Results\\Cmagdim210203.dat','wb') as fp:
+    #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.dat','rb') as fp:
-        hypersol1 = pickle.load(fp)
+    #with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210203.dat','rb') as fp:
+    #    hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\Mova210201.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\CMagDim210203.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
