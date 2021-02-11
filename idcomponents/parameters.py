@@ -9,14 +9,20 @@ from wradia import wrad_obj as wrd
 
 import numpy as np
 import radia as rd
+import h5py as h5
+from dask.array.tests.test_numpy_compat import dtype
 
 
 class model_parameters():
-    
+
     def __init__(self, **kwargs):
+        #h5py string type
+        h5str = h5.special_dtype(vlen=str) 
         #general
+        
         prop_defaults = {
             "origin": np.zeros(3), #set the origin of the device. Default is array([0., 0., 0.])
+            "coordinate_names" :np.array(['X','S','Z'], dtype = h5str),
             "pointsperperiod" : 20,
             "block_subdivision" : [2,3,1],
             

@@ -36,8 +36,19 @@ class CaseSolution():
     def __init__(self, model):
         self.model = model
         self.model.cont.wradSolve()
+        self.solved_attributes = []
     #this should solve a particular model
     #it should contain any of field, peakfield, effectivefield, 1st integral
+    
+    def case_save(self,h5object = False,h5path = 'Single_Case', fname = ''):
+        if h5object == False:
+            h5object = h5.File(fname, 'w')
+            
+        h5object.create_group(h5path)
+        
+        for item in self.solved_attributes:
+            h5object.create_dataset('{}/{}'.format(h5path,item),data = getattr(self,item))
+        
     
     def calculate_B_field(self, axis = 'default'):
         #define axis
@@ -52,8 +63,11 @@ class CaseSolution():
         self.bfield = np.array(tempb)
         
         self.bmax = np.array([np.max(np.abs(self.bfield[:,1])),np.max(np.abs(self.bfield[:,2])),np.max(np.abs(self.bfield[:,3]))])
-        self.beff = np.array([0.0,0.0,0.0])
+        self.beff = np.linalg.norm(self.bmax)
         
+        self.solved_attributes.append('bfield')
+        self.solved_attributes.append('bmax')
+        self.solved_attributes.append('beff')
         '''solve for B field for central 2 periods or minimum distance
         Solve for Peak and Effective Bx, Bs, Bz'''
         
@@ -114,7 +128,7 @@ class CaseSolution():
 
                     
             
-            print(1)
+            self.solved_attributes.append('forceonmagnets')
             
     def calculate_force_per_row(self):
         ''' solve for force on row'''
@@ -144,9 +158,12 @@ class CaseSolution():
             
             self.rowforces = np.zeros([len(rows),3])
             
+            
             #calculate forces on 'this' due to 'not this' in model
             for i in range(len(self.rowforces)):
                 self.rowforces[i] = np.array(rd.FldEnrFrc(rows[i][0].radobj,rows[i][1].radobj,"fxfyfz"))
+            
+        self.solved_attributes.append('rowforces')
     
     def calculate_force_per_quadrant(self):
         '''solve for force on quadrant'''
@@ -201,6 +218,7 @@ class CaseSolution():
             for i in range(len(self.quadrantforces)):
                 self.quadrantforces[i] = np.array(rd.FldEnrFrc(quadrants[i][0].radobj,quadrants[i][1].radobj,"fxfyfz"))
 
+            self.solved_attributes.append('quadrantforces')
     
     def calculate_force_per_beam(self):
         '''solve for the force on the beam'''
@@ -257,7 +275,8 @@ class CaseSolution():
             
             for i in range(len(self.beamforces)):
                 self.beamforces[i] = np.array(rd.FldEnrFrc(beams[i][0].radobj,beams[i][1].radobj,"fxfyfz"))
-            
+        
+        self.solved_attributes.append('beamforces')
             
     
     def calculate_torque_per_magnet(self):
@@ -446,7 +465,25 @@ class Solution():
                     
                     self.case_solutions.append(casesol)
     
-    def save(self):
+    def save(self,hf = None,solstring = 'Solution_0'):
+        if hf == None:
+            #create hdf5
+            print(1)
+        else:
+            hf.create_group(solstring)
+        for key in self.results:
+            hf.create_dataset('{}/{}'.format(solstring,key),data = self.results[key])
+            
+        for case in range(len(self.case_solutions)):
+            thiscase = 'Case_'+str(case)
+            self.case_solutions[case].case_save(hf,'{}/{}'.format(solstring,thiscase))
+                
+                #thiscase = 'Case_'+str(case)
+                #hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
+            
+                #hf.create_dataset('{}/{}/{}/TwoPeriodB'.format(solstring,key,thiscase), data = self.case_solutions[case].bfield)
+            
+        
         pass
     
     def plot(self):
@@ -746,14 +783,16 @@ class HyperSolution():
         #has results and inputs and search spaces (gap, shift scan etc(
         for sol in range(len(self.solutions)):
 #            this solution = 
-            hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol))
+            solstring = 'HyperSolution1/Solutions/Solution_'+ str(sol)
+            self.solutions[sol].save(hf,solstring)
+            #hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol))
         #for each case, create group CaseX
         #has results and inputs for each case
-            for case in range(len(self.solutions[sol].case_solutions)):
-                thiscase = 'Case_'+str(case)
-                hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
-                
-                hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
+            #for case in range(len(self.solutions[sol].case_solutions)):
+            #    thiscase = 'Case_'+str(case)
+            #    hf.create_group('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase)
+            #    
+            #    hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/TwoPeriodB', data = self.solutions[sol].case_solutions[case].bfield)
                 #hf.create_dataset('HyperSolution1/Solutions/Solution_'+ str(sol) + '/' +thiscase + '/B/Per_Beam', data = self.solutions[sol].case_solutions[case].
                 
         
@@ -769,7 +808,7 @@ if __name__ == '__main__':
                                              periods = 3, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
-                                             nominal_cmagnet_dimensions = [7.5,0.0,15.0], 
+                                             nominal_cmagnet_dimensions = [10.0,0.0,15.0], 
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
@@ -781,6 +820,11 @@ if __name__ == '__main__':
     
     case1 = CaseSolution(a)
     case1.calculate_B_field()
+    case1.calculate_force_per_beam()
+    case1.calculate_force_per_quadrant()
+    case1.calculate_force_per_row()
+    
+    case1.case_save(False, 'Single_Case', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\casedev210210.h5')
     
     #draw object
 #    rd.ObjDrwOpenGL(a.cont.radobj)
@@ -793,11 +837,11 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-7.5,0.01, 7.5)
+    shiftrange = np.arange(-7.5,0.1, 1.875)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
-    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, shiftrange = shiftrange)
+    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange)
     
     sol1 = Solution(test_hyper_params, scan_parameters)
     #sol1.solve()
@@ -826,8 +870,8 @@ if __name__ == '__main__':
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
-        #"Mova" : np.arange(0,46,15),
-        "nominal_cmagnet_dimensions": [np.array([7.5,10.1,0.5]),np.array([0.0]),np.arange(15.0,20.1,1)],
+        "Mova" : np.arange(0,46,5),
+        #"nominal_cmagnet_dimensions": [np.array([7.5]),np.array([0.0]),np.arange(15,25.1,10)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
         #"magnets_per_period" : np.arange(4,12,2)
@@ -845,13 +889,13 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    #with open('M:\Work\Athena_APPLEIII\Python\Results\\Cmagdim210203.dat','wb') as fp:
-    #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.dat','wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    #with open('M:\Work\Athena_APPLEIII\Python\Results\\Mova210203.dat','rb') as fp:
-    #    hypersol1 = pickle.load(fp)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.dat','rb') as fp:
+        hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\CMagDim210203.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.h5')
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
