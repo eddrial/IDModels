@@ -58,7 +58,10 @@ class CaseSolution():
         self.axis = axis
         #solve for the fieldlist
         tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',axis[0][1])
-    
+        
+        #absolutely temporary streamplot example
+        #self.model.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([-10,-10,0]), fields = 'bxbz')
+        
     #make that list a numpy array
         self.bfield = np.array(tempb)
         
@@ -685,7 +688,7 @@ class HyperSolution():
 
                 if a != idx[:len(tmpsolshape)]: 
                     #self.hyper_results[attribute][idx[:len(tmpsolshape)]] = np.amax(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
-                    self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
+                    self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs2(self.maxabs2(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2),1)
                     print (idx[:len(tmpsolshape)])
                 a = idx[:len(tmpsolshape)]
             
@@ -694,6 +697,21 @@ class HyperSolution():
         
         print(1)
         
+    def maxabs2(self, a, axis = None):
+        #first mind amin
+        mins = np.amin(a,axis)
+        maxs = np.amax(a,axis)
+        res = mins
+        
+        it = np.nditer(maxs, flags=['multi_index'])
+        while not it.finished:
+            if np.abs(mins[it.multi_index])> np.abs(maxs[it.multi_index]):
+                res[it.multi_index] = mins[it.multi_index]
+            elif np.abs(maxs[it.multi_index])> np.abs(mins[it.multi_index]):
+                res[it.multi_index] = maxs[it.multi_index]
+            it.iternext()
+        
+        return res
     
     def maxabs(self, a, axis=None):
         """Return slice of a, keeping only those values that are furthest away
@@ -837,7 +855,7 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-7.5,0.1, 1.875)
+    shiftrange = np.arange(-7.5,0.1, 7.5)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -870,8 +888,8 @@ if __name__ == '__main__':
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
-        "Mova" : np.arange(0,46,5),
-        #"nominal_cmagnet_dimensions": [np.array([7.5]),np.array([0.0]),np.arange(15,25.1,10)],
+        "Mova" : np.arange(0,46,25),
+        "nominal_cmagnet_dimensions": [np.arange(7.5,10,10),np.arange(0.0,1.0,10.0),np.arange(15,25.1,10)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
         #"magnets_per_period" : np.arange(4,12,2)

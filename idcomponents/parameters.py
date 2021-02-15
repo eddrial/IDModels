@@ -63,6 +63,10 @@ class model_parameters():
             
             "nominal_cmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
             "comp_magnet_chamfer" : [5.0,0.0,5.0],
+            "nominal_hcmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+            "hcomp_magnet_chamfer" : [5.0,0.0,5.0],
+            "nominal_vcmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+            "vcomp_magnet_chamfer" : [5.0,0.0,5.0],
             
             #####  Magnet Material #####
             
@@ -84,6 +88,9 @@ class model_parameters():
         #magnet thicknesses
         self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
         self.nominal_cmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
+        self.nominal_hcmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
+        self.nominal_vcmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
+        
         
         #square magnet dimensions
         if self.square_magnet is not False:
