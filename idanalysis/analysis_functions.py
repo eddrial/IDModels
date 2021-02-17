@@ -305,7 +305,7 @@ class Solution():
     '''
     
 
-    def __init__(self, hyper_params, scan_parameters, property = ['B']):
+    def __init__(self, hyper_params, scan_parameters, property = ['B','Forces']):
         '''
         Constructor
         '''
@@ -411,8 +411,9 @@ class Solution():
                     #delete object... actually can just be written over then object is out of reference
         print(1)
         
-    def solve(self):
+    def solve(self, property):
         #should solve through parameters
+        self.property = property
         for shiftmode in range(len(self.scan_parameters.shiftmoderange)):
             for gap in range(len(self.scan_parameters.gaprange)):
                 for shift in range(len(self.scan_parameters.shiftrange)):
@@ -468,14 +469,18 @@ class Solution():
                     
                     self.case_solutions.append(casesol)
     
-    def save(self,hf = None,solstring = 'Solution_0'):
+    def save(self,hf = None,solstring = 'Solution_0', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\'):
         if hf == None:
-            #create hdf5
-            print(1)
-        else:
-            hf.create_group(solstring)
+            hf = h5.File(fname, 'w')
+        
+        hf.create_group(solstring)
+        
         for key in self.results:
             hf.create_dataset('{}/{}'.format(solstring,key),data = self.results[key])
+            
+        hf.create_dataset('{}/{}'.format(solstring,'shiftrange'), data = self.scan_parameters.shiftrange)
+        
+        hf.create_dataset('{}/{}'.format(solstring,'gaprange'), data = self.scan_parameters.gaprange)
             
         for case in range(len(self.case_solutions)):
             thiscase = 'Case_'+str(case)
@@ -639,7 +644,7 @@ class HyperSolution():
             print("Solving HyperParameter Set {} of {}".format(i+1, len(self.hyper_inputs)))
             tmp_sol = Solution(hpset, self.scan_parameters, property = self.hyper_solution_properties)
             print('Solving for slices of {}'.format(hpset.block_subdivision))
-            tmp_sol.solve()
+            tmp_sol.solve(self.hyper_solution_properties)
             
             
             
@@ -823,27 +828,33 @@ if __name__ == '__main__':
     ### developing Case Solution ###
     
     test_hyper_params = parameters.model_parameters(Mova = 20, 
-                                             periods = 3, 
+                                             periods = 1, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
-                                             nominal_cmagnet_dimensions = [10.0,0.0,15.0], 
+                                             #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
+                                             nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
+                                             nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
-                                             magnets_per_period =4,
+                                             magnets_per_period = 6,
                                              gap = 2, 
-                                             rowshift = 4,
-                                             shiftmode = 'circular')
+                                             rowshift = 0,
+                                             shiftmode = 'circular',
+                                             block_subdivision = [1,1,1]
+                                             )
     a = id.compensatedAPPLEv2(test_hyper_params)
-    
+#    
     case1 = CaseSolution(a)
     case1.calculate_B_field()
-    case1.calculate_force_per_beam()
-    case1.calculate_force_per_quadrant()
-    case1.calculate_force_per_row()
+    print(case1.bmax)
+    print(1)
+#    case1.calculate_force_per_beam()
+#    case1.calculate_force_per_quadrant()
+#    case1.calculate_force_per_row()
     
-    case1.case_save(False, 'Single_Case', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\casedev210210.h5')
-    
+#    case1.case_save(False, 'Single_Case', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\casedev210210.h5')
+#    
     #draw object
 #    rd.ObjDrwOpenGL(a.cont.radobj)
     
@@ -854,15 +865,16 @@ if __name__ == '__main__':
 #    plt.show()
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.arange(2,10.1,4)
-    shiftrange = np.arange(-7.5,0.1, 7.5)
+    gaprange = np.arange(2,10.1,40)
+    shiftrange = np.arange(-7.5,7.51, 3.75)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange)
     
-    sol1 = Solution(test_hyper_params, scan_parameters)
-    #sol1.solve()
+#    sol1 = Solution(test_hyper_params, scan_parameters)
+#    sol1.solve()
+#    sol1.save(hf = None, solstring = 'Sol1', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\Solution.h5')
     
     ### Developing model Hypersolution
     
@@ -875,27 +887,31 @@ if __name__ == '__main__':
                               'periodlength' : 15,
                               'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
                               'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
+                              'nominal_vcmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
+                              'nominal_hcmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
                               'compappleseparation' : 7.5,
                               'apple_clampcut' : 3.0,
                               'comp_magnet_chamfer' : [3.0,0.0,3.0],
-                              'magnets_per_period' :4,
+                              'magnets_per_period' :6,
                               'gap' : 2, 
                               'rowshift' : 4,
                               'shiftmode' : 'circular',
                               #'square_magnet' : 15.0,
-                              'block_subdivision' : [1,1,1]}
+                              #'block_subdivision' : [1,1,1]
+                              }
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
-        "Mova" : np.arange(0,46,25),
-        "nominal_cmagnet_dimensions": [np.arange(7.5,10,10),np.arange(0.0,1.0,10.0),np.arange(15,25.1,10)],
+        #"Mova" : np.arange(15,25.1,5),
+        #"nominal_vcmagnet_dimensions": [np.arange(7.5,8,10),np.arange(0.0,1.0,10.0),np.arange(10,25.1,2.5)],
+        #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
-        #"magnets_per_period" : np.arange(4,12,2)
+        "magnets_per_period" : np.arange(4,11,2)
         }
     
-    hyper_solution_properties = ['B','Forces']
+    hyper_solution_properties = ['B']
     
     #create hypersolution object
     hypersol1 = HyperSolution(base_hyper_parameters = test_hyper_params_dict, 
@@ -905,15 +921,17 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-    hypersol1.solve()
+#    hypersol1.solve()
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.dat','wb') as fp:
-        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    rootname = 'nper210216'
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.dat','rb') as fp:
+#    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
+#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'rb') as fp:
         hypersol1 = pickle.load(fp)
     
-    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\mova210211.h5')
+    hypersol1.save('M:\Work\Athena_APPLEIII\Python\Results\\{}.h5'.format(rootname))
     
     mynumpyarray = np.zeros([len(hypersol1.hyper_results),2])
     
