@@ -60,7 +60,7 @@ class CaseSolution():
         tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',axis[0][1])
         
         #absolutely temporary streamplot example
-        #self.model.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([-10,-10,0]), fields = 'bxbz')
+        self.model.cont.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([10,10,0]), fields = 'bxbz')
         
     #make that list a numpy array
         self.bfield = np.array(tempb)
@@ -550,7 +550,7 @@ class HyperSolution():
                     del jlist[0:keylen]
                     #check exisitng length
                 
-                new_hyper_params = parameters.model_parameters(**base_hyper_parameters)
+                new_hyper_params = copy.deepcopy((parameters.model_parameters(**base_hyper_parameters)))
                 self.hyper_inputs.append(new_hyper_params)
             
     
@@ -866,7 +866,7 @@ if __name__ == '__main__':
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
     gaprange = np.arange(2,10.1,40)
-    shiftrange = np.arange(-7.5,7.51, 3.75)
+    shiftrange = np.arange(0.0,7.51, 375)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -896,8 +896,9 @@ if __name__ == '__main__':
                               'gap' : 2, 
                               'rowshift' : 4,
                               'shiftmode' : 'circular',
+                              'shim' : 0.25,
                               #'square_magnet' : 15.0,
-                              #'block_subdivision' : [1,1,1]
+                              'block_subdivision' : [1,1,1]
                               }
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
@@ -921,12 +922,12 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-#    hypersol1.solve()
+    hypersol1.solve()
     
-    rootname = 'nper210216'
+    rootname = 'nper210223a'
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
-#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'rb') as fp:
         hypersol1 = pickle.load(fp)
