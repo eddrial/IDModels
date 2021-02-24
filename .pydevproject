@@ -9,5 +9,7 @@
 <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
 <path>C:\Users\oqb\git\wRadia</path>
 <path>C:\Anaconda3\Lib\site-packages\radia</path>
+<path>C:\Users\oqb\workspace\Local_SRW</path>
+<path>C:\Users\oqb\workspace\Local_SRW\lib</path>
 </pydev_pathproperty>
 </pydev_project>

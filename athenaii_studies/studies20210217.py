@@ -2,7 +2,12 @@
 Created on 17 Feb 2021
 
 @author: oqb
+
 '''
+
+#creation of indivudual compensated APPLE, quick case solution
+#also a hyperparamaterspace search and solution
+#parallel axes plotting at the very end
 import numpy as np
 import radia as rd
 import h5py as h5
@@ -65,7 +70,7 @@ if __name__ == '__main__':
 #    plt.show()
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.arange(2,10.1,40)
+    gaprange = np.arange(2.2,10.1,40)
     shiftrange = np.arange(-7.5,7.51, 3.75)
     shiftmoderange = ['linear','circular']
     
@@ -96,6 +101,7 @@ if __name__ == '__main__':
                               'gap' : 2, 
                               'rowshift' : 4,
                               'shiftmode' : 'circular',
+                              'shim' : 0.250,
                               #'square_magnet' : 15.0,
                               #'block_subdivision' : [1,1,1]
                               }
@@ -108,7 +114,8 @@ if __name__ == '__main__':
         #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
-        "magnets_per_period" : np.arange(4,11,2)
+        "magnets_per_period" : np.arange(4,9,2),
+        "shim" : np.arange(0.05,0.251,0.05)
         }
     
     hyper_solution_properties = ['B']
@@ -121,12 +128,12 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-#    hypersol1.solve()
+    hypersol1.solve()
     
-    rootname = 'nper210216'
+    rootname = 'nper_shim210224'
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
-#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
+        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'rb') as fp:
         hypersol1 = pickle.load(fp)
