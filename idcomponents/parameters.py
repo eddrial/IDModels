@@ -36,7 +36,7 @@ class model_parameters():
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm
             "gap" : 5, #Default Gap to calculate at
-            "shim" : 0.05, # The gap between each magnet in a row / magnet array.
+            "shim" : 0.1, # The gap between each magnet in a row / magnet array.
             "periodlength" : 15, # The period length of the undulator
             "halbach_direction" : 1,  # a value to determine the sense of magnet rotation along the axis. 1 = Field BELOW array. -1 Field ABOVE array 
             "magnets_per_period" : 4, # This number is almost exclusively 4 in undulator Halbach arrays. But it doesn't *have* to be.
