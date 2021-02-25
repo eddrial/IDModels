@@ -60,7 +60,7 @@ class CaseSolution():
         tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',axis[0][1])
         
         #absolutely temporary streamplot example
-        self.model.cont.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([10,10,0]), fields = 'bxbz')
+        #self.model.cont.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([10,10,0]), fields = 'bxbz')
         
     #make that list a numpy array
         self.bfield = np.array(tempb)
@@ -101,35 +101,48 @@ class CaseSolution():
     def calculate_force_per_magnet(self):
         '''solve for an individual magnet in the model'''
         if self.model.model_parameters.type == 'Compensated_APPLE':
-            self.forceonmagnets = {}
-            rowlist = list(self.model.allarrays)
-            mag_list = []
+            magnets = [[] for r in range(self.model.model_parameters.rows)]
             
-            for i in range(self.model.model_parameters.magnets_per_period):
-                mag_list.append('mag_{}'.format(i))
-            
-            rowmaglist = []
-            
-            for row in rowlist:
-                for i in range(self.model.model_parameters.magnets_per_period):
-                    for mag in range(len(mag_list)):
-                        rowmaglist.append('{}_{}'.format(row,mag))
-                        self.forceonmagnets['{}_{}'.format(row,mag_list[mag])] = wrd.wradObjCnt()
-                        self.forceonmagnets['not{}_{}'.format(row,mag_list[mag])] = wrd.wradObjCnt()
-                        
-                        
-                        #i = 0 => central magnet
-                        #i = 2 => next magnet downstream
-                        if (mag - i) == (len(mag_list) - 1)/2:
-                            self.forceonmagnets['{}_{}'.format(row,mag_list[mag])].wradObjAddToCnt(mag_list[mag])
+            for i in range(len(magnets)):
+                #append to the list, a list of two containers. 
+                #The Container we chack the force on, 
+                #and the container for objects 'creating rest of field 
+                magnets[i] = [[wrd.wradObjCnt(),wrd.wradObjCnt()] for r in range(self.model.model_parameters.magnets_per_period)]
+                
+            #for each magnet row
+            for i in range(self.model.model_parameters.rows):
+                #for each magnet row
+                for j in range(self.model.model_parameters.rows):
+                    #if the row is the desired row
+                    if self.model.allarraytabs[i].row == j:
+                        #loop down to magnets
+                        for k in range(self.model.model_parameters.magnets_per_period):
+                            #put end structure in 'is not this' container
+                            print('i is {}, j is {}, k is {}'.format(i,j,k))
+                            magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[1]])
+                            #put part of periodic structure that is not in test area in 'is not this' container
+                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2)):
+                                magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period),self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()):
+                                magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                            #check periodic part for 'is this'
+                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2),int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period)):
+                                if k+int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2) == m:
+                                    magnets[j][k][0].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                                else:
+                                    magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                    else:
+                        #put it in the 'is not this' container
+                        for k in range(len(magnets[i])):
+                            magnets[i][k][1].wradObjAddToCnt([self.model.allarraytabs[j].cont])
                             
                     
-                        else:
-                            self.forceonmagnets['not{}_{}'.format(row,mag_list[mag])].wradObjAddToCnt(mag_list[mag])
-                            
                     
-
-                    
+            self.magnetforces = np.zeros([self.model.model_parameters.rows,len(magnets[0]),3])
+            #calculate forces on 'this' to 'not this'
+            for i in range(len(magnets)):
+                for j in range(len(magnets[i])):
+                    self.magnetforces[i,j] = np.array(rd.FldEnrFrc(magnets[i][j][0].radobj,magnets[i][j][1].radobj,"fxfyfz"))
             
             self.solved_attributes.append('forceonmagnets')
             

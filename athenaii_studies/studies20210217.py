@@ -7,7 +7,7 @@ Created on 17 Feb 2021
 
 #creation of indivudual compensated APPLE, quick case solution
 #also a hyperparamaterspace search and solution
-#parallel axes plotting at the very end
+#parallel axes plotting at the very end, which is broken
 import numpy as np
 import radia as rd
 import h5py as h5
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         ### developing Case Solution ###
     
     test_hyper_params = parameters.model_parameters(Mova = 20, 
-                                             periods = 1, 
+                                             periods = 2, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -52,6 +52,7 @@ if __name__ == '__main__':
 #    
     case1 = af.CaseSolution(a)
     case1.calculate_B_field()
+    case1.calculate_force_per_magnet()
     print(case1.bmax)
     print(1)
 #    case1.calculate_force_per_beam()
