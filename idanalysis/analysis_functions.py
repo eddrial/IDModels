@@ -118,7 +118,7 @@ class CaseSolution():
                         #loop down to magnets
                         for k in range(self.model.model_parameters.magnets_per_period):
                             #put end structure in 'is not this' container
-                            print('i is {}, j is {}, k is {}'.format(i,j,k))
+                            #print('i is {}, j is {}, k is {}'.format(i,j,k))
                             magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[1]])
                             #put part of periodic structure that is not in test area in 'is not this' container
                             for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2)):
@@ -144,7 +144,7 @@ class CaseSolution():
                 for j in range(len(magnets[i])):
                     self.magnetforces[i,j] = np.array(rd.FldEnrFrc(magnets[i][j][0].radobj,magnets[i][j][1].radobj,"fxfyfz"))
             
-            self.solved_attributes.append('forceonmagnets')
+            self.solved_attributes.append('magnetforces')
             
     def calculate_force_per_row(self):
         ''' solve for force on row'''
@@ -366,7 +366,8 @@ class Solution():
             self.results['Force_Per_Magnet_Type'] = np.zeros([len(self.scan_parameters.shiftmoderange),
                                              len(self.scan_parameters.gaprange),
                                              len(self.scan_parameters.shiftrange),
-                                             self.hyper_params.magnets_per_period * self.hyper_params.magnet_rows,
+                                             self.hyper_params.magnet_rows,
+                                             self.hyper_params.magnets_per_period,
                                              3])
             
             self.results['Force_Per_Row'] = np.zeros([len(self.scan_parameters.shiftmoderange),
@@ -458,17 +459,18 @@ class Solution():
                         casesol.calculate_second_integral()
                         
                     if 'Forces' in self.property:
-                        #casesol.calculate_force_per_magnet()
-                        casesol.calculate_force_per_row()
-                        casesol.calculate_force_per_quadrant()
-                        casesol.calculate_force_per_beam()
+                        casesol.calculate_force_per_magnet()
+                        self.results['Force_Per_Magnet_Type'][shiftmode,gap,shift] = casesol.magnetforces
+                        #casesol.calculate_force_per_row()
+                        #casesol.calculate_force_per_quadrant()
+                        #casesol.calculate_force_per_beam()
                         
-                        print ('The force on this arrangement is {}'.format(casesol.beamforces[0]))
+                        #print ('The force on this arrangement is {}'.format(casesol.beamforces[0]))
                         #load results into the solution
                         
-                        self.results['Force_Per_Row'][shiftmode,gap,shift] = casesol.rowforces
-                        self.results['Force_Per_Beam'][shiftmode,gap,shift] = casesol.beamforces
-                        self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = casesol.quadrantforces
+                        #self.results['Force_Per_Row'][shiftmode,gap,shift] = casesol.rowforces
+                        #self.results['Force_Per_Beam'][shiftmode,gap,shift] = casesol.beamforces
+                        #self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = casesol.quadrantforces
                         #np.array([casesol.forceonquadrants['force_on_quadrant_1'],
                         #                                                                casesol.forceonquadrants['force_on_quadrant_2'],
                         #                                                                casesol.forceonquadrants['force_on_quadrant_3'],
@@ -485,6 +487,8 @@ class Solution():
     def save(self,hf = None,solstring = 'Solution_0', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\'):
         if hf == None:
             hf = h5.File(fname, 'w')
+        else:
+            hf = h5.File(hf,'w')
         
         hf.create_group(solstring)
         
@@ -922,10 +926,10 @@ if __name__ == '__main__':
         #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
-        "magnets_per_period" : np.arange(4,11,2)
+        "magnets_per_period" : np.arange(6,11,20)
         }
     
-    hyper_solution_properties = ['B']
+    hyper_solution_properties = ['B', 'Forces']
     
     #create hypersolution object
     hypersol1 = HyperSolution(base_hyper_parameters = test_hyper_params_dict, 
