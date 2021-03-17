@@ -461,16 +461,16 @@ class Solution():
                     if 'Forces' in self.property:
                         casesol.calculate_force_per_magnet()
                         self.results['Force_Per_Magnet_Type'][shiftmode,gap,shift] = casesol.magnetforces
-                        #casesol.calculate_force_per_row()
-                        #casesol.calculate_force_per_quadrant()
-                        #casesol.calculate_force_per_beam()
+                        casesol.calculate_force_per_row()
+                        casesol.calculate_force_per_quadrant()
+                        casesol.calculate_force_per_beam()
                         
                         #print ('The force on this arrangement is {}'.format(casesol.beamforces[0]))
                         #load results into the solution
                         
-                        #self.results['Force_Per_Row'][shiftmode,gap,shift] = casesol.rowforces
-                        #self.results['Force_Per_Beam'][shiftmode,gap,shift] = casesol.beamforces
-                        #self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = casesol.quadrantforces
+                        self.results['Force_Per_Row'][shiftmode,gap,shift] = casesol.rowforces
+                        self.results['Force_Per_Beam'][shiftmode,gap,shift] = casesol.beamforces
+                        self.results['Force_Per_Quadrant'][shiftmode,gap,shift] = casesol.quadrantforces
                         #np.array([casesol.forceonquadrants['force_on_quadrant_1'],
                         #                                                                casesol.forceonquadrants['force_on_quadrant_2'],
                         #                                                                casesol.forceonquadrants['force_on_quadrant_3'],

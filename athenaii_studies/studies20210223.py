@@ -151,8 +151,8 @@ def XY_field_sheet(model, linewidth = 1):
     
     # Varying color along a streamline
     ax5 = fig.add_subplot(gs[2, 1])
-    strm = ax5.streamplot(Xf, Zf, BXf, BZf, color=BZf, linewidth=1, cmap='autumn')
-    fig.colorbar(strm.lines)
+    #strm = ax5.streamplot(Xf, Zf, BXf, BZf, color=BZf, linewidth=1, cmap='autumn')
+    #fig.colorbar(strm.lines)
     ax5.set_title('Functional Magnets')
     for i in range(3):
         for j in range(4):

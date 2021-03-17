@@ -165,6 +165,9 @@ def XY_field_sheet(model, linewidth = 1):
     plt.show()
 
 if __name__ == '__main__':
+#    shared parameters
+    min_gap = 13
+    
     #parameter_Set Horizontal_polarisation
     UE80_horz= parameters.model_parameters(Mova = 0,
                                         periods = 5, 
@@ -178,7 +181,7 @@ if __name__ == '__main__':
                                         apple_clampcut = 5.0,
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
-                                        gap = 10.5, 
+                                        gap = min_gap, 
                                         rowshift = 0,
                                         shiftmode = 'circular',
                                         block_subdivision = [2,3,1],
@@ -196,7 +199,7 @@ if __name__ == '__main__':
                                         apple_clampcut = 5.0,
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
-                                        gap = 10.5, 
+                                        gap = min_gap, 
                                         rowshift = 40,
                                         shiftmode = 'circular',
                                         block_subdivision = [2,3,1],
@@ -215,7 +218,25 @@ if __name__ == '__main__':
                                         apple_clampcut = 5.0,
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
-                                        gap = 10.5, 
+                                        gap = min_gap, 
+                                        rowshift = 0,
+                                        shiftmode = 'circular',
+                                        block_subdivision = [2,3,1],
+                                        M = 1.3                                        
+                                        )
+    UE_var_horz= parameters.model_parameters(Mova = 0,
+                                        periods = 5, 
+                                        periodlength =20,
+                                        nominal_fmagnet_dimensions = [30.0,0.0,30.0], 
+                                        #square_magnet = True,
+                                        nominal_cmagnet_dimensions = [10.0,0.0,15.0],
+                                        #nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
+                                        #nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
+                                        compappleseparation = 75,
+                                        apple_clampcut = 5.0,
+                                        comp_magnet_chamfer = [3.0,0.0,3.0],
+                                        magnets_per_period = 4,
+                                        gap = 4, 
                                         rowshift = 0,
                                         shiftmode = 'circular',
                                         block_subdivision = [2,3,1],
@@ -223,12 +244,14 @@ if __name__ == '__main__':
                                         )
     
     #make list of parameter sets to cycle through. In this case H and then V
-    param_sets = [UE112_horz, UE80_horz, UE80_vert]
+    #param_sets = [UE112_horz, UE80_horz, UE80_vert]
+    param_sets = [UE_var_horz]
     
     #cycle through sets
     for model in param_sets:
         #create model
-        this_id = id.compensatedAPPLEv2(model)
+        #this_id = id.compensatedAPPLEv2(model)
+        this_id = id.plainAPPLE(model)
         #solve model
         this_id.cont.wradSolve()
         

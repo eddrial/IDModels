@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                              gap = 2, 
                                              rowshift = 0,
                                              shiftmode = 'circular',
-                                             block_subdivision = [1,1,1]
+                                             block_subdivision = [2,3,1]
                                              )
     a = id.compensatedAPPLEv2(test_hyper_params)
 #    
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     sol1.solve(property = ['B','Forces'])
     
     
-    rootname = 'mag_forces_shim210225'
+    rootname = 'mag_forces_4per210226'
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
         pickle.dump(sol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
