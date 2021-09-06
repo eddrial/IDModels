@@ -1,10 +1,10 @@
 '''
-Created on 23 Feb 2021
+Created on 14 July 2021
 
 @author: oqb
 '''
 
-#Here is a final parameter set (20 degrees Mova, 6 mag per period
+#Here is a final parameter set (45 degrees Mova, 6 mag per period, 12mm gap, 27.3mm period)
 #include plotting of XZ at each place for each magnet
 #plotting of field along axis
 #plotting of field across axis at peaks#
@@ -518,10 +518,10 @@ if __name__ == '__main__':
     
     plt.show()'''
     #parameter_Set Horizontal_polarisation
-    ATH_II_hp_horz= parameters.model_parameters(Mova = 20,
+    ATH_II_hp_horz= parameters.model_parameters(Mova = 45,
                                         periods = 5, 
-                                        periodlength = 15,
-                                        nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
+                                        periodlength = 27.3,
+                                        nominal_fmagnet_dimensions = [25.0,0.0,25.0], 
                                         #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
                                         nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
                                         nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
@@ -529,16 +529,16 @@ if __name__ == '__main__':
                                         apple_clampcut = 3.0,
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 6,
-                                        gap = 2.2, 
+                                        gap = 12, 
                                         rowshift = 0,
                                         shiftmode = 'circular',
                                         block_subdivision = [1,1,1]
                                         )
     
-    ATH_II_hp_vert= parameters.model_parameters(Mova = 20,
+    ATH_II_hp_vert= parameters.model_parameters(Mova = 45,
                                         periods = 5, 
-                                        periodlength = 15,
-                                        nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
+                                        periodlength = 27.3,
+                                        nominal_fmagnet_dimensions = [25.0,0.0,25.0], 
                                         #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
                                         nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
                                         nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
@@ -546,7 +546,7 @@ if __name__ == '__main__':
                                         apple_clampcut = 3.0,
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 6,
-                                        gap = 2.2, 
+                                        gap = 12, 
                                         rowshift = 7.5,
                                         shiftmode = 'circular',
                                         block_subdivision = [1,1,1]

@@ -447,6 +447,9 @@ class compensatedAPPLEv2():
         ax0.set_aspect('equal')
         
         return ax0
+        
+        
+
         # Varying color along a streamline
 #        ax1 = fig.add_subplot(gs[0, 1])
 #        strm = ax1.streamplot(Xv, Zv, Bxv, Bzv, color=Bzv, linewidth=2, cmap='autumn')
@@ -526,11 +529,179 @@ class compensatedAPPLEv2():
         
 #        pass
 
+class twoPeriodAPPLE():
+    '''
+    27.08.21 ER
+    Incomplete. Looking to build two APPLE II Arrays adjacent to each other, 
+    to check the cross talk.
+    '''
+
+        
+    def __init__(self, 
+         model_parameters = parameters.model_parameters(),
+         fmagnet1 = ms.appleMagnet, fmagnet2 = ms.appleMagnet):
+        
+        rd.UtiDelAll()
+        
+        self.cont = wrd.wradObjCnt([])
+        
+        self.model_parameters = model_parameters
+        mp = self.model_parameters
+        
+        if mp.shiftmode == 'circular':
+            shiftmodesign = 1
+        elif mp.shiftmode == 'linear':
+            shiftmodesign = -1
+        else:
+            shiftmodesign = 0
+        
+        #fmagnet1 = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.periodlength)
+        #fmagnet2 = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.secondperiodlength)
+        
+        
+        self.rownames = ['q1','q2','q3','q4']
+        self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet1,2),ha.HalbachTermination_APPLE(model_parameters,fmagnet1)) for _ in range(4)])
+        
+        for r in range(2):
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet1),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet1), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+        for r in range(2,4):
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet1,2),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet1), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+        
+        ##### Functional Magnets #####
+        
+        ### Q1 ###
+
+        self.allarraytabs[0].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[0].cont.wradFieldInvert()
+        self.allarraytabs[0].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        self.allarraytabs[0].cont.wradReflect([0,0,0],[1,0,0])
+
+        
+        ### Q2 ###
+        self.allarraytabs[1].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[1].cont.wradFieldInvert()
+        self.allarraytabs[1].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+
+        
+        
+        ### Q3 ###
+        self.allarraytabs[2].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+ 
+        
+        ### Q4 ###
+        self.allarraytabs[3].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap)/2.0,
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[3].cont.wradReflect([0,0,0],[1,0,0])
+
+
+        
+        
+        for row in range(len(self.allarraytabs)):
+            self.cont.wradObjAddToCnt([self.allarraytabs[row].cont])
+
+class tribsAPPLE():
+    def __init__(self, 
+         model_parameters = parameters.model_parameters(),
+         fmagnet1 = ms.appleMagnet, fmagnet2 = ms.tribsAppleMiddleMagnet):
+        
+        rd.UtiDelAll()
+        
+        self.cont = wrd.wradObjCnt([])
+        
+        self.model_parameters = model_parameters
+        mp = self.model_parameters
+        
+        if mp.shiftmode == 'circular':
+            shiftmodesign = 1
+        elif mp.shiftmode == 'linear':
+            shiftmodesign = -1
+        else:
+            shiftmodesign = 0
+        
+        #fmagnet1 = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.periodlength)
+        #fmagnet2 = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.secondperiodlength)
+        
+        
+        self.rownames = ['q1','q2','q3','q4','q5','q6']
+        self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet1),ha.HalbachTermination_APPLE(model_parameters,fmagnet1)) for _ in range(len(self.rownames))])
+        
+        for r in ([0,2,3,5]):
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet1),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet1), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+        
+        for r in ([1,4]):
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet2),
+                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet2), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+        
+        
+        ##### Functional Magnets #####
+        
+        ### S1 ###
+
+        self.allarraytabs[0].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[0].cont.wradFieldInvert()
+        self.allarraytabs[0].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        self.allarraytabs[0].cont.wradReflect([0,0,0],[1,0,0])
+
+        
+        ### S2 ###
+        self.allarraytabs[1].cont.wradTranslate([0,
+                                                 mp.rowshift,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[1].cont.wradFieldInvert()
+        self.allarraytabs[1].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+
+        ### S3 ###
+        self.allarraytabs[2].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[2].cont.wradFieldInvert()
+        self.allarraytabs[2].cont.wradRotate([0,0,0],[0,1,0],np.pi)
+        
+
+        
+        
+        ### S4 ###
+        self.allarraytabs[3].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        
+        ### S5 ###
+        self.allarraytabs[4].cont.wradTranslate([0,
+                                                 0.0,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+ 
+        
+        ### S6 ###
+        self.allarraytabs[5].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+                                                 mp.rowshift*shiftmodesign,
+                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+        self.allarraytabs[5].cont.wradReflect([0,0,0],[1,0,0])
+
+
+        
+        
+        for row in range(len(self.allarraytabs)):
+            self.cont.wradObjAddToCnt([self.allarraytabs[row].cont])
+    
 
 if __name__ == '__main__':
-    testparams = parameters.model_parameters(Mova = 20, 
+    testparams = parameters.model_parameters(Mova = 0, 
                                              periods = 10, 
-                                             periodlength = 15,
+                                             periodlength = 25,
+                                             secondperiodlength = 35,
                                              block_subdivision = [1,1,1],
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              nominal_cmagnet_dimensions = [10.0,0.0,7.5], 
@@ -538,26 +709,35 @@ if __name__ == '__main__':
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
                                              magnets_per_period =4,
-                                             gap = 2,
-                                             rowshift = 0,
-                                             shiftmode = 'circular')
-    a = compensatedAPPLEv2(testparams)
+                                             gap = 10,
+                                             rowshift = 5.5,
+                                             shiftmode = 'linear')
+    #compensated APPLE test
+    #a = compensatedAPPLEv2(testparams)
+    
+    #Double Period Undulator Test
+    #array1magnet = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.periodlength)
+    #array2magnet = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.secondperiodlength)
+    #b = twoPeriodAPPLE(testparams)
+    
+    b = tribsAPPLE(testparams)
+
     
     #draw object
-    rd.ObjDrwOpenGL(a.cont.radobj)
+    rd.ObjDrwOpenGL(b.cont.radobj)
     
     #solve object
-    a.cont.wradSolve()
+    b.cont.wradSolve()
     
     #calculate field at a point
-    aa = rd.Fld(a.cont.radobj,'bxbybz',[0,0,10])
+    aa = rd.Fld(b.cont.radobj,'bxbybz',[0,0,10])
     
     #define line start and end points
-    linestart = [0,-60,0]
-    lineend = [0,60,0]
+    linestart = [0,-300,0] #"xsz"
+    lineend = [0,300,0]
     
     #calculate field on a line
-    bb = rd.FldLst(a.cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+    bb = rd.FldLst(b.cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
     
     #make that list a numpy array
     bbn = np.array(bb)

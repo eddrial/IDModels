@@ -60,6 +60,8 @@ class appleMagnet():
         self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
         
+        
+        
 class compMagnet():
     '''
     classdocs
@@ -186,10 +188,61 @@ class VcompMagnet():
         self.cont.wradObjDivMag(mp.block_subdivision)
         self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
+class tribsAppleMiddleMagnet():
+    '''
+    classdocs
+    '''
+    def __init__(self, 
+                 model_parameters = parameters.model_parameters(), 
+                 magnet_centre  = [0,0,0], 
+                 this_magnet_material = 'default', 
+                 colour = 'default', 
+                 magnet_thickness = 'default'):
         
+        '''
+        Constructor
+        '''
+        
+        mp = model_parameters
+        self.magnet_centre = magnet_centre
+        
+        if this_magnet_material == 'default':
+            this_magnet_material = mp.magnet_material
+            
+        if magnet_thickness == 'default':
+            magnet_thickness = mp.nominal_fmagnet_dimensions[1]
+        
+        '''orientation order z,y,x'''
+        self.cont = wrd.wradObjCnt([])  # Container
+    #    a.magnet_material = magnet_material
+        p1 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2+ 2* mp.apple_clampcut],
+                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut],
+                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut],
+                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - 2 * mp.apple_clampcut]], 
+                                                                  mp.direction)
+#        p3 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut],
+#                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+#                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+#                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut]], 
+#                                                                  mp.direction)
+        
+        self.cont.wradObjAddToCnt([p1,p2])
+        self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDivMag(mp.block_subdivision)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
+
+    
+    
 if __name__ == '__main__':
-    a = appleMagnet()
+    a = tribsAppleMiddleMagnet()
     b = compMagnet()
+    
+    rd.ObjDrwOpenGL(a.cont.radobj)
     
     a.cont.wradSolve(.001, 1000)
     

@@ -7,6 +7,8 @@ Created on 23 Oct 2020
 from wradia import wrad_mat as wrdm
 from wradia import wrad_obj as wrd
 
+
+import json
 import numpy as np
 import radia as rd
 import h5py as h5
@@ -38,6 +40,8 @@ class model_parameters():
             "gap" : 5, #Default Gap to calculate at
             "shim" : 0.1, # The gap between each magnet in a row / magnet array.
             "periodlength" : 15, # The period length of the undulator
+            "secondperiodlength" : 15, #The period length of a second array (for multiperiod array models or APPLE KNOTs etc)
+            "thirdperiodlength" : 15, #The period length of a third array, for multi period arrays for eg TRIBs exploitation
             "halbach_direction" : 1,  # a value to determine the sense of magnet rotation along the axis. 1 = Field BELOW array. -1 Field ABOVE array 
             "magnets_per_period" : 4, # This number is almost exclusively 4 in undulator Halbach arrays. But it doesn't *have* to be.
             
@@ -129,6 +133,38 @@ class model_parameters():
     #def write to h5
     #def read h5
     
+    def save(self, file_loc):
+        
+        tmp_dict = vars(self)
+        
+        for key in tmp_dict:
+            #print (tmp_dict[key])
+            if type(tmp_dict[key]) == np.ndarray:
+                tmp_dict[key] = tmp_dict[key].tolist()
+            if type(tmp_dict[key]) == wrdm.wradMatLin:
+                tmp_dict[key] = [self.ksi,self.M]
+        
+        with open(file_loc, 'w') as f:
+            json.dump(vars(self), f,sort_keys = True, indent = 4)
+    
+    
+    def load(self,f):
+        h5str = h5.special_dtype(vlen=str)
+        with open(f) as jj:
+            jsondict = json.load(jj)
+        
+        #print (jsondict)
+        
+        for key in jsondict:
+            setattr(self, key, jsondict[key])
+            
+        
+        self.origin = np.array(self.origin)
+        self.coordinate_names = np.array(['X','S','Z'], dtype = h5str)
+        
+        self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
+        
+
     
 class scan_parameters():
     

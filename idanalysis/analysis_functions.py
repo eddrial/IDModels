@@ -57,7 +57,7 @@ class CaseSolution():
             axis = [[0,-limit,0],[0,limit,0]]
         self.axis = axis
         #solve for the fieldlist
-        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',axis[0][1])
+        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',np.min(axis[0]))
         
         #absolutely temporary streamplot example
         #self.model.cont.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([10,10,0]), fields = 'bxbz')
@@ -105,7 +105,7 @@ class CaseSolution():
             
             for i in range(len(magnets)):
                 #append to the list, a list of two containers. 
-                #The Container we chack the force on, 
+                #The Container we check the force on, 
                 #and the container for objects 'creating rest of field 
                 magnets[i] = [[wrd.wradObjCnt(),wrd.wradObjCnt()] for r in range(self.model.model_parameters.magnets_per_period)]
                 
@@ -512,8 +512,23 @@ class Solution():
         pass
     
     def plot(self):
-        pass
+        print('You ain\'t plotted anything yet!')
         
+    def plot_Bpeak_vs_Gap(self, f = None):
+        plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,0]),1), label = 'Peak Bx')
+        plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,2]),1), label = 'Peak Bz')
+        
+        plt.xlabel('Gap (mm)')
+        plt.ylabel('Peak B (T)')
+        
+        plt.title('Peak B Field of Device with Gap')
+        
+        plt.legend()
+        
+        #plt.show()
+        
+        if f != None:
+            plt.savefig(f)
         
 class HyperSolution():
     '''solves a hypersolution - hyperparameters can be varied'''
@@ -882,12 +897,12 @@ if __name__ == '__main__':
 #    plt.show()
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.arange(2,10.1,40)
-    shiftrange = np.arange(0.0,7.51, 375)
+    gaprange = np.arange(2.2,10.1,40)
+    shiftrange = np.arange(-7.5,7.51, 3.75)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
-    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange)
+    scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     
 #    sol1 = Solution(test_hyper_params, scan_parameters)
 #    sol1.solve()
@@ -900,7 +915,7 @@ if __name__ == '__main__':
     
     #create test hyper params as dict
     test_hyper_params_dict = {'Mova': 20,
-                              'periods' : 5,
+                              'periods' : 3,
                               'periodlength' : 15,
                               'nominal_fmagnet_dimensions' : [15.0,0.0,15.0], #obsoleted by 'square_magnet'
                               'nominal_cmagnet_dimensions' : [7.5,0.0,15.0], #obsoleted by 'square_magnet'
@@ -915,18 +930,18 @@ if __name__ == '__main__':
                               'shiftmode' : 'circular',
                               'shim' : 0.25,
                               #'square_magnet' : 15.0,
-                              'block_subdivision' : [1,1,1]
+                              'block_subdivision' : [2,3,1]
                               }
     
     #hypersolution_variables a dict of ranges. Can only be ranges of existing parameters in test_hyper_params
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
         #"Mova" : np.arange(15,25.1,5),
-        #"nominal_vcmagnet_dimensions": [np.arange(7.5,8,10),np.arange(0.0,1.0,10.0),np.arange(10,25.1,2.5)],
+        "nominal_vcmagnet_dimensions": [np.arange(7.5,8,10),np.arange(0.0,1.0,10.0),np.arange(10,40.1,5.0)],
         #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
-        "magnets_per_period" : np.arange(6,11,20)
+        #"magnets_per_period" : np.arange(6,11,20)
         }
     
     hyper_solution_properties = ['B', 'Forces']
@@ -941,7 +956,7 @@ if __name__ == '__main__':
     
     hypersol1.solve()
     
-    rootname = 'nper210223a'
+    rootname = 'vcdim2100305'
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
         pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)

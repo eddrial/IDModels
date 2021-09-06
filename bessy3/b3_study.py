@@ -2,6 +2,8 @@
 Created on 24 Feb 2021
 
 @author: oqb
+
+This is a Dog's dinner
 '''
 #import Local_SRW as srw
 import srwlib as srw
@@ -34,7 +36,7 @@ def UE112():
     
     return UE112H
 
-def UEX(periodlength = 120, gap = 13, rowshift = 0):
+def UEX(periodlength = 42, gap = 6, rowshift = 0):
     UEXH_params = testparams = parameters.model_parameters(periods = 10, 
                                          periodlength = periodlength,
                                          block_subdivision = [2,1,1],
@@ -66,7 +68,7 @@ def BrillFromLambdaU(name, length, periodlength, gap, rowshift, eBeam):
     harm,harm.n, harm.h_or_v, harm.B  = srw.SRWLMagFldH(), 1, 'h', bmax
     und, und.per, und.name, und.gap = srw.SRWLMagFldU([harmXU80]), periodlength/1000, name, gap
     und.nPer = int(length/und.per)
-    Bril = srw.bril_und(eBeam,und,0.3,1,11,NbEnpts,1,plotting = False)
+    Bril = srw.bril_und(eBeam,und,0.3,1,11,NbEnpts,1,plotting = True)
     
     return Bril, und, harm
     
@@ -78,9 +80,17 @@ if __name__ == '__main__':
     BII_hb_eBeam = srw.srwl_uti_src_e_beam('BESSYII High Beta')
     BIII_eBeam = srw.srwl_uti_src_e_beam('BESSYIII Beta')
     
+    BIII_OT_1p7_eBeam = srw.srwl_uti_src_e_beam('BESSYIII OT 1.7GeV')
+    BIII_OT_2p5_eBeam = srw.srwl_uti_src_e_beam('BESSYIII OT 2.5GeV')
+    
+    
     #General Parameters
+    
+    straight_length_BII = 4.2
     straight_length = 4.5
     short_straight_length = 2
+    straight_length_OT_17 = 3.2
+    straight_length_OT_25 = 4.0
     
     NbEnpts = 1001
     
@@ -131,7 +141,7 @@ if __name__ == '__main__':
     UE112Hcase.calculate_B_field()
     print(UE112Hcase.bmax)
 
-    UEXH = UEX()
+    UEXH = UEX(periodlength = 48, gap = 12, rowshift = 0)
     print('p')    
     UEXHcase = af.CaseSolution(UEXH)
     UEXHcase.calculate_B_field()
@@ -365,19 +375,50 @@ if __name__ == '__main__':
     harmXU52,harmXU52.n, harmXU52.h_or_v, harmXU52.B  = srw.SRWLMagFldH(), 1, 'h', 0.967
     undXU52, undXU52.per, undXU52.name, undXU52.gap = srw.SRWLMagFldU([harmXU52]), 0.052, 'XU52', 0.013
     undXU52.nPer = int(straight_length/undXU52.per)
+    
+    
     BIII_XU52_Bril = srw.bril_und(BIII_eBeam,undXU52,0.3,1,11,NbEnpts,1,plotting = False)
     
     #XU38
-    harmXU38,harmXU38.n, harmXU38.h_or_v, harmXU38.B  = srw.SRWLMagFldH(), 1, 'h', 0.728
-    undXU38, undXU38.per, undXU38.name, undXU38.gap = srw.SRWLMagFldU([harmXU38]), 0.038, 'XU38', 0.013
-    undXU38.nPer = int(straight_length/undXU38.per)
+    harmXU38,harmXU38.n, harmXU38.h_or_v, harmXU38.B  = srw.SRWLMagFldH(), 1, 'h', 1.21
+    undXU38, undXU38.per, undXU38.name, undXU38.gap = srw.SRWLMagFldU([harmXU38]), 0.038, 'XU38', 0.006
+    undXU38.nPer = int(straight_length_BII/undXU38.per)
+    BII_XU38_Bril = srw.bril_und(BII_lb_eBeam,undXU38,0.3,1,11,NbEnpts,1,plotting = False)
+    
     BIII_XU38_Bril = srw.bril_und(BIII_eBeam,undXU38,0.3,1,11,NbEnpts,1,plotting = False)
+    
+    undXU38.nPer = int(straight_length_OT_17/undXU38.per)
+    BIII_OT17_XU38_80_Bril= srw.bril_und(BIII_OT_1p7_eBeam,undXU38,0.3,1,11,NbEnpts,1,plotting = False)
+    undXU38.nPer = int(straight_length_OT_25/undXU38.per)
+    BIII_OT25_XU38_105_Bril = srw.bril_und(BIII_OT_2p5_eBeam,undXU38,0.3,1,11,NbEnpts,1,plotting = False)
     
     #XU32
     harmXU32,harmXU32.n, harmXU32.h_or_v, harmXU32.B  = srw.SRWLMagFldH(), 1, 'h', 1.1
     undXU32, undXU32.per, undXU32.name, undXU32.gap = srw.SRWLMagFldU([harmXU32]), 0.032, 'XU32', 0.006
-    undXU32.nPer = int(straight_length/undXU32.per)
+    undXU32.nPer = int(straight_length_BII/undXU32.per)
+    BII_XU32_Bril = srw.bril_und(BII_lb_eBeam,undXU32,0.3,1,11,NbEnpts,1,plotting = False)
+    
     BIII_XU32_Bril = srw.bril_und(BIII_eBeam,undXU32,0.3,1,11,NbEnpts,1,plotting = False)
+    
+    undXU32.nPer = int(straight_length_OT_17/undXU32.per)
+    BIII_OT17_XU32_Bril= srw.bril_und(BIII_OT_1p7_eBeam,undXU32,0.3,1,11,NbEnpts,1,plotting = False)
+    undXU32.nPer = int(straight_length_OT_25/undXU32.per)
+    BIII_OT25_XU32_Bril = srw.bril_und(BIII_OT_2p5_eBeam,undXU32,0.3,1,11,NbEnpts,1,plotting = False)
+    
+    #XU26
+    harmXU26,harmXU26.n, harmXU26.h_or_v, harmXU26.B  = srw.SRWLMagFldH(), 1, 'h', 0.96
+    undXU26, undXU26.per, undXU26.name, undXU26.gap = srw.SRWLMagFldU([harmXU26]), 0.026, 'XU26', 0.006
+    undXU26.nPer = int(straight_length_BII/undXU26.per)
+    BII_XU26_Bril = srw.bril_und(BII_lb_eBeam,undXU26,0.3,1,11,NbEnpts,1,plotting = False)
+    
+    BIII_XU26_Bril = srw.bril_und(BIII_eBeam,undXU26,0.3,1,11,NbEnpts,1,plotting = False)
+    
+    undXU26.nPer = int(straight_length_OT_17/undXU26.per)
+    BIII_OT17_XU26_Bril= srw.bril_und(BIII_OT_1p7_eBeam,undXU26,0.3,1,11,NbEnpts,1,plotting = False)
+    undXU26.nPer = int(straight_length_OT_25/undXU26.per)
+    BIII_OT25_XU26_Bril = srw.bril_und(BIII_OT_2p5_eBeam,undXU26,0.3,1,11,NbEnpts,1,plotting = False)
+    
+
     
     
     #UE_5eV
@@ -414,7 +455,10 @@ if __name__ == '__main__':
     
     BII_U17_Bril = srw.bril_und(BII_hb_eBeam,undU17,0.3,1,9,NbEnpts,1,plotting = False)
     BIII_U17_Bril = srw.bril_und(BIII_eBeam,undU17,0.3,1,9,NbEnpts,1,plotting = False)
+    BII_U17_120_Bril = srw.bril_und(BII_hb_eBeam,undU17_120,0.3,1,9,NbEnpts,1,plotting = False)
     BIII_U17_120_Bril = srw.bril_und(BIII_eBeam,undU17_120,0.3,1,9,NbEnpts,1,plotting = False)
+    BIII_OT17_U17_120_Bril = srw.bril_und(BIII_OT_1p7_eBeam,undU17_120,0.3,1,9,NbEnpts,1,plotting = False)#OT = Original Tunnel
+    BIII__OT25_U17_120_Bril = srw.bril_und(BIII_OT_2p5_eBeam,undU17_120,0.3,1,9,NbEnpts,1,plotting = False)
     
     BIII_5eV_Bril = srw.bril_und(BIII_eBeam,und5eV,0.3,1,5,NbEnpts,1,plotting = False)
     
@@ -425,6 +469,20 @@ if __name__ == '__main__':
     BII_Range = srw.plotbril([BII_UE112H_Bril,BII_UE48H_Bril,BII_U41_Bril,BII_U17_Bril],BII_lb_eBeam, ['UE112','UE48','U41','U17'])
     BII_Range.set_title('Example IDs installed in BESSY II')
     BII_Range.legend()
+    
+    #OT Comparisons
+    OT_Range = srw.plotbril([BII_U17_120_Bril,BIII_U17_120_Bril,BIII_OT17_U17_120_Bril,BIII__OT25_U17_120_Bril],
+                            'unused',
+                            ['BII', 'BIII Green Field 2.5GeV', 'BIII Original Tunnel 1.7GeV', 'BIII Original Tunnel 2.5GeV'])
+    OT_Range.set_title('Impact of Different BIII Options:\n 120 period, 1.15T, CPMU17')
+    OT_Range.legend()
+    
+    OT_Range_38 = srw.plotbril([BII_XU26_Bril,BIII_XU38_Bril, BIII_OT17_XU26_Bril, BIII_OT25_XU38_105_Bril],
+                               'unused',
+                               ['BII 1.7GeV - 4.2m straight - IVUE26','BIII Green Field 2.5GeV - 4.2m straight - IVUE38','BIII Original Tunnel 1.7GeV - 3.2m Straight - IVUE26',
+                                'BIII Original Tunnel 2.5GeV - 4m Straight - IVUE38'])
+    OT_Range_38.set_title('Impact of Different BIII Options:\n 6mm gap, 0.96/1.2T, IVUE26/38')
+    OT_Range_38.legend()
     
     
     #EMIL comparison

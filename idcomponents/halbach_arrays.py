@@ -20,10 +20,26 @@ class HalbachArray():
     '''
 
 
-    def __init__(self, model_hyper_parameters = parameters.model_parameters(), magnet = ms.appleMagnet):
+    def __init__(self, model_hyper_parameters = parameters.model_parameters(), magnet = ms.appleMagnet, array_number = 1):
         '''
         Constructor
         '''
+        #switch to find out which array order is required, for multi period undulators
+        if array_number == 1:
+            per_length = model_hyper_parameters.periodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.periodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+        elif array_number == 2:
+            per_length = model_hyper_parameters.secondperiodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.secondperiodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+            
+        elif array_number == 3:
+            per_length = model_hyper_parameters.thirdperiodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.thirdperiodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+
+        
         #def appleArray(model_hyper_parameters, loc_offset, halbach_direction = -1):
         self.cont = wrd.wradObjCnt([])
         
