@@ -1,0 +1,99 @@
+{
+    "M": 1.6262400000000001,
+    "Mova": 0,
+    "apple_clampcut": 5.0,
+    "beams": 2,
+    "block_subdivision": [
+        1,
+        1,
+        1
+    ],
+    "comp_magnet_chamfer": [
+        5.0,
+        0.0,
+        5.0
+    ],
+    "compappleseparation": 7.5,
+    "coordinate_names": [
+        "X",
+        "S",
+        "Z"
+    ],
+    "direction": "y",
+    "end_magnet_thickness": [
+        1.775
+    ],
+    "end_separation": 2.5,
+    "gap": 6.2,
+    "halbach_direction": 1,
+    "hcomp_magnet_chamfer": [
+        5.0,
+        0.0,
+        5.0
+    ],
+    "jawshift": 0,
+    "key": 1.6262400000000001,
+    "ksi": [
+        0.019,
+        0.06
+    ],
+    "magnet_chamfer": [
+        5.0,
+        0.0,
+        5.0
+    ],
+    "magnet_material": [
+        [
+            0.019,
+            0.06
+        ],
+        1.6262400000000001
+    ],
+    "magnet_rows": 12,
+    "magnets_per_period": 6,
+    "minimumgap": 2,
+	"name": "Sandbox Undulator",
+    "nominal_cmagnet_dimensions": [
+        15.0,
+        2.4,
+        30.0
+    ],
+    "nominal_fmagnet_dimensions": [
+        20.0,
+        2.4,
+        20.0
+    ],
+    "nominal_hcmagnet_dimensions": [
+        7.5,
+        2.4,
+        15.0
+    ],
+    "nominal_vcmagnet_dimensions": [
+        15.0,
+        2.4,
+        15.0
+    ],
+    "origin": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "periodlength": 15,
+    "periods": 4,
+    "pointsperperiod": 20,
+    "quadrants": 4,
+    "rows": 12,
+    "rows_per_quadrant": 3,
+    "rowshift": 0,
+    "rowtorowgap": 0.5,
+    "shiftmode": "circular",
+    "shim": 0.1,
+    "square_magnet": false,
+    "totalmagnets": 25,
+    "type": "Cryogenic Compensated Tilted APPLE II",
+    "vcomp_magnet_chamfer": [
+        5.0,
+        0.0,
+        5.0
+    ]
+}

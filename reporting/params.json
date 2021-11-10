@@ -1,0 +1,17 @@
+{
+    "M": 1.6262400000000001,
+    "Mova": 0,
+    "apple_clampcut": 5.0,
+    "beams": 2,
+    "block_subdivision": [
+        2,
+        3,
+        1
+    ],
+    "comp_magnet_chamfer": [
+        5.0,
+        0.0,
+        5.0
+    ],
+    "compappleseparation": 7.5,
+    "coordinate_names": 

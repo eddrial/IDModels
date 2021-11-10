@@ -515,6 +515,8 @@ class Solution():
         print('You ain\'t plotted anything yet!')
         
     def plot_Bpeak_vs_Gap(self, f = None):
+        plt.close()
+        
         plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,0]),1), label = 'Peak Bx')
         plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,2]),1), label = 'Peak Bz')
         
@@ -526,6 +528,31 @@ class Solution():
         plt.legend()
         
         #plt.show()
+        
+        if f != None:
+            plt.savefig(f)
+            
+    def plot_Bpeak_vs_Phase(self, f = None):
+        plt.close()
+        #if # gaps > 4 set idx to euqlly distributed sample
+        if len(self.scan_parameters.gaprange)>4:
+            idx = np.round(np.linspace(0, len(self.scan_parameters.gaprange) - 1, 4)).astype(int)
+        else:
+            idx = np.arange(len(self.scan_parameters.gaprange))
+            
+        for i in range(len(idx)):
+            plt.plot(self.scan_parameters.shiftrange,self.results['Bmax'][0,idx[i],:,0], label = 'Peak Bx: {}mm Gap'.format(self.scan_parameters.gaprange[i]))
+            plt.plot(self.scan_parameters.shiftrange,self.results['Bmax'][0,idx[i],:,2], label = 'Peak Bz: {}mm Gap'.format(self.scan_parameters.gaprange[i]))
+            
+        
+        plt.xlabel('Shift (mm)')
+        plt.ylabel('Peak B (T)')
+        
+        plt.title('Peak B Field of Device with Shift')
+        
+        plt.legend()
+        
+        
         
         if f != None:
             plt.savefig(f)

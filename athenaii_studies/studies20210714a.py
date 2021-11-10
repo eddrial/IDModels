@@ -20,10 +20,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import tracemalloc
-import time
+from datetime import datetime
 
 from wradia import wrad_obj as wrd
 from apple2p5 import model2 as id
+from idcomponents import magnet_shapes as ms
 from idcomponents import parameters
 from idanalysis import analysis_functions as af
 from ipywidgets.widgets.interaction import fixed
@@ -33,8 +34,8 @@ if __name__ == '__main__':
         ### developing Case Solution ###
     
     test_hyper_params = parameters.model_parameters(Mova = 20, 
-                                             periods = 2, 
-                                             periodlength = 15,
+                                             periods = 6, 
+                                             periodlength = 17,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
                                              nominal_vcmagnet_dimensions = [7.5,0.0,15.0],
@@ -49,12 +50,25 @@ if __name__ == '__main__':
                                              block_subdivision = [1,1,1]
                                              )
     #a = id.compensatedAPPLEv2(test_hyper_params)
-    a = id.plainAPPLE(test_hyper_params)
+    #a = id.plainAPPLE(test_hyper_params, fmagnet=ms.appleMagnetFELr4)
+    a = id.plainAPPLE(test_hyper_params, fmagnet=ms.appleMagnet)
 #    
+
+        #add stayclear
+    stayclear = rd.ObjCylMag([0,0,0],2,150,24,'y')
+    stayclearcnt = rd.ObjCnt([stayclear])
+    rd.ObjDrwAtr(stayclearcnt,[1,0,0],1)
+    rd.ObjDrwOpenGL(stayclearcnt)
+    
     case1 = af.CaseSolution(a)
     case1.calculate_B_field()
     #case1.calculate_force_per_magnet()
     rd.ObjDrwOpenGL(a.cont.radobj, 'Axes->False')
+    
+    rd.ObjAddToCnt(stayclearcnt,[a.cont.radobj])
+    rd.ObjDrwOpenGL(stayclearcnt)
+
+
     print(case1.bmax)
     print(1)
     
@@ -70,8 +84,10 @@ if __name__ == '__main__':
     sol1 = af.Solution(test_hyper_params, scan_parameters,property = ['B','Forces'])
     sol1.solve(property = ['B','Forces'])
     
+    timestamp = datetime.now()
+    rootname = 'dev_{}'.format(timestamp.strftime("%Y%m%d_%H%M%S"))
     
-    rootname = 'lin_mag_forces_6per210426'
+    print('files with root {} are bing saved'.format(timestamp.strftime("%Y%m%d_%H%M%S")))
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
         pickle.dump(sol1,fp,protocol=pickle.HIGHEST_PROTOCOL)

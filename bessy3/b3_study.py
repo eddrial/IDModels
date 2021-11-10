@@ -128,6 +128,30 @@ if __name__ == '__main__':
     stkP.mesh.xFin = 0.02 #final horizontal position [m]
     stkP.mesh.yStart = -0.015 #initial vertical position [m]
     stkP.mesh.yFin = 0.015 #final vertical position [m]
+
+    #***********Wavefront
+    wfr1 = srw.SRWLWfr() #For spectrum vs photon energy
+    
+    wfr1.allocate(10000, 1, 1) #Numbers of points vs Photon Energy, Horizontal and Vertical Positions
+    wfr1.mesh.zStart = 20. #Longitudinal Position [m] at which SR has to be calculated
+    wfr1.mesh.eStart = 10. #Initial Photon Energy [eV]
+    wfr1.mesh.eFin = 3000. #Final Photon Energy [eV]
+    wfr1.mesh.xStart = -0.001 #Initial Horizontal Position [m]
+    wfr1.mesh.xFin = 0.001 #Final Horizontal Position [m]
+    wfr1.mesh.yStart = -0.001 #Initial Vertical Position [m]
+    wfr1.mesh.yFin = 0.001 #Final Vertical Position [m]
+    wfr1.partBeam = BII_lb_eBeam
+    
+    wfr2 = srw.SRWLWfr() #For intensity distribution at fixed photon energy
+    wfr2.allocate(1, 101, 101) #Numbers of points vs Photon Energy, Horizontal and Vertical Positions
+    wfr2.mesh.zStart = 20. #Longitudinal Position [m] at which SR has to be calculated
+    wfr2.mesh.eStart = 1090. #Initial Photon Energy [eV]
+    wfr2.mesh.eFin = 1090. #Final Photon Energy [eV]
+    wfr2.mesh.xStart = -0.001 #Initial Horizontal Position [m]
+    wfr2.mesh.xFin = 0.001 #Final Horizontal Position [m]
+    wfr2.mesh.yStart = -0.001 #Initial Vertical Position [m]
+    wfr2.mesh.yFin = 0.001 #Final Vertical Position [m]
+    wfr2.partBeam = BII_lb_eBeam
     
     #undulators
     #UE112

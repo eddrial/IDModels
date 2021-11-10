@@ -140,10 +140,12 @@ class Sandbox(object):
             
             #plot of Bx and By peak with Gap
             self.mysolution.plot_Bpeak_vs_Gap('fig{}.png'.format(self.fignum))
+            self.mysolution.plot_Bpeak_vs_Phase('fig{}.png'.format(self.fignum+1))
             
             sleep(14)
             
             self.rep.add_picture('fig{}.png'.format(self.fignum))
+            self.rep.add_picture('fig{}.png'.format(self.fignum+1))
             
             #Plot of HH minimum Gap
             

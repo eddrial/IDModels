@@ -188,6 +188,114 @@ class VcompMagnet():
         self.cont.wradObjDivMag(mp.block_subdivision)
         self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
+        
+        
+class appleMagnetFELr4():
+    '''
+    classdocs
+    '''
+    def __init__(self, 
+                 model_parameters = parameters.model_parameters(), 
+                 magnet_centre  = [0,0,0], 
+                 this_magnet_material = 'default', 
+                 colour = 'default', 
+                 magnet_thickness = 'default'):
+        
+        '''
+        Constructor
+        '''
+        
+        mp = model_parameters
+        self.magnet_centre = magnet_centre
+        
+        if this_magnet_material == 'default':
+            this_magnet_material = mp.magnet_material
+            
+        if magnet_thickness == 'default':
+            magnet_thickness = mp.nominal_fmagnet_dimensions[1]
+        
+        '''orientation order z,y,x'''
+        self.cont = wrd.wradObjCnt([])  # Container
+    #    a.magnet_material = magnet_material
+    #p1 is the min body of the magnet
+        p1 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+    #p2 is the bottom part
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+        
+    #p3 is the top part
+        p3 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2-1.58],#b
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - 1.58,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],#c
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut]], 
+                                                                  mp.direction)
+        
+        self.cont.wradObjAddToCnt([p1,p2,p3])
+        self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDivMag(mp.block_subdivision)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
+
+class appleMagnetFELr6():
+    '''
+    classdocs
+    '''
+    def __init__(self, 
+                 model_parameters = parameters.model_parameters(), 
+                 magnet_centre  = [0,0,0], 
+                 this_magnet_material = 'default', 
+                 colour = 'default', 
+                 magnet_thickness = 'default'):
+        
+        '''
+        Constructor
+        '''
+        
+        mp = model_parameters
+        self.magnet_centre = magnet_centre
+        
+        if this_magnet_material == 'default':
+            this_magnet_material = mp.magnet_material
+            
+        if magnet_thickness == 'default':
+            magnet_thickness = mp.nominal_fmagnet_dimensions[1]
+        
+        '''orientation order z,y,x'''
+        self.cont = wrd.wradObjCnt([])  # Container
+    #    a.magnet_material = magnet_material
+    #p1 is the min body of the magnet
+        p1 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+    #p2 is the bottom part
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+        
+    #p3 is the top part
+        p3 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2-3],#b
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - 3,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],#c
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut]], 
+                                                                  mp.direction)
+        
+        self.cont.wradObjAddToCnt([p1,p2,p3])
+        self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDivMag(mp.block_subdivision)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
+
 class tribsAppleMiddleMagnet():
     '''
     classdocs
