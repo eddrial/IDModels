@@ -1,0 +1,16 @@
+language: python
+
+services:
+  - docker
+
+install:
+  - docker pull eddrial/opt-id:env-v3
+  - docker run -itd --name env --env-file <(env | grep TRAVIS) -v $(pwd):/tmp/repo/ -w /tmp/repo/ eddrial/opt-id:env-v3
+  
+script:
+  - docker exec env pip install -e .
+  - docker exec env python -m pytest --cov=wradia test/
+
+after_script:
+  - docker exec env coveralls
+  - docker stop env
