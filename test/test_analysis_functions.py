@@ -4,6 +4,7 @@ Created on 11 Nov 2021
 @author: oqb
 '''
 import unittest
+import idanalysis as ida
 
 
 class Test(unittest.TestCase):

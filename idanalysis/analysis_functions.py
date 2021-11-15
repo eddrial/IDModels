@@ -24,6 +24,18 @@ from idcomponents import parameters
 from ipywidgets.widgets.interaction import fixed
 from wradia.wrad_obj import wradObjCnt
 
+class MetaData():
+    '''struct class that stores, saves, reads metadata'''
+    def __init__(self):
+        self.author = 'E Rial'
+        self.dateandtime = time.localtime()
+        self.facility = 'Helmholtz Zentrum Berlin'
+        self.IDType = 'Compensated APPLE'
+        
+    def savemetadataattributes(self, hs):
+        hs.attrs['author'] = self.author
+        
+
 class CaseFullSolution():
     '''solves along full axis'''
     def __init__(self):
@@ -487,8 +499,8 @@ class Solution():
     def save(self,hf = None,solstring = 'Solution_0', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\'):
         if hf == None:
             hf = h5.File(fname, 'w')
-        else:
-            hf = h5.File(hf,'w')
+        #else: #unnecessary?
+            #hf = h5.File(hf,'w')
         
         hf.create_group(solstring)
         
@@ -752,7 +764,8 @@ class HyperSolution():
 
                 if a != idx[:len(tmpsolshape)]: 
                     #self.hyper_results[attribute][idx[:len(tmpsolshape)]] = np.amax(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2)
-                    self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs2(self.maxabs2(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2),1)
+                    #self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs2(self.maxabs2(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2),1)
+                    self.hyper_results[attribute][idx[:len(tmpsolshape)]] = self.maxabs2(self.maxabs2(self.maxabs2(tmpsols[idx[:len(tmpsolshape)]].results[attribute],2),1),0)
                     print (idx[:len(tmpsolshape)])
                 a = idx[:len(tmpsolshape)]
             
@@ -815,10 +828,12 @@ class HyperSolution():
     def save(self,savefile):
         hf = h5.File(savefile, 'w')
         
+        md = MetaData()
         #save info on hyperspace search
         #what name? HS1, HS2, HS3 etc - HyperSolution1
         #saves hyperspace inputs and outputs (are there any sensible HyperSpace outputs?)
-        hf.create_group('HyperSolution1')
+        hs = hf.create_group('HyperSolution1')
+        md.savemetadataattributes(hs)
         hf.create_group('HyperSolution1/HyperParamaters')
         #pop iterated hyperparamaters to new dict... actually can they be binned?
         
@@ -971,7 +986,8 @@ if __name__ == '__main__':
         #"magnets_per_period" : np.arange(6,11,20)
         }
     
-    hyper_solution_properties = ['B', 'Forces']
+    #hyper_solution_properties = ['B', 'Forces']
+    hyper_solution_properties = ['B']
     
     #create hypersolution object
     hypersol1 = HyperSolution(base_hyper_parameters = test_hyper_params_dict, 
@@ -981,12 +997,12 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-    hypersol1.solve()
+#    hypersol1.solve()
     
-    rootname = 'vcdim2100305'
+    rootname = 'vcdim211115'
     
-    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
-        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+#    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
+#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'rb') as fp:
         hypersol1 = pickle.load(fp)
@@ -1002,6 +1018,7 @@ if __name__ == '__main__':
     plt.plot(mynumpyarray[:,0],mynumpyarray[:,1])
     
     mynumpyarray = np.zeros([60,4])
+    
     
     for i in range(60):
         mynumpyarray[i] = [hypersol1.hyper_inputs[i].block_subdivision[0],
