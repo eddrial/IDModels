@@ -10,7 +10,7 @@ install:
   
 script:
   - docker exec env pip install -e .
-  - docker exec env python -m pytest --cov=wradia test/
+  - docker exec env python -m pytest --cov=idmodels test/
 
 after_script:
   - docker exec env coveralls
