@@ -1,3 +1,4 @@
 # Runtime
 #http://github.com/ochubar/Radia/tarball/master#egg=package-1.0&subdirectory=env/radia_python
-https://github.com/eddrial/wradia.git@master
+#https://github.com/eddrial/wradia.git@master
+git+https://github.com/eddrial/wradia.git#egg=wradia
