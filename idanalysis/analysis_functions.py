@@ -1015,6 +1015,7 @@ if __name__ == '__main__':
         mynumpyarray[i] = [hypersol1.hyper_inputs[i].square_magnet,
                            hypersol1.hyper_results[i]['Bmax'][0,0,0,0]]
         
+        
     plt.plot(mynumpyarray[:,0],mynumpyarray[:,1])
     
     mynumpyarray = np.zeros([60,4])
