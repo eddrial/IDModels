@@ -4,9 +4,9 @@ services:
   - docker
 
 install:
-  - pip install -r requirements.txt
   - docker pull eddrial/opt-id:env-v3
   - docker run -itd --name env --env-file <(env | grep TRAVIS) -v $(pwd):/tmp/repo/ -w /tmp/repo/ eddrial/opt-id:env-v3
+  - pip install -r requirements.txt
   
 script:
   - docker exec env pip install -e .
