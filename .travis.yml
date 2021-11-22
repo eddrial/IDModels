@@ -1,7 +1,7 @@
 language: python
 
 before_script:
-  - wget https://github.com/eddrial/wRadia/archive/0.1.tar.gz -O /tmp/casper.tar.gz
+  - wget https://github.com/eddrial/wRadia/archive/0.1.tar.gz -O /tmp/wRadia.tar.gz
   - tar -xvf /tmp/casper.tar.gz
   - export PATH=$PATH:$PWD/wRadia-0.1/bin/
 
