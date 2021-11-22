@@ -1,14 +1,10 @@
 language: python
 
-before_script:
-  - wget https://github.com/eddrial/wRadia/archive/0.1.tar.gz -O /tmp/wRadia.tar.gz
-  - tar -xvf /tmp/wRadia.tar.gz
-  - export PATH=$PATH:$PWD/wRadia-0.1/bin/
-
 services:
   - docker
 
 install:
+  - pip install -r requirements.txt
   - docker pull eddrial/opt-id:env-v3
   - docker run -itd --name env --env-file <(env | grep TRAVIS) -v $(pwd):/tmp/repo/ -w /tmp/repo/ eddrial/opt-id:env-v3
   
