@@ -833,10 +833,12 @@ class HyperSolution():
         #what name? HS1, HS2, HS3 etc - HyperSolution1
         #saves hyperspace inputs and outputs (are there any sensible HyperSpace outputs?)
         hs = hf.create_group('HyperSolution1')
+        hsa = hf.create_group('HyperSolution1/Attributes')
         md.savemetadataattributes(hs)
-        hf.create_group('HyperSolution1/HyperParamaters')
+        #hf.create_group('HyperSolution1/HyperParamaters')
         #pop iterated hyperparamaters to new dict... actually can they be binned?
         
+        #Fixed Parameters are Attributes of the Hypersolution, and are saved as such
         #iterate keys in base_hypersolution_variables to create dataset
         for fixed_parameter in self.base_hyper_parameters.__dict__.keys():
             print('saving fixed parameter {}'.format(fixed_parameter))
@@ -845,12 +847,14 @@ class HyperSolution():
                 print ('{} is not fixed in this hypersolution'.format(fixed_parameter))
             #if is a class
             elif hasattr(self.base_hyper_parameters.__dict__[fixed_parameter],'__dict__'):
-                hf.create_group('HyperSolution1/HyperParamaters/'+fixed_parameter)
-                for fixed_sub_parameter in self.base_hyper_parameters.__dict__[fixed_parameter].__dict__.keys():
-                    hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter+'/'+fixed_sub_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter].__dict__[fixed_sub_parameter])
-            #if just a supported type, write.
+                pass # The only class is the material with M and ksi, which are already individually saved as attributes
+                #hf.create_group('HyperSolution1/HyperParamaters/'+fixed_parameter)
+                #for fixed_sub_parameter in self.base_hyper_parameters.__dict__[fixed_parameter].__dict__.keys():
+                #    hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter+'/'+fixed_sub_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter].__dict__[fixed_sub_parameter])
+            #if just a supported type, write as attribute.
             else:
-                hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
+                #hf.create_dataset('HyperSolution1/HyperParamaters/'+fixed_parameter, data = self.base_hyper_parameters.__dict__[fixed_parameter])
+                hsa.attrs[fixed_parameter] = self.base_hyper_parameters.__dict__[fixed_parameter]
         
         # write varied hyperparameters = Hypervariables
         for varied_parameter in self.hyper_solution_variables.keys():
@@ -979,7 +983,7 @@ if __name__ == '__main__':
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
         #"Mova" : np.arange(15,25.1,5),
-        "nominal_vcmagnet_dimensions": [np.arange(7.5,8,10),np.arange(0.0,1.0,10.0),np.arange(10,40.1,5.0)],
+        "nominal_vcmagnet_dimensions": [np.arange(7.5,8,0.25),np.arange(0.0,1.0,10.0),np.arange(10,40.1,5.0)],
         #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
@@ -997,12 +1001,12 @@ if __name__ == '__main__':
                               method = 'systematic',
                               iterations = 60)
     
-#    hypersol1.solve()
+    #hypersol1.solve()
     
     rootname = 'vcdim211115'
     
-#    with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
-#        pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+    #with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
+    #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
     with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'rb') as fp:
         hypersol1 = pickle.load(fp)
