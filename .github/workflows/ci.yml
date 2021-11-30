@@ -42,10 +42,10 @@ jobs:
       # Configure environment variable depending on which branch we are running on
       - name: Set env to master
         if: endsWith(github.ref, '/master')
-        run: echo "DOCKER_REPO_TAG=wradia:latest" >> $GITHUB_ENV
+        run: echo "DOCKER_REPO_TAG=idmodels:latest" >> $GITHUB_ENV
       - name: Set env to branch
         if: (!endsWith(github.ref, '/master'))
-        run: echo "DOCKER_REPO_TAG=wradia:${GITHUB_REF##*/}" >> $GITHUB_ENV
+        run: echo "DOCKER_REPO_TAG=idmodels:${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Set image name
         run: echo "DOCKER_REPO_NAME=${{ secrets.DOCKER_ORG }}/$DOCKER_REPO_TAG" >> $GITHUB_ENV
