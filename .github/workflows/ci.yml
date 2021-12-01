@@ -67,9 +67,9 @@ jobs:
         run: |
           docker run -itd --name env -v $(pwd):/tmp/repo/ -w /tmp/repo/ $DOCKER_REPO_NAME
 
-#      - name: Execute tests within container
-#        run: |
-#          docker exec env python -m pytest --cov=/usr/local/Opt-ID/IDSort/src /usr/local/Opt-ID/IDSort/test/ --cov-report xml:coverage.xml --cov-report term-missing
+      - name: Execute tests within container
+        run: |
+          docker exec env python -m pytest --cov=/usr/local/IDModels /usr/local/IDModels/test --cov-report xml:coverage.xml --cov-report term-missing
 
       - name: Halt container
         run: docker stop env
