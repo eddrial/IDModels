@@ -19,5 +19,5 @@ class WrdPlotObject(object):
         '''
         fig = plt.figure(figsize=(7, 9))
         for i in range(axes_num):
-            ax[i] = 
+            pass
         
