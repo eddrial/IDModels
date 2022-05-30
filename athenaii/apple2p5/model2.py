@@ -700,18 +700,18 @@ class tribsAPPLE():
 if __name__ == '__main__':
     testparams = parameters.model_parameters(Mova = 0, 
                                              periods = 10, 
-                                             periodlength = 25,
+                                             periodlength = 52,
                                              secondperiodlength = 35,
                                              block_subdivision = [1,1,1],
-                                             nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
-                                             nominal_cmagnet_dimensions = [10.0,0.0,7.5], 
-                                             compappleseparation = 7.5,
+                                             nominal_fmagnet_dimensions = [9.75,0.0,9.75], 
+                                             #nominal_cmagnet_dimensions = [10.0,0.0,7.5], 
+                                             #compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
-                                             comp_magnet_chamfer = [3.0,0.0,3.0],
+                                             #comp_magnet_chamfer = [3.0,0.0,3.0],
                                              magnets_per_period =4,
-                                             gap = 10,
-                                             rowshift = 5.5,
-                                             shiftmode = 'linear')
+                                             gap = 13,
+                                             rowshift = 10,
+                                             shiftmode = 'circular')
     #compensated APPLE test
     #a = compensatedAPPLEv2(testparams)
     
@@ -737,13 +737,23 @@ if __name__ == '__main__':
     lineend = [0,300,0]
     
     #calculate field on a line
+    aa = rd.FldLst(b.cont.radobj,'bxbybz',[-5,-300,0],[-5,300,0],int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
     bb = rd.FldLst(b.cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+    cc = rd.FldLst(b.cont.radobj,'bxbybz',[5,-300,0],[5,300,0],int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+    dd = rd.FldLst(b.cont.radobj,'bxbybz',[-25,0,0],[25,0,0],int(1+(lineend[1]-linestart[1])/0.1),'arg',-25)
     
     #make that list a numpy array
+    aan = np.array(aa)
     bbn = np.array(bb)
+    ccn = np.array(cc)
+    ddn = np.array(dd)
+
     
     #plot the calculated field
+    plt.plot(aan[:,0],aan[:,1:4])
     plt.plot(bbn[:,0],bbn[:,1:4])
+    plt.plot(ccn[:,0],ccn[:,1:4])
+
     plt.legend(['bx','by','bz'])
     
     #show it

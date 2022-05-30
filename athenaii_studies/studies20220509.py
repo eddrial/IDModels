@@ -5,7 +5,7 @@ Created on 14 Jul 2021
 
 '''
 
-#creation of indivudual APPLE, quick case solution
+#creation of indivudual compensated APPLE, quick case solution
 #also a hyperparamaterspace search and solution
 #parallel axes plotting at the very end, which is broken
 import numpy as np
@@ -32,7 +32,7 @@ from wradia.wrad_obj import wradObjCnt
 
 if __name__ == '__main__':
         ### developing Case Solution ###
-    lam_u = 20
+    lam_u = 18
     
     test_hyper_params = parameters.model_parameters(Mova = 20, 
                                              periods = 4, 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
                                              magnets_per_period = 6,
                                              gap = 6.2, 
-                                             rowshift = 6.087,#lam_u*21.1/64.0,
+                                             rowshift = lam_u*21.1/64.0,
                                              shiftmode = 'circular',
                                              block_subdivision = [1,1,1]
                                              )

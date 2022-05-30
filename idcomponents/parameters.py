@@ -30,11 +30,11 @@ class model_parameters():
             
             ######  Undulator Parameters  ######
             
-            "type" : "Compensated_APPLE",
+            "type" : "Compensated_APPLE", #Or "Plain_APPLE"
             "beams" : 2,
             "quadrants" : 4,
             "rows_per_quadrant" : 3,
-            "rows" : 12, 
+            #"rows" : 12, 
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm
             "gap" : 5, #Default Gap to calculate at
@@ -75,8 +75,12 @@ class model_parameters():
             #####  Magnet Material #####
             
             "ksi" : [.019, .06], # Permeability - anisotropic
-            "M" : 1.21*1.344, # Block Remanence [T]
-            "Mova" : 0.0 # Off Vertical Angle of Vertical type magnet blocks [degrees]
+            "M" : 1.21*1.344, # Block Remanence [T] Default Cryogenic Grade
+            "Mova" : 0.0, # Off Vertical Angle of Vertical type magnet blocks [degrees]
+            
+            #####  Perturbation #####
+            
+            "perturbation_fn" : self.perturbation_fn
             
             
         }
@@ -111,11 +115,18 @@ class model_parameters():
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
+        
         #core undulator parameters
         if self.type == 'Compensated_APPLE':
             self.magnet_rows = 12
+            self.rows = 12
+            
+        if self.type == 'Plain_APPLE':
+            self.magnet_rows = 4
+            self.rows = 4
         
-        
+    def perturbation_fn(self, s=0.0):
+        return np.array([s*0.0,s*0.0])
         
     def resize_square_blocks(self, square):
         self.nominal_fmagnet_dimensions[0] = square

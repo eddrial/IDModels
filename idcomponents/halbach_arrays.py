@@ -45,7 +45,13 @@ class HalbachArray():
         
         loc_offset = [0,0,0]
         
+        #define the location offset in S of the magnet
         loc_offset[1] = -((model_hyper_parameters.totalmagnets-1)/2.0) * (model_hyper_parameters.nominal_fmagnet_dimensions[1] + model_hyper_parameters.shim)
+        
+        
+        #functionally efined offset in x and z based on s. Function can be passed in.
+        loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+        
         M = []
         mat = []
         for i in range(model_hyper_parameters.magnets_per_period):
@@ -58,6 +64,7 @@ class HalbachArray():
             
             mag = magnet(model_hyper_parameters, loc_offset,mat[(x)%model_hyper_parameters.magnets_per_period]) 
             loc_offset[1] += model_hyper_parameters.nominal_fmagnet_dimensions[1] + model_hyper_parameters.shim
+            loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
             self.cont.wradObjAddToCnt([mag.cont])
             
         #return a

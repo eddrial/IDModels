@@ -5,6 +5,7 @@ Created on 23 Feb 2021
 '''
 
 #Here is a final parameter set (20 degrees Mova, 6 mag per period
+#plotting of geometry pics
 #include plotting of XZ at each place for each magnet
 #plotting of field along axis
 #plotting of field across axis at peaks#

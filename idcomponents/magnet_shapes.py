@@ -328,18 +328,18 @@ class tribsAppleMiddleMagnet():
                                                                   [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
                                                                   [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
                                                                   mp.direction)
-        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2+ 2* mp.apple_clampcut],
-                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut],
-                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut],
-                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - 2 * mp.apple_clampcut]], 
-                                                                  mp.direction)
+#        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2+ 2* mp.apple_clampcut],
+#                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut],
+#                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 - 2 * mp.apple_clampcut, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut],
+#                                                                  [magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2, magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - 2 * mp.apple_clampcut]], 
+#                                                                  mp.direction)
 #        p3 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut],
 #                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
 #                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
 #                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut]], 
 #                                                                  mp.direction)
         
-        self.cont.wradObjAddToCnt([p1,p2])
+        self.cont.wradObjAddToCnt([p1])
         self.cont.wradMatAppl(this_magnet_material)
         self.cont.wradObjDivMag(mp.block_subdivision)
         self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)

@@ -19,6 +19,7 @@ import tracemalloc
 import time
 
 from wradia import wrad_obj as wrd
+from wradia import wrad_mat as wrdm
 from apple2p5 import model2 as id
 from idcomponents import parameters
 from ipywidgets.widgets.interaction import fixed
@@ -67,20 +68,24 @@ class CaseSolution():
         if axis == 'default':
             limit = self.model.model_parameters.periodlength
             axis = [[0,-limit,0],[0,limit,0]]
+            axis_cross = [[-150,0,0],[150,0,0]]
+            
         self.axis = axis
+        self.axis_cross = axis_cross
         #solve for the fieldlist
         tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis[0],axis[1],int(1+self.model.model_parameters.pointsperperiod*2),'arg',np.min(axis[0]))
-        
-        #absolutely temporary streamplot example
-        #self.model.cont.wradStreamPlot(corner1 = np.array([-10,-10,0]), corner2 = np.array([10,10,0]), fields = 'bxbz')
-        
-    #make that list a numpy array
+        #make that list a numpy array
         self.bfield = np.array(tempb)
+        
+        if (self.model.model_parameters.rowshift == 0.0 or self.model.model_parameters.rowshift == self.model.model_parameters.periodlength/2.0):
+            tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis_cross[0],axis_cross[1],1001,'arg',np.min(axis_cross[0]))
+            self.bprofile = np.array(tempb)
         
         self.bmax = np.array([np.max(np.abs(self.bfield[:,1])),np.max(np.abs(self.bfield[:,2])),np.max(np.abs(self.bfield[:,3]))])
         self.beff = np.linalg.norm(self.bmax)
         
         self.solved_attributes.append('bfield')
+        self.solved_attributes.append('bprofile')
         self.solved_attributes.append('bmax')
         self.solved_attributes.append('beff')
         '''solve for B field for central 2 periods or minimum distance
@@ -112,90 +117,91 @@ class CaseSolution():
     
     def calculate_force_per_magnet(self):
         '''solve for an individual magnet in the model'''
-        if self.model.model_parameters.type == 'Compensated_APPLE':
-            magnets = [[] for r in range(self.model.model_parameters.rows)]
+        #if self.model.model_parameters.type == 'Compensated_APPLE':
+        magnets = [[] for r in range(self.model.model_parameters.rows)]
+        
+        for i in range(len(magnets)):
+            #append to the list, a list of two containers. 
+            #The Container we check the force on, 
+            #and the container for objects 'creating rest of field 
+            magnets[i] = [[wrd.wradObjCnt([]),wrd.wradObjCnt([])] for r in range(self.model.model_parameters.magnets_per_period)]
             
-            for i in range(len(magnets)):
-                #append to the list, a list of two containers. 
-                #The Container we check the force on, 
-                #and the container for objects 'creating rest of field 
-                magnets[i] = [[wrd.wradObjCnt(),wrd.wradObjCnt()] for r in range(self.model.model_parameters.magnets_per_period)]
-                
+        #for each magnet row
+        for i in range(self.model.model_parameters.rows):
             #for each magnet row
-            for i in range(self.model.model_parameters.rows):
-                #for each magnet row
-                for j in range(self.model.model_parameters.rows):
-                    #if the row is the desired row
-                    if self.model.allarraytabs[i].row == j:
-                        #loop down to magnets
-                        for k in range(self.model.model_parameters.magnets_per_period):
-                            #put end structure in 'is not this' container
-                            #print('i is {}, j is {}, k is {}'.format(i,j,k))
-                            magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[1]])
-                            #put part of periodic structure that is not in test area in 'is not this' container
-                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2)):
+            for j in range(self.model.model_parameters.rows):
+                #if the row is the desired row
+                if self.model.allarraytabs[i].row == j:
+                    #loop down to magnets
+                    for k in range(self.model.model_parameters.magnets_per_period):
+                        #put end structure in 'is not this' container
+                        #print('i is {}, j is {}, k is {}'.format(i,j,k))
+                        magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[1]])
+                        #put part of periodic structure that is not in test area in 'is not this' container
+                        for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2)):
+                            magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                        for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period),self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()):
+                            magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                        #check periodic part for 'is this'
+                        for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2),int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period)):
+                            if k+int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2) == m:
+                                magnets[j][k][0].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
+                            else:
                                 magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
-                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period),self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()):
-                                magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
-                            #check periodic part for 'is this'
-                            for m in range(int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2),int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2+self.model.model_parameters.magnets_per_period)):
-                                if k+int((self.model.allarraytabs[i].cont.objectlist[0].objectlist.__len__()-1)/2) == m:
-                                    magnets[j][k][0].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
-                                else:
-                                    magnets[j][k][1].wradObjAddToCnt([self.model.allarraytabs[i].cont.objectlist[0].objectlist[m]])
-                    else:
-                        #put it in the 'is not this' container
-                        for k in range(len(magnets[i])):
-                            magnets[i][k][1].wradObjAddToCnt([self.model.allarraytabs[j].cont])
-                            
-                    
-                    
-            self.magnetforces = np.zeros([self.model.model_parameters.rows,len(magnets[0]),3])
-            #calculate forces on 'this' to 'not this'
-            for i in range(len(magnets)):
-                for j in range(len(magnets[i])):
-                    self.magnetforces[i,j] = np.array(rd.FldEnrFrc(magnets[i][j][0].radobj,magnets[i][j][1].radobj,"fxfyfz"))
-            
-            self.solved_attributes.append('magnetforces')
+                else:
+                    #put it in the 'is not this' container
+                    for k in range(len(magnets[i])):
+                        magnets[i][k][1].wradObjAddToCnt([self.model.allarraytabs[j].cont])
+                        
+                
+                
+        self.magnetforces = np.zeros([self.model.model_parameters.rows,len(magnets[0]),3])
+        #calculate forces on 'this' to 'not this'
+        for i in range(len(magnets)):
+            for j in range(len(magnets[i])):
+                
+                self.magnetforces[i,j] = np.array(rd.FldEnrFrc(magnets[i][j][0].radobj,magnets[i][j][1].radobj,"fxfyfz"))
+        
+        self.solved_attributes.append('magnetforces')
             
     def calculate_force_per_row(self):
         ''' solve for force on row'''
-        if self.model.model_parameters.type == 'Compensated_APPLE':
+        #if self.model.model_parameters.type == 'Compensated_APPLE':
                           #"General Solution Method"
-            rows = []
-            for i in range(self.model.model_parameters.rows):
-                #append to the list, a list of two containers. 
-                #The Container we chack the force on, 
-                #and the container for objects 'creating rest of field 
-                rows.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
-            
-            self.rownames = self.model.rownames
-            
-            #for each magnet row
-            for i in range(self.model.model_parameters.rows):
-                #for each beam option
-                for j in range(self.model.model_parameters.rows):
-                    #if the row is the desired row
-                    if self.model.allarraytabs[i].row == j:
-                        #put it in the 'is this' container
-                        rows[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-                    else:
-                        #put it in the 'is not this' container
-                        rows[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-            
-            
-            self.rowforces = np.zeros([len(rows),3])
-            
-            
-            #calculate forces on 'this' due to 'not this' in model
-            for i in range(len(self.rowforces)):
-                self.rowforces[i] = np.array(rd.FldEnrFrc(rows[i][0].radobj,rows[i][1].radobj,"fxfyfz"))
-            
+        rows = []
+        for i in range(self.model.model_parameters.rows):
+            #append to the list, a list of two containers. 
+            #The Container we chack the force on, 
+            #and the container for objects 'creating rest of field 
+            rows.append([wrd.wradObjCnt([]),wrd.wradObjCnt([])])
+        
+        self.rownames = self.model.rownames
+        
+        #for each magnet row
+        for i in range(self.model.model_parameters.rows):
+            #for each beam option
+            for j in range(self.model.model_parameters.rows):
+                #if the row is the desired row
+                if self.model.allarraytabs[i].row == j:
+                    #put it in the 'is this' container
+                    rows[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                else:
+                    #put it in the 'is not this' container
+                    rows[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+        
+        
+        self.rowforces = np.zeros([len(rows),3])
+        
+        
+        #calculate forces on 'this' due to 'not this' in model
+        for i in range(len(self.rowforces)):
+            self.rowforces[i] = np.array(rd.FldEnrFrc(rows[i][0].radobj,rows[i][1].radobj,"fxfyfz"))
+        
         self.solved_attributes.append('rowforces')
-    
+
     def calculate_force_per_quadrant(self):
         '''solve for force on quadrant'''
-        if self.model.model_parameters.type == 'Compensated_APPLE':
+#        if self.model.model_parameters.type == 'Compensated_APPLE':
 #            self.forceonquadrants = {}
 #            self.forceonquadrantsarray = np.zeros([3,4])
 #            #create upper wrad object
@@ -218,39 +224,39 @@ class CaseSolution():
 #                self.forceonquadrantsarray[:,quadsol-1] = self.forceonquadrants['force_on_quadrant_{}'.format(quadsol)]
                 
             #"General Solution Method"
-            quadrants = []
-            for i in range(self.model.model_parameters.quadrants):
-                #append to the list, a list of two containers. 
-                #The Container we chack the force on, 
-                #and the container for objects 'creating rest of field 
-                quadrants.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
-            
-            self.quadrantnames = ['q1','q2','q3','q4']
-            
-            #for each magnet row
-            for i in range(self.model.model_parameters.rows):
-                #for each beam option
-                for j in range(self.model.model_parameters.quadrants):
-                    #if the row is in the quadrant option
-                    if self.model.allarraytabs[i].quadrant == j:
-                        #put it in the 'is this' container
-                        quadrants[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-                    else:
-                        #put it in the 'is not this' container
-                        quadrants[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-            
-            
-            self.quadrantforces = np.zeros([len(quadrants),3])
-            
-            #calculate forces on 'this' due to 'not this' in model
-            for i in range(len(self.quadrantforces)):
-                self.quadrantforces[i] = np.array(rd.FldEnrFrc(quadrants[i][0].radobj,quadrants[i][1].radobj,"fxfyfz"))
+        quadrants = []
+        for i in range(self.model.model_parameters.quadrants):
+            #append to the list, a list of two containers. 
+            #The Container we chack the force on, 
+            #and the container for objects 'creating rest of field 
+            quadrants.append([wrd.wradObjCnt([]),wrd.wradObjCnt([])])
+        
+        self.quadrantnames = ['q1','q2','q3','q4']
+        
+        #for each magnet row
+        for i in range(self.model.model_parameters.rows):
+            #for each beam option
+            for j in range(self.model.model_parameters.quadrants):
+                #if the row is in the quadrant option
+                if self.model.allarraytabs[i].quadrant == j:
+                    #put it in the 'is this' container
+                    quadrants[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                else:
+                    #put it in the 'is not this' container
+                    quadrants[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+        
+        
+        self.quadrantforces = np.zeros([len(quadrants),3])
+        
+        #calculate forces on 'this' due to 'not this' in model
+        for i in range(len(self.quadrantforces)):
+            self.quadrantforces[i] = np.array(rd.FldEnrFrc(quadrants[i][0].radobj,quadrants[i][1].radobj,"fxfyfz"))
 
-            self.solved_attributes.append('quadrantforces')
+        self.solved_attributes.append('quadrantforces')
     
     def calculate_force_per_beam(self):
         '''solve for the force on the beam'''
-        if self.model.model_parameters.type == 'Compensated_APPLE':
+#        if self.model.model_parameters.type == 'Compensated_APPLE':
             #create upper wrad object
             #upper_beam = wrd.wradObjCnt()
             #upper_beam.wradObjAddToCnt([self.model.allarrays['q1'].cont,
@@ -270,42 +276,42 @@ class CaseSolution():
             #                           self.model.allarrays['c4h'].cont,
             #                           self.model.allarrays['c4v'].cont])
             
-            beams = []
-            for i in range(self.model.model_parameters.beams):
-                #append to the list, a list of two containers. 
-                #The Container we chack the force on, 
-                #and the container for objects 'creating rest of field 
-                beams.append([wrd.wradObjCnt(),wrd.wradObjCnt()])
-            
-            self.beamnames = ['upper','lower']
-            
-            #for each magnet row
-            for i in range(self.model.model_parameters.rows):
-                #for each beam option
-                for j in range(self.model.model_parameters.beams):
-                    #if the row is in the beam option
-                    if self.model.allarraytabs[i].beam == j:
-                        #put it in the 'is this' container
-                        beams[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-                    else:
-                        #put it in the 'is not this' container
-                        beams[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
-            
-            #solve force lower due to all the rest
-            #a = rd.FldEnrFrc(upper_beam.radobj,lower_beam.radobj,"fxfyfz")
-            #solve force on upper due to all the rest
-            #b = rd.FldEnrFrc(lower_beam.radobj,upper_beam.radobj,"fxfyfz")
-            
-            #self.forceonlower = a
-            #self.forceonupper = b
-            
-            self.beamforces = np.zeros([len(beams),3])
-            
-            for i in range(len(self.beamforces)):
-                self.beamforces[i] = np.array(rd.FldEnrFrc(beams[i][0].radobj,beams[i][1].radobj,"fxfyfz"))
+        beams = []
+        for i in range(self.model.model_parameters.beams):
+            #append to the list, a list of two containers. 
+            #The Container we chack the force on, 
+            #and the container for objects 'creating rest of field 
+            beams.append([wrd.wradObjCnt([]),wrd.wradObjCnt([])])
         
+        self.beamnames = ['upper','lower']
+        
+        #for each magnet row
+        for i in range(self.model.model_parameters.rows):
+            #for each beam option
+            for j in range(self.model.model_parameters.beams):
+                #if the row is in the beam option
+                if self.model.allarraytabs[i].beam == j:
+                    #put it in the 'is this' container
+                    beams[j][0].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+                else:
+                    #put it in the 'is not this' container
+                    beams[j][1].wradObjAddToCnt([self.model.allarraytabs[i].cont])
+        
+        #solve force lower due to all the rest
+        #a = rd.FldEnrFrc(upper_beam.radobj,lower_beam.radobj,"fxfyfz")
+        #solve force on upper due to all the rest
+        #b = rd.FldEnrFrc(lower_beam.radobj,upper_beam.radobj,"fxfyfz")
+        
+        #self.forceonlower = a
+        #self.forceonupper = b
+        
+        self.beamforces = np.zeros([len(beams),3])
+        
+        for i in range(len(self.beamforces)):
+            self.beamforces[i] = np.array(rd.FldEnrFrc(beams[i][0].radobj,beams[i][1].radobj,"fxfyfz"))
+    
         self.solved_attributes.append('beamforces')
-            
+        
     
     def calculate_torque_per_magnet(self):
         '''solve for an individual magnet in the model'''
@@ -352,6 +358,12 @@ class Solution():
                                                len(self.scan_parameters.gaprange),
                                                len(self.scan_parameters.shiftrange),
                                                int(1+hyper_params.pointsperperiod*2),
+                                               4])
+            
+            self.results['Bprofile'] = np.zeros([len(self.scan_parameters.shiftmoderange),
+                                               len(self.scan_parameters.gaprange),
+                                               len(self.scan_parameters.shiftrange),
+                                               int(1+hyper_params.pointsperperiod*4),
                                                4])
             
             self.results['Beff'] = np.zeros([len(self.scan_parameters.shiftmoderange),
@@ -454,7 +466,14 @@ class Solution():
                     
                     time1 = time.time()
                     #build the case models
-                    casemodel = id.compensatedAPPLEv2(self.hyper_params)
+                                            
+                    if self.hyper_params.type == 'Plain_APPLE':
+                        casemodel = id.plainAPPLE(self.hyper_params)
+                    
+                    #else assume compensated APPLE
+                    else:
+                        casemodel = id.compensatedAPPLEv2(self.hyper_params)
+                    
                     time2 = time.time()
                     #solve the case model
                     casesol = CaseSolution(casemodel)
@@ -529,8 +548,8 @@ class Solution():
     def plot_Bpeak_vs_Gap(self, f = None):
         plt.close()
         
-        plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,0]),1), label = 'Peak Bx')
-        plt.scatter(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,2]),1), label = 'Peak Bz')
+        plt.plot(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,0]),1), label = 'Peak Bx')
+        plt.plot(self.scan_parameters.gaprange,np.amax(np.abs(self.results['Bmax'][0,:,:,2]),1), label = 'Peak Bz')
         
         plt.xlabel('Gap (mm)')
         plt.ylabel('Peak B (T)')
@@ -539,10 +558,11 @@ class Solution():
         
         plt.legend()
         
-        #plt.show()
+        plt.show()
         
         if f != None:
             plt.savefig(f)
+            
             
     def plot_Bpeak_vs_Phase(self, f = None):
         plt.close()
@@ -905,8 +925,8 @@ class HyperSolution():
 if __name__ == '__main__':
     ### developing Case Solution ###
     
-    test_hyper_params = parameters.model_parameters(Mova = 20, 
-                                             periods = 1, 
+    test_hyper_params = parameters.model_parameters(Mova = 0, 
+                                             periods = 5, 
                                              periodlength = 15,
                                              nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                              #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -915,8 +935,8 @@ if __name__ == '__main__':
                                              compappleseparation = 7.5,
                                              apple_clampcut = 3.0,
                                              comp_magnet_chamfer = [3.0,0.0,3.0],
-                                             magnets_per_period = 6,
-                                             gap = 2, 
+                                             magnets_per_period = 4,
+                                             gap = 1, 
                                              rowshift = 0,
                                              shiftmode = 'circular',
                                              block_subdivision = [1,1,1]
@@ -943,16 +963,17 @@ if __name__ == '__main__':
 #    plt.show()
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.arange(2.2,10.1,40)
-    shiftrange = np.arange(-7.5,7.51, 3.75)
-    shiftmoderange = ['linear','circular']
+    gaprange = np.arange(1.,6.01,6)
+    shiftrange = np.arange(0,7.51, 7.5)
+    #shiftmoderange = ['linear','circular']
+    shiftmoderange = ['linear']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
     
-#    sol1 = Solution(test_hyper_params, scan_parameters)
-#    sol1.solve()
-#    sol1.save(hf = None, solstring = 'Sol1', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\Solution.h5')
+    sol1 = Solution(test_hyper_params, scan_parameters)
+    sol1.solve('B')
+    sol1.save(hf = None, solstring = 'Sol1', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\gap_scan.h5')
     
     ### Developing model Hypersolution
     
@@ -983,11 +1004,11 @@ if __name__ == '__main__':
     hyper_solution_variables = {
         #"block_subdivision" : [np.array([2]),np.arange(2,4),np.arange(3,4)],
         #"Mova" : np.arange(15,25.1,5),
-        "nominal_vcmagnet_dimensions": [np.arange(7.5,8,0.25),np.arange(0.0,1.0,10.0),np.arange(10,40.1,5.0)],
+        #"nominal_vcmagnet_dimensions": [np.arange(7.5,8,0.25),np.arange(0.0,1.0,10.0),np.arange(10,40.1,5.0)],
         #"nominal_hcmagnet_dimensions": [np.arange(7.5,8.1,2),np.arange(0.0,1.0,10.0),np.arange(10,15.1,1)],
         #"square_magnet" : np.arange(10,20.1,5),
         #"rowtorowgap" : np.arange(0.4,0.51,0.1),
-        #"magnets_per_period" : np.arange(6,11,20)
+        "magnets_per_period" : np.arange(4,8,2)
         }
     
     #hyper_solution_properties = ['B', 'Forces']
@@ -1003,7 +1024,7 @@ if __name__ == '__main__':
     
     #hypersol1.solve()
     
-    rootname = 'vcdim211115'
+    rootname = 'FLASH_IVAPPLE_220214'
     
     #with open('M:\Work\Athena_APPLEIII\Python\Results\\{}.dat'.format(rootname),'wb') as fp:
     #    pickle.dump(hypersol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
