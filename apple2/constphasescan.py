@@ -16,10 +16,13 @@ import time
 
 if __name__ == '__main__':
     #define parameter space
-    gaps = np.array([15,17,20,25,30,40,50])
-    shifts = np.arange(-24,25,4)
-    shiftmodes = ['circular', 'linear']
-    #set up APPLE 2 device (UE48)
+    #gaps = np.array([15,17,20,25,30,40,50])
+    gaps = np.array([15,50])
+    shifts = np.arange(-28.1,-27.9,0.1)
+    #shifts = np.arange(0,3,4)
+    #shiftmodes = ['circular', 'linear']
+    shiftmodes = ['linear']
+    #set up APPLE 2 device (UE56)
     #solve peakfield in parameter space
     print (gaps)
     print(shifts)
@@ -27,9 +30,9 @@ if __name__ == '__main__':
     min_gap = 13
     
     #parameter_Set Horizontal_polarisation
-    UE48_params = parameters.model_parameters(Mova = 0,
+    UE56_params = parameters.model_parameters(Mova = 0,
                                         periods = 5, 
-                                        periodlength =48,
+                                        periodlength =56,
                                         nominal_fmagnet_dimensions = [40.0,0.0,40.0], 
                                         #square_magnet = True,
                                         nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -46,36 +49,35 @@ if __name__ == '__main__':
                                         M = 1.3                                        
                                         )
     
-    basescan = parameters.scan_parameters(48.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
+    basescan = parameters.scan_parameters(56.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
-    UE48 = id.plainAPPLE(UE48_params)
+    UE56 = id.plainAPPLE(UE56_params)
     
-    UE48.cont.wradSolve()
+    UE56.cont.wradSolve()
     
-    case = af.CaseSolution(UE48)
+    case = af.CaseSolution(UE56)
     case.calculate_B_field()
     
     print ("Peak Field for ID {} is {}".format('UE48', np.max(case.bmax)))
     print('placeholder')
     
-    sol = Solution(UE48_params,basescan,property = ['B'])
+    sol = Solution(UE56_params,basescan,property = ['B'])
     
-    #sol.solve('B')
+    sol.solve('B')
+    babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
+    np.save('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy',babs)
     
-    #babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
-    #np.save('C:/Users/oqb/git/IDModels/apple2/babs_demo.npy',babs)
-    
-    #bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
-    #np.save('C:/Users/oqb/git/IDModels/apple2/bphi_demo.npy',bphi)
+    bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
+    np.save('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy',bphi)
     
     #or load
-    bphi=np.load('C:/Users/oqb/git/IDModels/apple2/bphi_demo.npy')
-    babs=np.load('C:/Users/oqb/git/IDModels/apple2/babs_demo.npy')
+    bphi=np.load('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy')
+    babs=np.load('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy')
     
     
-    K = 0.0934 * 48 * babs
+    K = 0.0934 * 56 * babs
 
-    lamb = 48/(2*3400*3400)*(1 + (K*K/2)/2) 
+    lamb = 56/(2*4892*4892)*(1 + (K*K/2)/2) 
     
     E = 6.64e-34 * 3e8/(1e-3 * lamb*1.6e-19)
 
