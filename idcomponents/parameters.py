@@ -110,7 +110,8 @@ class model_parameters():
         #end_magnet_thicknesses
         self.end_magnet_thickness = [(self.periodlength / 8.0) - self.shim]
         
-        
+        #default magnet profile
+        self.magnet_profile = np.random.rand(int(self.nominal_fmagnet_dimensions[0]+1))
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
