@@ -60,6 +60,7 @@ class model_parameters():
             "square_magnet" : False,
             "nominal_fmagnet_dimensions" : [30.0,0.0,30.0], # The nominal maximal magnet dimension for the functional magnets [mm]
             "apple_clampcut" : 5.0, # The size of the square removed for clamping an APPLE magnet [mm]
+            "apple_clampcut_non_symmetric": [5.0, 0.0, 3.0],
             "magnet_chamfer" : [5.0,0.0,5.0], # Dimensions of chamfer for a rectangular magnet (to make it octagonal) [mm]
             "direction" : 'y', # The direction of extrusion - along the direction of travel of the electrons. Dimensions propogate in the order [z,y,x]
         

@@ -58,6 +58,56 @@ class appleMagnet():
         self.cont.wradMatAppl(this_magnet_material)
         self.cont.wradObjDivMag(mp.block_subdivision)
         self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
+
+
+class appleMagnetNonSymmetric():
+    '''
+    classdocs
+    '''
+    #Functional APPLE magnet with non-equal corner cutouts
+    def __init__(self, 
+                 model_parameters = parameters.model_parameters(), 
+                 magnet_centre  = [0,0,0], 
+                 this_magnet_material = 'default', 
+                 colour = 'default', 
+                 magnet_thickness = 'default'):
+        
+        '''
+        Constructor
+        '''
+        
+        mp = model_parameters
+        self.magnet_centre = magnet_centre
+        
+        if this_magnet_material == 'default':
+            this_magnet_material = mp.magnet_material
+            
+        if magnet_thickness == 'default':
+            magnet_thickness = mp.nominal_fmagnet_dimensions[1]
+        
+        '''orientation order z,y,x'''
+        self.cont = wrd.wradObjCnt([])  # Container
+    #    a.magnet_material = magnet_material
+        p1 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut_non_symmetric[0],magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut_non_symmetric[0],magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut_non_symmetric[2],magnet_centre[2]+mp.nominal_fmagnet_dimensions[0]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut_non_symmetric[2],magnet_centre[2]-mp.nominal_fmagnet_dimensions[0]/2]], 
+                                                                  mp.direction)
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut_non_symmetric[2]],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut_non_symmetric[0],magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2 - mp.apple_clampcut_non_symmetric[2]],
+                                                                  [magnet_centre[0]-mp.nominal_fmagnet_dimensions[0]/2 + mp.apple_clampcut_non_symmetric[0],magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2]], 
+                                                                  mp.direction)
+        p3 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut_non_symmetric[0]],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2,magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut_non_symmetric[2],magnet_centre[2]+mp.nominal_fmagnet_dimensions[2]/2],
+                                                                  [magnet_centre[0]+mp.nominal_fmagnet_dimensions[0]/2 - mp.apple_clampcut_non_symmetric[2],magnet_centre[2]-mp.nominal_fmagnet_dimensions[2]/2 + mp.apple_clampcut_non_symmetric[0]]], 
+                                                                  mp.direction)
+        
+        self.cont.wradObjAddToCnt([p1,p2,p3])
+        self.cont.wradMatAppl(this_magnet_material)
+        self.cont.wradObjDivMag(mp.block_subdivision)
+        self.cont.wradObjDrwAtr(colour = 'default', linethickness = 2)
         
         
         
@@ -135,10 +185,10 @@ class HcompMagnet():
                                                                   [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_hcmagnet_dimensions[2]/2.0],
                                                                   [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_hcmagnet_dimensions[2]/2.0]], 
                                                                   model_parameters.direction)
-        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2,magnet_centre[2]-model_parameters.nominal_hcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2,magnet_centre[2]+model_parameters.nominal_hcmagnet_dimensions[2]/2.0 - model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_hcmagnet_dimensions[2]/2 - model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_hcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]/2.0]], 
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2,magnet_centre[2]-model_parameters.nominal_hcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2,magnet_centre[2]+model_parameters.nominal_hcmagnet_dimensions[2]/2.0 - model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_hcmagnet_dimensions[2]/2 - model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_hcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_hcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]]], 
                                                                   model_parameters.direction)
         
         self.cont.wradObjAddToCnt([p1,p2])
@@ -177,10 +227,10 @@ class VcompMagnet():
                                                                   [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_vcmagnet_dimensions[2]/2.0],
                                                                   [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_vcmagnet_dimensions[2]/2.0]], 
                                                                   model_parameters.direction)
-        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2,magnet_centre[2]-model_parameters.nominal_vcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2,magnet_centre[2]+model_parameters.nominal_vcmagnet_dimensions[2]/2.0 - model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_vcmagnet_dimensions[2]/2 - model_parameters.comp_magnet_chamfer[2]/2.0],
-                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_vcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]/2.0]], 
+        p2 = wrd.wradObjThckPgn(magnet_centre[1], magnet_thickness, [[magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2,magnet_centre[2]-model_parameters.nominal_vcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2,magnet_centre[2]+model_parameters.nominal_vcmagnet_dimensions[2]/2.0 - model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]+model_parameters.nominal_vcmagnet_dimensions[2]/2 - model_parameters.comp_magnet_chamfer[2]],
+                                                                  [magnet_centre[0]+model_parameters.nominal_vcmagnet_dimensions[0]/2.0 - model_parameters.comp_magnet_chamfer[0],magnet_centre[2]-model_parameters.nominal_vcmagnet_dimensions[2]/2 + model_parameters.comp_magnet_chamfer[2]]], 
                                                                   model_parameters.direction)
         
         self.cont.wradObjAddToCnt([p1,p2])
@@ -411,8 +461,9 @@ class tribsAppleMiddleMagnet():
 if __name__ == '__main__':
     a = appleMagnetvarProfile()
     b = compMagnet()
+    c = appleMagnetNonSymmetric()
     
-    rd.ObjDrwOpenGL(a.cont.radobj)
+    rd.ObjDrwOpenGL(c.cont.radobj)
     
     a.cont.wradSolve(.001, 1000)
     

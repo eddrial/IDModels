@@ -4,8 +4,9 @@ Created on 3 Mar 2020
 @author: oqb
 '''
 import unittest
-import wradia as wrd
 import radia as rd
+import wradia as wrd
+
 import apple2p5.model1 as am
 
 
@@ -18,7 +19,7 @@ class Test(unittest.TestCase):
         a = wrd.wrad_obj.wradObjCnt()
         print(a)
         self.assertFalse(False, 'msg')
-        
+
 
     def testName(self):
         pass

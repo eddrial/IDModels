@@ -32,7 +32,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from idcomponents import parameters
 from idcomponents import magnet_shapes as ms
-from matplotlib.cbook.deprecation import _deprecated_parameter_class
+#from matplotlib.cbook.deprecation import _deprecated_parameter_class
 #from uti_plot import *
 
 

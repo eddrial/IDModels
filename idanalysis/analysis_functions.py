@@ -66,9 +66,10 @@ class CaseSolution():
     def calculate_B_field(self, axis = 'default'):
         #define axis
         if axis == 'default':
-            limit = self.model.model_parameters.periodlength
-            axis = [[0,-limit,0],[0,limit,0]]
-            axis_cross = [[-150,0,0],[150,0,0]]
+            limit_longitudinal = self.model.model_parameters.periodlength
+            axis = [[0,-limit_longitudinal,0],[0,limit_longitudinal,0]]
+            limit_transverse = 2 * self.model.model_parameters.nominal_hcmagnet_dimensions[2]+self.model.model_parameters.nominal_fmagnet_dimensions[2]+self.model.model_parameters.compappleseparation
+            axis_cross = [[-limit_transverse,0,0],[limit_transverse,0,0]]
             
         self.axis = axis
         self.axis_cross = axis_cross
@@ -77,9 +78,9 @@ class CaseSolution():
         #make that list a numpy array
         self.bfield = np.array(tempb)
         
-        if (self.model.model_parameters.rowshift == 0.0 or self.model.model_parameters.rowshift == self.model.model_parameters.periodlength/2.0):
-            tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis_cross[0],axis_cross[1],1001,'arg',np.min(axis_cross[0]))
-            self.bprofile = np.array(tempb)
+        #if (self.model.model_parameters.rowshift == 0.0 or self.model.model_parameters.rowshift == self.model.model_parameters.periodlength/2.0):
+        tempb = rd.FldLst(self.model.cont.radobj,'bxbybz',axis_cross[0],axis_cross[1],1001,'arg',np.min(axis_cross[0]))
+        self.bprofile = np.array(tempb)
         
         self.bmax = np.array([np.max(np.abs(self.bfield[:,1])),np.max(np.abs(self.bfield[:,2])),np.max(np.abs(self.bfield[:,3]))])
         self.beff = np.linalg.norm(self.bmax)
@@ -363,7 +364,7 @@ class Solution():
             self.results['Bprofile'] = np.zeros([len(self.scan_parameters.shiftmoderange),
                                                len(self.scan_parameters.gaprange),
                                                len(self.scan_parameters.shiftrange),
-                                               int(1+hyper_params.pointsperperiod*4),
+                                               1001,
                                                4])
             
             self.results['Beff'] = np.zeros([len(self.scan_parameters.shiftmoderange),
@@ -470,6 +471,11 @@ class Solution():
                     if self.hyper_params.type == 'Plain_APPLE':
                         casemodel = id.plainAPPLE(self.hyper_params)
                     
+                    elif self.hyper_params.type == 'Anti-symmetrically Compensated APPLE':
+                        casemodel = id.compensatedAPPLEv2(self.hyper_params) 
+                        
+                    elif self.hyper_params.type == 'Symmetrically Compensated APPLE':
+                        casemodel = id.compensatedAPPLEv2(self.hyper_params) 
                     #else assume compensated APPLE
                     else:
                         casemodel = id.compensatedAPPLEv2(self.hyper_params)
@@ -484,6 +490,7 @@ class Solution():
                         print ('The peak field of this arrangement is {}'.format(casesol.bmax))
                         self.results['Bmax'][shiftmode,gap,shift] = casesol.bmax
                         self.results['Bfield'][shiftmode,gap,shift] = casesol.bfield
+                        self.results['Bprofile'][shiftmode, gap, shift] = casesol.bprofile
                     
                     if 'Integrals' in self.property:
                         casesol.calculate_first_integral()
@@ -518,8 +525,8 @@ class Solution():
     def save(self,hf = None,solstring = 'Solution_0', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\'):
         if hf == None:
             hf = h5.File(fname, 'w')
-        #else: #unnecessary?
-            #hf = h5.File(hf,'w')
+        else:  #NOT unnecessary!
+            hf = h5.File(hf,'w')
         
         hf.create_group(solstring)
         

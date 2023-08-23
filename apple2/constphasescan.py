@@ -5,7 +5,7 @@ Created on 4 Jan 2022
 '''
 import numpy as np
 from wradia import wrad_obj as wrd
-from apple2p5 import model2 as id
+import apple2p5.model2 as id1
 from idcomponents import parameters
 from idanalysis import analysis_functions as af
 from idanalysis.analysis_functions import Solution
@@ -14,14 +14,15 @@ from matplotlib.tri import Triangulation,  CubicTriInterpolator
 from shapely.geometry import LineString, point
 import time
 
+
 if __name__ == '__main__':
     #define parameter space
     #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.array([15,50])
-    shifts = np.arange(-28.1,-27.9,0.1)
+    gaps = np.array([46.0])
+    shifts = np.arange(-28.0,0.1,7.0)
     #shifts = np.arange(0,3,4)
     #shiftmodes = ['circular', 'linear']
-    shiftmodes = ['linear']
+    shiftmodes = ['circular']
     #set up APPLE 2 device (UE56)
     #solve peakfield in parameter space
     print (gaps)
@@ -43,15 +44,15 @@ if __name__ == '__main__':
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
                                         gap = min_gap, 
-                                        rowshift = 0,
+                                        rowshift = 20,
                                         shiftmode = 'circular',
-                                        block_subdivision = [2,3,1],
+                                        block_subdivision = [1,1,1],
                                         M = 1.3                                        
                                         )
     
     basescan = parameters.scan_parameters(56.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
-    UE56 = id.plainAPPLE(UE56_params)
+    UE56 = id1.plainAPPLE(UE56_params)
     
     UE56.cont.wradSolve()
     
@@ -64,8 +65,14 @@ if __name__ == '__main__':
     sol = Solution(UE56_params,basescan,property = ['B'])
     
     sol.solve('B')
+    
     babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
+    bz = sol.results['Bmax'][:,:,:,0]
+    bx = sol.results['Bmax'][:,:,:,2]
     np.save('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy',babs)
+    np.save('C:/Users/oqb/git/IDModels/apple2/bx_UE56_gap.npy',bx)
+    np.save('C:/Users/oqb/git/IDModels/apple2/bz_UE56_gap.npy',bz)
+    
     
     bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
     np.save('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy',bphi)
@@ -73,14 +80,17 @@ if __name__ == '__main__':
     #or load
     bphi=np.load('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy')
     babs=np.load('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy')
+    bx = np.load('C:/Users/oqb/git/IDModels/apple2/bx_UE56_gap.npy')
+    bz = np.load('C:/Users/oqb/git/IDModels/apple2/bz_UE56_gap.npy')
     
     
-    K = 0.0934 * 56 * babs
-
-    lamb = 56/(2*4892*4892)*(1 + (K*K/2)/2) 
+    Kx = 0.0934 * 56 * bx
+    Kz = 0.0934 * 56 * bz
+    lamb = (56/(2*4892*4892))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
+    #lamb = (56/(2*3326*3326))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
     
     E = 6.64e-34 * 3e8/(1e-3 * lamb*1.6e-19)
-
+    
     X,Y =  np.meshgrid(shifts,gaps)
     
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -103,6 +113,10 @@ if __name__ == '__main__':
     #cubic interpolation of abs B
     babs_fzc = CubicTriInterpolator(triObj,babs[0].flatten())
     
+    bx_fzc = CubicTriInterpolator(triObj,bx[0].flatten())
+    
+    bz_fzc = CubicTriInterpolator(triObj,bz[0].flatten())
+    
     #cubic interpolation of E
     E_fzc = CubicTriInterpolator(triObj,E[0].flatten())
     
@@ -113,8 +127,8 @@ if __name__ == '__main__':
     
     rands = np.zeros([1000,4])
     for i in range(1000):
-        gaprand = 15 + 35* np.random.random()
-        shiftrand = -24 + 48 * np.random.random()
+        gaprand = 12.8 + 37.2* np.random.random()
+        shiftrand = -28 + 28 * np.random.random()
         rands[i] = [gaprand, shiftrand, E_fzc(shiftrand,gaprand),bphi_fzc(shiftrand,gaprand)]
     
     #plot rands
@@ -129,8 +143,8 @@ if __name__ == '__main__':
     
     t0 = time.time()
     
-    ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten(), [30])
-    ax2.tricontour(X.flatten(),Y.flatten(),E[0].flatten(), [400])
+    ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten(), [-45])
+    ax2.tricontour(X.flatten(),Y.flatten(),E[0].flatten(), [900])
 
     #ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten())
     #ax2.tricontour(X.flatten(),Y.flatten(),babs[0].flatten())
@@ -151,5 +165,6 @@ if __name__ == '__main__':
     t1 = time.time()
     print(t1-t0)
     plt.show()
+    print(p.coords.xy)
     print(1)
     
