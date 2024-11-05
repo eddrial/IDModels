@@ -12,7 +12,7 @@ import json
 import numpy as np
 import radia as rd
 import h5py as h5
-from dask.array.tests.test_numpy_compat import dtype
+
 
 
 class model_parameters():

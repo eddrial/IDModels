@@ -27,13 +27,13 @@ from apple2p5 import model2 as id
 from idcomponents import parameters
 from idcomponents import magnet_shapes as ms
 from idanalysis import analysis_functions as af
-from ipywidgets.widgets.interaction import fixed
 from wradia.wrad_obj import wradObjCnt
 
 if __name__ == '__main__':
         ### developing Case Solution ###
     
-    test_hyper_params = parameters.model_parameters(Type = 'Anti-symmetrically Compensated APPLE',
+    test_hyper_params = parameters.model_parameters(#Type = 'Anti-symmetrically Compensated APPLE',
+                                                    Type = 'Symmetrically Compensated APPLE',
                                             Mova = 0, 
                                              periods = 4, 
                                              periodlength = 32,

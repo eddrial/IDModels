@@ -1,7 +1,9 @@
 '''
-Created on 4 Jan 2022
+Created on 25 Sep 2024
 
 @author: oqb
+
+To generate info for F. Kronast
 '''
 import numpy as np
 from wradia import wrad_obj as wrd
@@ -18,22 +20,22 @@ import time
 if __name__ == '__main__':
     #define parameter space
     #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.arange(50,51,100)
-    shifts = np.arange(0.0,28.1,28.0)
+    gaps = np.arange(16,60,1)
+    shifts = np.arange(0.0,24.6,24.5)
     #shifts = np.arange(0,3,4)
     #shiftmodes = ['circular', 'linear']
-    shiftmodes = ['circular']
-    #set up APPLE 2 device (UE56)
+    shiftmodes = ['linear']
+    #set up APPLE 2 device (UE49)
     #solve peakfield in parameter space
     print (gaps)
     print(shifts)
     
-    min_gap = 13
+    min_gap = 16
     
     #parameter_Set Horizontal_polarisation
-    UE56_params = parameters.model_parameters(Mova = 0,
+    UE49_params = parameters.model_parameters(Mova = 0,
                                         periods = 5, 
-                                        periodlength =56,
+                                        periodlength =49,
                                         nominal_fmagnet_dimensions = [40.0,0.0,40.0], 
                                         #square_magnet = True,
                                         nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -44,50 +46,66 @@ if __name__ == '__main__':
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
                                         gap = min_gap, 
-                                        rowshift = 20,
-                                        shiftmode = 'circular',
+                                        rowshift = 0,
+                                        shiftmode = 'linear',
                                         block_subdivision = [1,1,1],
                                         M = 1.3                                        
                                         )
     
-    basescan = parameters.scan_parameters(56.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
+    basescan = parameters.scan_parameters(49.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
-    UE56 = id1.plainAPPLE(UE56_params)
+    UE49 = id1.plainAPPLE(UE49_params)
     
-    UE56.cont.wradSolve()
+    UE49.cont.wradSolve()
     
-    case = af.CaseSolution(UE56)
+    case = af.CaseSolution(UE49)
     case.calculate_B_field()
     
     print ("Peak Field for ID {} is {}".format('UE48', np.max(case.bmax)))
     print('placeholder')
     
-    sol = Solution(UE56_params,basescan,property = ['B'])
+    sol = Solution(UE49_params,basescan,property = ['B'])
     
-    sol.solve('B')
+    '''sol.solve('B')
     
     babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
     bz = sol.results['Bmax'][:,:,:,0]
     bx = sol.results['Bmax'][:,:,:,2]
-    np.save('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy',babs)
-    np.save('C:/Users/oqb/git/IDModels/apple2/bx_UE56_gap.npy',bx)
-    np.save('C:/Users/oqb/git/IDModels/apple2/bz_UE56_gap.npy',bz)
+    np.save('C:/Users/oqb/git/IDModels/apple2/babs_UE49_gap.npy',babs)
+    np.save('C:/Users/oqb/git/IDModels/apple2/bx_UE49_gap.npy',bx)
+    np.save('C:/Users/oqb/git/IDModels/apple2/bz_UE49_gap.npy',bz)
     
     
     bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
-    np.save('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy',bphi)
-    
+    np.save('C:/Users/oqb/git/IDModels/apple2/bphi_UE49_gap.npy',bphi)
+    '''
     #or load
-    bphi=np.load('C:/Users/oqb/git/IDModels/apple2/bphi_UE56_gap.npy')
-    babs=np.load('C:/Users/oqb/git/IDModels/apple2/babs_UE56_gap.npy')
-    bx = np.load('C:/Users/oqb/git/IDModels/apple2/bx_UE56_gap.npy')
-    bz = np.load('C:/Users/oqb/git/IDModels/apple2/bz_UE56_gap.npy')
+    bphi=np.load('C:/Users/oqb/git/IDModels/apple2/bphi_UE49_gap.npy')
+    babs=np.load('C:/Users/oqb/git/IDModels/apple2/babs_UE49_gap.npy')
+    bx = np.load('C:/Users/oqb/git/IDModels/apple2/bx_UE49_gap.npy')
+    bz = np.load('C:/Users/oqb/git/IDModels/apple2/bz_UE49_gap.npy')
     
     
-    Kx = 0.0934 * 56 * bx
-    Kz = 0.0934 * 56 * bz
-    lamb = (56/(2*4892*4892))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
-    #lamb = (56/(2*3326*3326))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
+    Kx0 = 0.0934 * 49 * bx[0,:,0]
+    Kz0 = 0.0934 * 49 * bz[0,:,1]
+    #lamb = (56/(2*4892*4892))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
+    
+    shifts_calc = np.arange(0,25.0,0.5)
+    
+    per_len = 49
+    gamma = 3326
+    e_charge = 1.6e-19
+    h = 6.64e-34
+    c = 3e8
+    
+    wavelengths = np.zeros([len(gaps), len(shifts_calc)])
+    
+    #Kx = (shifts_calc/per_len)*cos(np.pi()*E8/$D$1)
+    
+    for s in range(len(shifts_calc)):
+        wavelengths[:,s] = (per_len/(2*gamma*gamma))*(1+(Kx*Kx/2)+(Kz*Kz/2))
+    
+    lamb = (49/(2*3326*3326))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
     
     E = 6.64e-34 * 3e8/(1e-3 * lamb*1.6e-19)
     
@@ -127,8 +145,8 @@ if __name__ == '__main__':
     
     rands = np.zeros([1000,4])
     for i in range(1000):
-        gaprand = 12.8 + 37.2* np.random.random()
-        shiftrand = -28 + 28 * np.random.random()
+        gaprand = 16 + 43* np.random.random()
+        shiftrand = 0.0 + 24.5 * np.random.random()
         rands[i] = [gaprand, shiftrand, E_fzc(shiftrand,gaprand),bphi_fzc(shiftrand,gaprand)]
     
     #plot rands

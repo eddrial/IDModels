@@ -18,22 +18,22 @@ import time
 if __name__ == '__main__':
     #define parameter space
     #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.arange(50,51,100)
-    shifts = np.arange(0.0,28.1,28.0)
+    gaps = np.arange(15,51,100)
+    shifts = np.arange(-25.65,25.66,25.65/4)
     #shifts = np.arange(0,3,4)
     #shiftmodes = ['circular', 'linear']
-    shiftmodes = ['circular']
+    shiftmodes = ['linear']
     #set up APPLE 2 device (UE56)
     #solve peakfield in parameter space
     print (gaps)
     print(shifts)
     
-    min_gap = 13
+    min_gap = 15
     
     #parameter_Set Horizontal_polarisation
-    UE56_params = parameters.model_parameters(Mova = 0,
+    UE51_params = parameters.model_parameters(Mova = 0,
                                         periods = 5, 
-                                        periodlength =56,
+                                        periodlength =51.3,
                                         nominal_fmagnet_dimensions = [40.0,0.0,40.0], 
                                         #square_magnet = True,
                                         nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -45,26 +45,27 @@ if __name__ == '__main__':
                                         magnets_per_period = 4,
                                         gap = min_gap, 
                                         rowshift = 20,
-                                        shiftmode = 'circular',
-                                        block_subdivision = [1,1,1],
-                                        M = 1.3                                        
+                                        shiftmode = 'linear',
+                                        block_subdivision = [2,3,1],
+                                        M = 1.3,
+                                        type = 'Plain_APPLE'                                        
                                         )
     
-    basescan = parameters.scan_parameters(56.0,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
+    basescan = parameters.scan_parameters(51.3,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
-    UE56 = id1.plainAPPLE(UE56_params)
+    UE51 = id1.plainAPPLE(UE51_params)
     
-    UE56.cont.wradSolve()
+    UE51.cont.wradSolve()
     
-    case = af.CaseSolution(UE56)
+    case = af.CaseSolution(UE51)
     case.calculate_B_field()
     
     print ("Peak Field for ID {} is {}".format('UE48', np.max(case.bmax)))
     print('placeholder')
     
-    sol = Solution(UE56_params,basescan,property = ['B'])
+    sol = Solution(UE51_params,basescan,property = ['B','Forces'])
     
-    sol.solve('B')
+    sol.solve('Forces')
     
     babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
     bz = sol.results['Bmax'][:,:,:,0]

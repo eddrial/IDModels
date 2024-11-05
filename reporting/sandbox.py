@@ -40,7 +40,8 @@ class Sandbox(object):
         
         
         
-    def publish_report(self,all = False, 
+    def publish_report(self,fname, 
+                       all = False, 
                        Title = False, 
                        Contents = False, 
                        Introduction = False,
@@ -271,15 +272,53 @@ if __name__ == '__main__':
     
     fname = args.input
     
-    test_hyper_params = parameters.model_parameters()
+    test_hyper_params = parameters.model_parameters(type  = "Compensated_APPLE", #Or "Plain_APPLE"
+                                                    periods = 7, # Number of Periods of the APPLE Undulator
+                                                    periodlength = 24, # The period length of the undulator
+                                                    magnets_per_period = 4, # This number is almost exclusively 4 in undulator Halbach arrays. But it doesn't *have* to be.
+                                                    
+                                                    #####  APPLE Undulator Parameters  #####
+                                                    rowtorowgap= 0.5, # for APPLE devices the distance between functional rows on the same jaw
+                                                    end_separation = 2.5, #separation of end magnet in usual APPLE end constellation
+                                                    
+                                                    #####  Compensated APPLE Undulator Parameters  #####
+                                                    compappleseparation = 15.0, # The gap between functional magnets and compenation magnets
+                                                    
+                                                    #####  Magnet Shape  #####
+                                                    
+                                                    nominal_fmagnet_dimensions = [20.0,0.0,20.0], # The nominal maximal magnet dimension for the functional magnets [mm]
+                                                    apple_clampcut = 5.0, # The size of the square removed for clamping an APPLE magnet [mm]
+                                                    apple_clampcut_non_symmetric = [5.0, 0.0, 3.0],
+                                                    magnet_chamfer = [5.0,0.0,5.0], # Dimensions of chamfer for a rectangular magnet (to make it octagonal) [mm]
+                                                    
+                                                
+                                                    #####  Compensation Magnets #####
+                                                    
+                                                    nominal_cmagnet_dimensions = [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+                                                    comp_magnet_chamfer = [5.0,0.0,5.0],
+                                                    nominal_hcmagnet_dimensions = [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+                                                    hcomp_magnet_chamfer = [5.0,0.0,5.0],
+                                                    nominal_vcmagnet_dimensions = [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
+                                                    vcomp_magnet_chamfer = [5.0,0.0,5.0],
+                                                    
+                                                    #####  Magnet Material #####
+                                                    
+                                                    ksi = [.019, .06], # Permeability - anisotropic
+                                                    #M = 1.21*1.344, # Block Remanence [T] Default Cryogenic Grade
+                                                    M = 1.344,
+                                                    Mova =  0.0, # Off Vertical Angle of Vertical type magnet blocks [degrees]
+                                                    )
+                                                    
     
-    test_hyper_params.load(fname)
+    test_hyper_params.name = "Test_ID_Jul24"
+    
+    #test_hyper_params.load(fname)
     
     my_ID = id.compensatedAPPLEv2(test_hyper_params)
     
      ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.array([2.2,5])
-    shiftrange = np.arange(-7.5,7.51, 7.5)
+    gaprange = np.array([6,8])
+    shiftrange = np.arange(-12,9.5, 12)
     shiftmoderange = ['linear','circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -293,6 +332,6 @@ if __name__ == '__main__':
     
     my_rep = Sandbox(my_ID,my_solution)
     
-    my_rep.publish_report(all = True)
+    my_rep.publish_report(fname = '19mm_APPLE2p5', all = True)
     
     print(1)

@@ -1,13 +1,14 @@
 '''
-Created on 14 Aug 2024
+Created on 23 Feb 2021
 
 @author: oqb
 '''
 
-'''
-This is a quick output for an IVUE24 compensated APPLE II
-with common material in A and B (H and V) magnets
-'''
+#Here is a final parameter set (20 degrees Mova, 6 mag per period
+#plotting of geometry pics
+#include plotting of XZ at each place for each magnet
+#plotting of field along axis
+#plotting of field across axis at peaks#
 
 import numpy as np
 import radia as rd
@@ -15,7 +16,6 @@ import matplotlib.pyplot as plt
 from wradia import wrad_obj as wrd
 from apple2p5 import model2 as id
 from idcomponents import parameters
-from idanalysis.analysis_functions import Solution
 from idanalysis import analysis_functions as af
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.mplot3d import axes3d
@@ -517,55 +517,48 @@ if __name__ == '__main__':
     ax.set_zlabel('Z')
     ax.set_zlim(-100, 100)
     
-    
-    
     plt.show()'''
-    
-    gaps = np.arange(4,10.1,1)
-    shifts = np.arange(0.0,12.1,3.0)
-    #shifts = np.arange(0,3,4)
-    shiftmodes = ['circular', 'linear']
-    #shiftmodes = ['circular']
-    #set up APPLE 2 device (UE51)
-    #solve peakfield in parameter space
-    
     #parameter_Set Horizontal_polarisation
-    IVUE24= parameters.model_parameters(Mova = 0,
+    ATH_II_hp_horz= parameters.model_parameters(Mova = 20,
                                         periods = 5, 
-                                        periodlength = 24,
-                                        nominal_fmagnet_dimensions = [30.0,0.0,30.0], 
+                                        periodlength = 15,
+                                        nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
                                         #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
-                                        nominal_vcmagnet_dimensions = [12,0.0,25.0],
-                                        nominal_hcmagnet_dimensions = [12,0.0,30.0], 
-                                        compappleseparation = 15,
-                                        apple_clampcut = 5.0,
-                                        comp_magnet_chamfer = [5.0,0.0,5.0],
-                                        magnets_per_period = 4,
-                                        gap = 6.2, 
+                                        nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
+                                        nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
+                                        compappleseparation = 7.5,
+                                        apple_clampcut = 3.0,
+                                        comp_magnet_chamfer = [3.0,0.0,3.0],
+                                        magnets_per_period = 6,
+                                        gap = 2.2, 
                                         rowshift = 0,
                                         shiftmode = 'circular',
-                                        block_subdivision = [2,1,3],
-                                        M = 1.32
+                                        block_subdivision = [1,1,1]
+                                        )
+    
+    ATH_II_hp_vert= parameters.model_parameters(Mova = 20,
+                                        periods = 5, 
+                                        periodlength = 15,
+                                        nominal_fmagnet_dimensions = [15.0,0.0,15.0], 
+                                        #nominal_cmagnet_dimensions = [10.0,0.0,15.0],
+                                        nominal_vcmagnet_dimensions = [7.5,0.0,12.5],
+                                        nominal_hcmagnet_dimensions = [7.5,0.0,15.0], 
+                                        compappleseparation = 7.5,
+                                        apple_clampcut = 3.0,
+                                        comp_magnet_chamfer = [3.0,0.0,3.0],
+                                        magnets_per_period = 6,
+                                        gap = 2.2, 
+                                        rowshift = 7.5,
+                                        shiftmode = 'circular',
+                                        block_subdivision = [1,1,1]
                                         )
     
     #make list of parameter sets to cycle through. In this case H and then V
+    param_sets = [ATH_II_hp_horz,ATH_II_hp_vert]
     
     
-    this_id = id.compensatedAPPLEv2(IVUE24)
+    this_id = id.compensatedAPPLEv2(ATH_II_hp_horz)
     
-    basescan = parameters.scan_parameters(24,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
-    
-    sol = Solution(IVUE24,basescan,property = ['B','Forces'])
-    
-    sol.solve('B')
-    
-    sol.plot_Bpeak_vs_Gap()
-    
-    sol.plot_Bpeak_vs_Phase()
-    
-    
-    
-    print('stop here')
     #for i in range(12):
     #    figi = plot_geometry(this_id, linewidth = 1, mag_index = 0, highlightrows = [i], highlightmagnets = [0])
     #    figi.savefig("M:\\Work\\Athena_APPLEIII\\Python\\Results\\Geometry_pics\\row_{}.png".format(i+1))

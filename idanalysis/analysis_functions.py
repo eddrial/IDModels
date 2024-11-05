@@ -22,7 +22,6 @@ from wradia import wrad_obj as wrd
 from wradia import wrad_mat as wrdm
 from apple2p5 import model2 as id
 from idcomponents import parameters
-from ipywidgets.widgets.interaction import fixed
 from wradia.wrad_obj import wradObjCnt
 
 class MetaData():
@@ -475,7 +474,7 @@ class Solution():
                         casemodel = id.compensatedAPPLEv2(self.hyper_params) 
                         
                     elif self.hyper_params.type == 'Symmetrically Compensated APPLE':
-                        casemodel = id.compensatedAPPLEv2(self.hyper_params) 
+                        casemodel = id.compensatedAPPLEv2_Sym(self.hyper_params) 
                     #else assume compensated APPLE
                     else:
                         casemodel = id.compensatedAPPLEv2(self.hyper_params)
