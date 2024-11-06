@@ -1065,7 +1065,7 @@ if __name__ == '__main__':
     qbfields = [[],[],[],[]]
     i = 0 
     for quadrant in quads:
-        qq = rd.FldLst(a.allarrays[quadrant].cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
+        qq = rd.FldLst(b.allarrays[quadrant].cont.radobj,'bxbybz',linestart,lineend,int(1+(lineend[1]-linestart[1])/0.1),'arg',linestart[1])
         qbfields[i] = qq
         i += 1
         
@@ -1101,7 +1101,7 @@ if __name__ == '__main__':
     print('read out the field {}'.format(aa))
     
     input("Press Enter to continue...")
-    print('{}'.format(a.cont.radobj))
+    print('{}'.format(b.cont.radobj))
     #a.allarrays['q1'].cont.objectlist[4].objectlist[0].magnetisation
     
     #for debugging
