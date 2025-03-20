@@ -83,7 +83,6 @@ class model_parameters():
             
             "perturbation_fn" : self.perturbation_fn
             
-            
         }
         
         for (prop, default) in prop_defaults.items():
@@ -92,7 +91,9 @@ class model_parameters():
         ###Derived Attributes###
         
         #Undulator
-        self.totalmagnets = int(self.periods*self.magnets_per_period + 1);
+        self.totalmagnets = int(self.periods*self.magnets_per_period + 1)
+        
+        self.perturbation_list = np.zeros([self.totalmagnets,2])
         
         #magnet thicknesses
         self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
@@ -114,8 +115,14 @@ class model_parameters():
         #default magnet profile
         self.magnet_profile = np.random.rand(int(self.nominal_fmagnet_dimensions[0]+1))
         
+        #magnetisation list
+        self.M_list = np.zeros([self.totalmagnets,3])
+        self.M_list[2,:] = 1
+        
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
+        
+        
         
         
         #core undulator parameters
