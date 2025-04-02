@@ -10,6 +10,7 @@ import pygame as pyg
 import pygame.locals as pygl
 import OpenGL.GL as ogl
 import OpenGL.GLU as oglu
+import OpenGL.GLUT as oglut
 
 import numpy as np
 
@@ -18,13 +19,42 @@ import apple2p5.model2 as id1
 import radia as rd
 from idcomponents import parameters
 
-def Cube(vertices, edges):
-    ogl.glBegin(ogl.GL_LINES)
-    for edge in edges:
-        for vertex in edge:
+width = 500
+height = 500
+
+vertices = [(-1,-1,-1), ( 1,-1,-1), ( 1, 1,-1), (-1, 1,-1), (-1,-1, 1), ( 1,-1, 1), ( 1, 1, 1), (-1, 1, 1)]
+faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
+colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
+
+def cube():
+    ogl.glRotatef(1, 3, 1, 1)
+    ogl.glBegin(ogl.GL_QUADS)
+    for i, face in enumerate(faces):
+        ogl.glColor3fv(colors[i])
+        for vertex in face:
             ogl.glVertex3fv(vertices[vertex])
-    
-    ogl.glEnd
+    ogl.glEnd()
+
+def showScreen():
+    ogl.glClearColor(0, 0, 0, 1)
+    ogl.glClear(ogl.GL_COLOR_BUFFER_BIT | ogl.GL_DEPTH_BUFFER_BIT)
+    cube()
+    oglut.glutSwapBuffers()
+
+def mouseTracker(mousex, mousey):
+    print(f"Mouse pos: {mousex}, {mousey}")
+
+def reshapeWindow(x, y):
+    global width, height
+    width = x
+    height = y
+    print(x, y)
+    ogl.glMatrixMode(ogl.GL_PROJECTION)
+    ogl.glLoadIdentity()
+    oglu.gluPerspective(45, (width / height), 0.0001, 1000)
+    ogl.glMatrixMode(ogl.GL_MODELVIEW)
+
+
 
 if __name__ == '__main__':
     rd.UtiDelAll()
@@ -54,13 +84,26 @@ if __name__ == '__main__':
     
     a = id1.plainAPPLE(model_parameters = a_param)
     
-    rd.ObjDrwOpenGL(a.cont.radobj)
+    #rd.ObjDrwOpenGL(a.cont.radobj)
     
-    edges = np.array([[0,1],[0,3],[0,4],[1,5],[1,2],[2,6],[2,3],[3,7],[4,5],[4,7],[5,6],[6,7]])
+    oglut.glutInit()
+    oglut.glutInitDisplayMode(oglut.GLUT_RGBA)
+    oglut.glutInitWindowSize(500, 500)
+    wind = oglut.glutCreateWindow(b'OpenGL')
+    oglut.glutDisplayFunc(showScreen)
+    oglut.glutIdleFunc(showScreen)
+    oglut.glutMotionFunc(mouseTracker)
+    oglut.glutPassiveMotionFunc(mouseTracker)
+    oglut.glutReshapeFunc(reshapeWindow)
     
-    cube = Cube(a.cont.objectlist[0].objectlist[0].objectlist[0].objectlist[0].vertices,edges)
+    ogl.glMatrixMode(ogl.GL_MODELVIEW)
+    ogl.glLoadIdentity()
+    ogl.glTranslatef(0, 0, -5)
     
-    pyg.init()
-    display = (800,600)
-    pyg.display.set_mode(display, pygl.DOUBLEBUF|pygl.OPENGL)
+    ogl.glEnable(ogl.GL_DEPTH_TEST)
+    
+    while True:
+        oglut.glutMainLoopEvent()
+        oglut.glutPostRedisplay()
+        time.sleep(0.01)
     pass
