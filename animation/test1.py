@@ -6,12 +6,25 @@ Created on Apr 2, 2025
 import time
 import random
 
+import pygame as pyg
+import pygame.locals as pygl
+import OpenGL.GL as ogl
+import OpenGL.GLU as oglu
+
 import numpy as np
 
 import apple2p5.model2 as id1
 
 import radia as rd
 from idcomponents import parameters
+
+def Cube(vertices, edges):
+    ogl.glBegin(ogl.GL_LINES)
+    for edge in edges:
+        for vertex in edge:
+            ogl.glVertex3fv(vertices[vertex])
+    
+    ogl.glEnd
 
 if __name__ == '__main__':
     rd.UtiDelAll()
@@ -43,4 +56,11 @@ if __name__ == '__main__':
     
     rd.ObjDrwOpenGL(a.cont.radobj)
     
+    edges = np.array([[0,1],[0,3],[0,4],[1,5],[1,2],[2,6],[2,3],[3,7],[4,5],[4,7],[5,6],[6,7]])
+    
+    cube = Cube(a.cont.objectlist[0].objectlist[0].objectlist[0].objectlist[0].vertices,edges)
+    
+    pyg.init()
+    display = (800,600)
+    pyg.display.set_mode(display, pygl.DOUBLEBUF|pygl.OPENGL)
     pass
