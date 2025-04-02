@@ -6,8 +6,6 @@ Created on Apr 2, 2025
 import time
 import random
 
-import pygame as pyg
-import pygame.locals as pygl
 import OpenGL.GL as ogl
 import OpenGL.GLU as oglu
 import OpenGL.GLUT as oglut
@@ -19,40 +17,44 @@ import apple2p5.model2 as id1
 import radia as rd
 from idcomponents import parameters
 
-width = 500
-height = 500
+class IDDraw():
+    def __init__(self, 
+                 frame_details,
+                 my_object):
+        self.width = 800
+        self.height = 500
 
-vertices = [(-1,-1,-1), ( 1,-1,-1), ( 1, 1,-1), (-1, 1,-1), (-1,-1, 1), ( 1,-1, 1), ( 1, 1, 1), (-1, 1, 1)]
-faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
-colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
+        self.vertices = [(-1,-1,-1), ( 1,-1,-1), ( 1, 1,-1), (-1, 1,-1), (-1,-1, 1), ( 1,-1, 1), ( 1, 1, 1), (-1, 1, 1)]
+        self.faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
+        self.colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
 
-def cube():
-    ogl.glRotatef(1, 3, 1, 1)
-    ogl.glBegin(ogl.GL_QUADS)
-    for i, face in enumerate(faces):
-        ogl.glColor3fv(colors[i])
-        for vertex in face:
-            ogl.glVertex3fv(vertices[vertex])
-    ogl.glEnd()
+    def cube(self):
+        ogl.glRotatef(1, 3, 1, 1)
+        ogl.glBegin(ogl.GL_QUADS)
+        for i, face in enumerate(self.faces):
+            ogl.glColor3fv(self.colors[i])
+            for vertex in face:
+                ogl.glVertex3fv(self.vertices[vertex])
+        ogl.glEnd()
 
-def showScreen():
-    ogl.glClearColor(0, 0, 0, 1)
-    ogl.glClear(ogl.GL_COLOR_BUFFER_BIT | ogl.GL_DEPTH_BUFFER_BIT)
-    cube()
-    oglut.glutSwapBuffers()
+    def showScreen(self):
+        ogl.glClearColor(0, 0, 0, 1)
+        ogl.glClear(ogl.GL_COLOR_BUFFER_BIT | ogl.GL_DEPTH_BUFFER_BIT)
+        self.cube()
+        oglut.glutSwapBuffers()
 
-def mouseTracker(mousex, mousey):
-    print(f"Mouse pos: {mousex}, {mousey}")
+    def mouseTracker(self,mousex, mousey):
+        print(f"Mouse pos: {mousex}, {mousey}")
 
-def reshapeWindow(x, y):
-    global width, height
-    width = x
-    height = y
-    print(x, y)
-    ogl.glMatrixMode(ogl.GL_PROJECTION)
-    ogl.glLoadIdentity()
-    oglu.gluPerspective(45, (width / height), 0.0001, 1000)
-    ogl.glMatrixMode(ogl.GL_MODELVIEW)
+    def reshapeWindow(self, x, y):
+        global width, height
+        width = x
+        height = y
+        print(x, y)
+        ogl.glMatrixMode(ogl.GL_PROJECTION)
+        ogl.glLoadIdentity()
+        oglu.gluPerspective(45, (width / height), 0.0001, 1000)
+        ogl.glMatrixMode(ogl.GL_MODELVIEW)
 
 
 
@@ -88,17 +90,20 @@ if __name__ == '__main__':
     
     oglut.glutInit()
     oglut.glutInitDisplayMode(oglut.GLUT_RGBA)
-    oglut.glutInitWindowSize(500, 500)
+    oglut.glutInitWindowSize(800, 500)
     wind = oglut.glutCreateWindow(b'OpenGL')
-    oglut.glutDisplayFunc(showScreen)
-    oglut.glutIdleFunc(showScreen)
-    oglut.glutMotionFunc(mouseTracker)
-    oglut.glutPassiveMotionFunc(mouseTracker)
-    oglut.glutReshapeFunc(reshapeWindow)
+    
+    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[0].objectlist[0])
+    
+    oglut.glutDisplayFunc(id_canvas.showScreen)
+    oglut.glutIdleFunc(id_canvas.showScreen)
+    oglut.glutMotionFunc(id_canvas.mouseTracker)
+    oglut.glutPassiveMotionFunc(id_canvas.mouseTracker)
+    oglut.glutReshapeFunc(id_canvas.reshapeWindow)
     
     ogl.glMatrixMode(ogl.GL_MODELVIEW)
     ogl.glLoadIdentity()
-    ogl.glTranslatef(0, 0, -5)
+    ogl.glTranslatef(0, 0, -10)
     
     ogl.glEnable(ogl.GL_DEPTH_TEST)
     
