@@ -24,9 +24,12 @@ class IDDraw():
         self.width = 500
         self.height = 500
 
-        self.vertices = [(-1,-1,-1), ( 1,-1,-1), ( 1, 1,-1), (-1, 1,-1), (-1,-1, 1), ( 1,-1, 1), ( 1, 1, 1), (-1, 1, 1)]
-        self.faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
-        self.colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
+        #self.vertices = [(-2,-2,-2), ( 0,-2,-2), ( 0, 0,-2), (-2, 0,-2), (-2,-2, 0), ( 0,-2, 0), ( 0, 0, 0), (-2, 0, 0)]
+        self.vertices = my_object.vertices
+        #self.faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
+        self.faces = my_object.polygons
+        #self.colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
+        self.colors = [my_object.colour,my_object.colour,my_object.colour,my_object.colour,my_object.colour,my_object.colour]
 
     def cube(self):
         ogl.glRotatef(1, 3, 1, 1)
@@ -64,7 +67,7 @@ class IDDraw():
         
         ogl.glMatrixMode(ogl.GL_MODELVIEW)
         ogl.glLoadIdentity()
-        ogl.glTranslatef(0, 0, -10)
+        ogl.glTranslatef(0, 0, -100)
         
         ogl.glEnable(ogl.GL_DEPTH_TEST)
         
@@ -110,7 +113,7 @@ if __name__ == '__main__':
     oglut.glutInitWindowSize(800, 500)
     wind = oglut.glutCreateWindow(b'OpenGL')
     
-    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[0].objectlist[0])
+    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[0])
     
     id_canvas.displayWindow()
     pass
