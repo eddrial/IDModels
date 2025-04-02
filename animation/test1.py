@@ -21,7 +21,7 @@ class IDDraw():
     def __init__(self, 
                  frame_details,
                  my_object):
-        self.width = 800
+        self.width = 500
         self.height = 500
 
         self.vertices = [(-1,-1,-1), ( 1,-1,-1), ( 1, 1,-1), (-1, 1,-1), (-1,-1, 1), ( 1,-1, 1), ( 1, 1, 1), (-1, 1, 1)]
@@ -47,14 +47,31 @@ class IDDraw():
         print(f"Mouse pos: {mousex}, {mousey}")
 
     def reshapeWindow(self, x, y):
-        global width, height
-        width = x
-        height = y
+        self.width = x
+        self.height = y
         print(x, y)
         ogl.glMatrixMode(ogl.GL_PROJECTION)
         ogl.glLoadIdentity()
-        oglu.gluPerspective(45, (width / height), 0.0001, 1000)
+        oglu.gluPerspective(45, (self.width/self.height), 0.0001, 1000)
         ogl.glMatrixMode(ogl.GL_MODELVIEW)
+        
+    def displayWindow(self):
+        oglut.glutDisplayFunc(self.showScreen)
+        oglut.glutIdleFunc(self.showScreen)
+        oglut.glutMotionFunc(self.mouseTracker)
+        oglut.glutPassiveMotionFunc(self.mouseTracker)
+        oglut.glutReshapeFunc(self.reshapeWindow)
+        
+        ogl.glMatrixMode(ogl.GL_MODELVIEW)
+        ogl.glLoadIdentity()
+        ogl.glTranslatef(0, 0, -10)
+        
+        ogl.glEnable(ogl.GL_DEPTH_TEST)
+        
+        while True:
+            oglut.glutMainLoopEvent()
+            oglut.glutPostRedisplay()
+            time.sleep(0.01)
 
 
 
@@ -95,20 +112,5 @@ if __name__ == '__main__':
     
     id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[0].objectlist[0])
     
-    oglut.glutDisplayFunc(id_canvas.showScreen)
-    oglut.glutIdleFunc(id_canvas.showScreen)
-    oglut.glutMotionFunc(id_canvas.mouseTracker)
-    oglut.glutPassiveMotionFunc(id_canvas.mouseTracker)
-    oglut.glutReshapeFunc(id_canvas.reshapeWindow)
-    
-    ogl.glMatrixMode(ogl.GL_MODELVIEW)
-    ogl.glLoadIdentity()
-    ogl.glTranslatef(0, 0, -10)
-    
-    ogl.glEnable(ogl.GL_DEPTH_TEST)
-    
-    while True:
-        oglut.glutMainLoopEvent()
-        oglut.glutPostRedisplay()
-        time.sleep(0.01)
+    id_canvas.displayWindow()
     pass
