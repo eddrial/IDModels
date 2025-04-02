@@ -117,7 +117,6 @@ class model_parameters():
         
         #magnetisation list
         self.M_list = np.zeros([self.totalmagnets,3])
-        self.M_list[2,:] = 1
         
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
