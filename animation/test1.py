@@ -20,30 +20,33 @@ from idcomponents import parameters
 class IDDraw():
     def __init__(self, 
                  frame_details,
-                 my_object):
+                 my_object, my_object2):
         self.width = 500
         self.height = 500
 
         #self.vertices = [(-2,-2,-2), ( 0,-2,-2), ( 0, 0,-2), (-2, 0,-2), (-2,-2, 0), ( 0,-2, 0), ( 0, 0, 0), (-2, 0, 0)]
         self.vertices = my_object.vertices
+        self.vertices2 = my_object2.vertices
         #self.faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
         self.faces = my_object.polygons
+        self.faces2 = my_object2.polygons
         #self.colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
-        self.colors = [my_object.colour,my_object.colour,my_object.colour,my_object.colour,my_object.colour,my_object.colour]
+        self.colours = [my_object.colour]*len(self.faces)
 
-    def cube(self):
+    def cube(self, vertices, faces, colours):
         ogl.glRotatef(1, 3, 1, 1)
         ogl.glBegin(ogl.GL_QUADS)
-        for i, face in enumerate(self.faces):
-            ogl.glColor3fv(self.colors[i])
+        for i, face in enumerate(faces):
+            ogl.glColor3fv(colours[i])
             for vertex in face:
-                ogl.glVertex3fv(self.vertices[vertex])
+                ogl.glVertex3fv(vertices[vertex])
         ogl.glEnd()
 
     def showScreen(self):
         ogl.glClearColor(0, 0, 0, 1)
         ogl.glClear(ogl.GL_COLOR_BUFFER_BIT | ogl.GL_DEPTH_BUFFER_BIT)
-        self.cube()
+        self.cube(self.vertices,self.faces,self.colours)
+        self.cube(self.vertices2,self.faces2,self.colours)
         oglut.glutSwapBuffers()
 
     def mouseTracker(self,mousex, mousey):
@@ -113,7 +116,7 @@ if __name__ == '__main__':
     oglut.glutInitWindowSize(800, 500)
     wind = oglut.glutCreateWindow(b'OpenGL')
     
-    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[0])
+    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[0], a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[1])
     
     id_canvas.displayWindow()
     pass
