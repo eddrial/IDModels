@@ -15,38 +15,50 @@ import numpy as np
 import apple2p5.model2 as id1
 
 import radia as rd
+import wradia as wrd
 from idcomponents import parameters
 
 class IDDraw():
     def __init__(self, 
                  frame_details,
-                 my_object, my_object2):
+                 my_object):
         self.width = 500
         self.height = 500
+        
+        self.my_object = my_object
 
         #self.vertices = [(-2,-2,-2), ( 0,-2,-2), ( 0, 0,-2), (-2, 0,-2), (-2,-2, 0), ( 0,-2, 0), ( 0, 0, 0), (-2, 0, 0)]
-        self.vertices = my_object.vertices
-        self.vertices2 = my_object2.vertices
+#        self.vertices = my_object.vertices
+#        self.vertices2 = my_object2.vertices
         #self.faces = [(4,0,3,7), (1,0,4,5), (0,1,2,3), (1,5,6,2), (3,2,6,7), (5,4,7,6)]
-        self.faces = my_object.polygons
-        self.faces2 = my_object2.polygons
+#        self.faces = my_object.polygons
+#        self.faces2 = my_object2.polygons
         #self.colors = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 1, 0), (1, 0, 1), (0, 1, 1)]
-        self.colours = [my_object.colour]*len(self.faces)
+#        self.colours = [my_object.colour]*len(self.faces)
 
-    def cube(self, vertices, faces, colours):
-        ogl.glRotatef(1, 3, 1, 1)
+    def cube(self, my_object):
+        def excavate(objofint):
+            if isinstance(objofint, wrd.wrad_obj.wradObjCnt):
+                for i in range(len(objofint.objectlist)):
+                    excavate(objofint.objectlist[i])
+            else:
+                for i, face in enumerate(objofint.polygons):
+                    ogl.glColor3fv(objofint.colour)
+                    for vertex in face:
+                        ogl.glVertex3fv(objofint.vertices[vertex])
+        
+        #ogl.glRotatef(2, 3, 1, 1)
         ogl.glBegin(ogl.GL_QUADS)
-        for i, face in enumerate(faces):
-            ogl.glColor3fv(colours[i])
-            for vertex in face:
-                ogl.glVertex3fv(vertices[vertex])
+        
+        excavate(my_object)
+        
         ogl.glEnd()
 
     def showScreen(self):
         ogl.glClearColor(0, 0, 0, 1)
         ogl.glClear(ogl.GL_COLOR_BUFFER_BIT | ogl.GL_DEPTH_BUFFER_BIT)
-        self.cube(self.vertices,self.faces,self.colours)
-        self.cube(self.vertices2,self.faces2,self.colours)
+        self.cube(self.my_object)
+        #self.cube(self.vertices2,self.faces2,self.colours)
         oglut.glutSwapBuffers()
 
     def mouseTracker(self,mousex, mousey):
@@ -70,7 +82,7 @@ class IDDraw():
         
         ogl.glMatrixMode(ogl.GL_MODELVIEW)
         ogl.glLoadIdentity()
-        ogl.glTranslatef(0, 0, -100)
+        ogl.glTranslatef(0, 0, -500)
         
         ogl.glEnable(ogl.GL_DEPTH_TEST)
         
@@ -109,14 +121,14 @@ if __name__ == '__main__':
     
     a = id1.plainAPPLE(model_parameters = a_param)
     
-    #rd.ObjDrwOpenGL(a.cont.radobj)
+    rd.ObjDrwOpenGL(a.cont.radobj)
     
     oglut.glutInit()
     oglut.glutInitDisplayMode(oglut.GLUT_RGBA)
     oglut.glutInitWindowSize(800, 500)
     wind = oglut.glutCreateWindow(b'OpenGL')
     
-    id_canvas = IDDraw(0,a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[0], a.cont.objectlist[0].objectlist[0].objectlist[20].objectlist[1])
+    id_canvas = IDDraw(0,a.cont)
     
     id_canvas.displayWindow()
     pass
