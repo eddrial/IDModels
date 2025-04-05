@@ -527,6 +527,7 @@ if __name__ == '__main__':
     shiftmodes = ['circular', 'linear']
     #shiftmodes = ['circular']
     #set up APPLE 2 device (UE51)
+    
     #solve peakfield in parameter space
     
     #parameter_Set Horizontal_polarisation
