@@ -1,5 +1,6 @@
 import numpy as np
 from vispy import app, gloo
+from vispy.io import image
 from vispy.util.transforms import perspective, translate, rotate
 import radia as rd
 import wradia as wrd
@@ -8,6 +9,7 @@ from idcomponents import parameters
 
 import time
 import random
+from vispy.gloo.util import _screenshot
 
 class IDDraw():
     def __init__(self):
@@ -214,12 +216,16 @@ class Canvas(app.Canvas):
             self.phi = 45 + 360*(np.cos(2*np.pi*self.time_count/720))
             
         
-        
+        if self.time_count > 1080:
+            quit()
         
         self.model = np.dot(rotate(self.theta, (1, 0, 0)),
                             rotate(self.phi, (0, 1, 0)))
         self.program['u_model'] = self.model
         self.update()
+        if self.time_count%60 == 0:
+            scshframe = _screenshot()
+            image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\my_tst{}.png'.format(self.time_count), scshframe)
 
     # ---------------------------------
     def on_resize(self, event):
