@@ -175,7 +175,8 @@ class Canvas(app.Canvas):
         self.program = gloo.Program(drawobj.vert, drawobj.frag)
         self.program.bind(gloo.VertexBuffer(self.vertices))
 
-        self.view = translate((0, 0, -201))
+        self.view = np.dot(translate((0, -100, -201)),
+                           rotate(30,(1,0,0)))
         self.model = np.eye(4, dtype=np.float32)
 
         gloo.set_viewport(0, 0, self.physical_size[0], self.physical_size[1])
@@ -187,8 +188,10 @@ class Canvas(app.Canvas):
         self.program['u_model'] = self.model
         self.program['u_view'] = self.view
 
-        self.theta = 0
-        self.phi = 0
+        self.theta = -90
+        self.phi = 45
+        
+        self.time_count = 0
 
         gloo.set_clear_color('white')
         gloo.set_state('opaque')
@@ -200,10 +203,10 @@ class Canvas(app.Canvas):
 
     # ---------------------------------
     def on_timer(self, event):
-        self.theta += .5
-        self.phi += .5
-        self.model = np.dot(rotate(self.theta, (0, 0, 1)),
-                            rotate(self.phi, (0, 1, 1)))
+        self.theta += .0
+        self.phi += 1
+        self.model = np.dot(rotate(self.theta, (1, 0, 0)),
+                            rotate(self.phi, (0, 1, 0)))
         self.program['u_model'] = self.model
         self.update()
 
@@ -267,5 +270,5 @@ if __name__ == '__main__':
     #Drawing stuff
     
     idd = IDDraw()
-    canvas = Canvas(idd, a.cont.objectlist[0])
+    canvas = Canvas(idd, a.cont)
     app.run()
