@@ -203,14 +203,16 @@ class Canvas(app.Canvas):
 
     # ---------------------------------
     def on_timer(self, event):
-        self.time_count +=1
+        self.time_count +=0.5
         
         self.theta += .0
         
         if self.time_count < 360 or self.time_count>720:
             self.phi = 45
         else:
-            self.phi += 1
+            #self.phi = 45+self.time_count
+            self.phi = 45 + 360*(np.cos(2*np.pi*self.time_count/720))
+            
         
         
         
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     #create ID
     rd.UtiDelAll()
     a_param = parameters.model_parameters(
-        periods = 1,
+        periods = 3,
         periodlength = 40,
         minimumgap = 15,
         M = 1.32,
