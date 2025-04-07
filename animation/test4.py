@@ -203,8 +203,17 @@ class Canvas(app.Canvas):
 
     # ---------------------------------
     def on_timer(self, event):
+        self.time_count +=1
+        
         self.theta += .0
-        self.phi += 1
+        
+        if self.time_count < 360 or self.time_count>720:
+            self.phi = 45
+        else:
+            self.phi += 1
+        
+        
+        
         self.model = np.dot(rotate(self.theta, (1, 0, 0)),
                             rotate(self.phi, (0, 1, 0)))
         self.program['u_model'] = self.model
