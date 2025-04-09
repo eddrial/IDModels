@@ -208,7 +208,7 @@ class Canvas(app.Canvas):
         
         self.show()
         scshframe = _screenshot()
-        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\shift_comp_apple\ivue32_{}_{}.png'.format(mod_params.shiftmode,count), scshframe)
+        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\gap_apple\ivue32_{}_g{}_s{}.png'.format(mod_params.shiftmode,mod_params.gap,mod_params.rowshift), scshframe)
         self.close()
 
         
@@ -269,29 +269,30 @@ if __name__ == '__main__':
     
     #shift loop
     for mode in ['circular', 'linear']:
-        for shift in range(362):
-            
-            rd.UtiDelAll()
-            a_param = parameters.model_parameters(
-                periods = 4,
-                periodlength = 32,
-                minimumgap = 6,
-                M = 1.32,
-                block_subdivision = [1,1,1],
-                rowshift = 16*np.sin(2*np.pi*shift/361),
-                shiftmode = mode)
-            
-            t0 = time.time()
-
-            #a = ArbAPPLE(model_parameters = a_param)
-            
-            a = id1.compensatedAPPLEv2(model_parameters = a_param)
-            
-            #rd.ObjDrwOpenGL(a.cont.radobj)
-            
-            #Drawing stuff
-            
-            idd = IDDraw()
-            canvas = Canvas(idd, a.cont, shift, a.model_parameters)
-            app.run()
+        for shift in range(32,33,16):
+            for gap in range (6, 326,1):
+                ggap = (gap-6)/8+6
+                rd.UtiDelAll()
+                a_param = parameters.model_parameters(
+                    periods = 4,
+                    periodlength = 32,
+                    gap = ggap,
+                    M = 1.32,
+                    block_subdivision = [1,1,1],
+                    rowshift = shift,
+                    shiftmode = mode)
+                
+                t0 = time.time()
+    
+                #a = ArbAPPLE(model_parameters = a_param)
+                
+                a = id1.compensatedAPPLEv2(model_parameters = a_param)
+                
+                #rd.ObjDrwOpenGL(a.cont.radobj)
+                
+                #Drawing stuff
+                
+                idd = IDDraw()
+                canvas = Canvas(idd, a.cont, shift, a.model_parameters)
+                app.run()
             print(1)

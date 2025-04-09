@@ -166,7 +166,7 @@ class IDDraw():
 # -----------------------------------------------------------------------------
 class Canvas(app.Canvas):
 
-    def __init__(self, drawobj, my_wrdobj):
+    def __init__(self, drawobj, my_wrdobj, count, mod_params):
         app.Canvas.__init__(self, keys='interactive', size=(800, 600))
 
         #self.vertices, self.filled, self.outline = drawobj.cube()
@@ -199,9 +199,19 @@ class Canvas(app.Canvas):
         gloo.set_state('opaque')
         gloo.set_polygon_offset(1, 1)
 
-        self._timer = app.Timer('auto', connect=self.on_timer, start=True)
-
+        #self._timer = app.Timer('auto', connect=self.on_timer, start=True)
+        
+        self.model = np.dot(rotate(self.theta, (1, 0, 0)),
+                            rotate(self.phi, (0, 1, 0)))
+        self.program['u_model'] = self.model
+        self.update()
+        
         self.show()
+        scshframe = _screenshot()
+        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\shift_comp_apple\ivue32_{}_{}.png'.format(mod_params.shiftmode,count), scshframe)
+        self.close()
+
+        
 
     # ---------------------------------
     def on_timer(self, event):
@@ -218,6 +228,7 @@ class Canvas(app.Canvas):
         
         if self.time_count > 1080:
             self._timer.stop()
+            self.app.quit()
         
         self.model = np.dot(rotate(self.theta, (1, 0, 0)),
                             rotate(self.phi, (0, 1, 0)))
@@ -225,7 +236,7 @@ class Canvas(app.Canvas):
         self.update()
         if self.time_count%1 == 0:
             scshframe = _screenshot()
-            image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\my_tst{}.png'.format(self.time_count), scshframe)
+#            image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\my_tst{}.png'.format(self.time_count), scshframe)
 
     # ---------------------------------
     def on_resize(self, event):
@@ -255,37 +266,32 @@ class Canvas(app.Canvas):
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     #create ID
-    rd.UtiDelAll()
-    a_param = parameters.model_parameters(
-        periods = 4,
-        periodlength = 32,
-        minimumgap = 6,
-        M = 1.32,
-        block_subdivision = [1,1,1])
-    #a_param.block_subdivision = [1,1,1]
-    #a_param.periods = 20
-    #a_param.periodlength = 40
-    #a_param.minimumgap = 15
     
-    #a_param.M = 1.32
-    
-    t0 = time.time()
-    
-    for i in range(len(a_param.M_list[:])):
-        ang = random.random()*2*np.pi
-        
-        
-        a_param.M_list[i,0:3:2] = np.array([a_param.M*np.sin(ang), a_param.M*np.cos(ang)])
-    
-    
-    #a = ArbAPPLE(model_parameters = a_param)
-    
-    a = id1.compensatedAPPLEv2(model_parameters = a_param)
-    
-    #rd.ObjDrwOpenGL(a.cont.radobj)
-    
-    #Drawing stuff
-    
-    idd = IDDraw()
-    canvas = Canvas(idd, a.cont)
-    app.run()
+    #shift loop
+    for mode in ['circular', 'linear']:
+        for shift in range(362):
+            
+            rd.UtiDelAll()
+            a_param = parameters.model_parameters(
+                periods = 4,
+                periodlength = 32,
+                minimumgap = 6,
+                M = 1.32,
+                block_subdivision = [1,1,1],
+                rowshift = 16*np.sin(2*np.pi*shift/361),
+                shiftmode = mode)
+            
+            t0 = time.time()
+
+            #a = ArbAPPLE(model_parameters = a_param)
+            
+            a = id1.compensatedAPPLEv2(model_parameters = a_param)
+            
+            #rd.ObjDrwOpenGL(a.cont.radobj)
+            
+            #Drawing stuff
+            
+            idd = IDDraw()
+            canvas = Canvas(idd, a.cont, shift, a.model_parameters)
+            app.run()
+            print(1)
