@@ -30,10 +30,10 @@ class model_parameters():
             
             ######  Undulator Parameters  ######
             
-            "type" : "Compensated_APPLE", #Or "Plain_APPLE"
+            "type" : "Plain_APPLE", #Or "Compensated_APPLEPlain_APPLE"
             "beams" : 2,
             "quadrants" : 4,
-            "rows_per_quadrant" : 3,
+            "rows_per_quadrant" : 1,
             #"rows" : 12, 
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm

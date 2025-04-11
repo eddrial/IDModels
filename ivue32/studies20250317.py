@@ -33,7 +33,8 @@ if __name__ == '__main__':
         ### developing Case Solution ###
     
     test_hyper_params = parameters.model_parameters(#Type = 'Anti-symmetrically Compensated APPLE',
-                                                    Type = 'Symmetrically Compensated APPLE',
+                                                    #Type = 'Symmetrically Compensated APPLE',
+                                                    type = 'Plain_APPLE',
                                             Mova = 0, 
                                              periods = 4, 
                                              periodlength = 32,
@@ -53,7 +54,7 @@ if __name__ == '__main__':
                                              )
     #a = id.compensatedAPPLEv2_Sym(test_hyper_params, fmagnet=ms.appleMagnetNonSymmetric)
     
-    a = id.compensatedAPPLEv2(test_hyper_params, fmagnet=ms.appleMagnetNonSymmetric)#    
+    a = id.plainAPPLE(test_hyper_params, fmagnet=ms.appleMagnetNonSymmetric)#    
 
 
     rd.ObjDrwOpenGL(a.cont.radobj)
@@ -65,8 +66,8 @@ if __name__ == '__main__':
     
     
     ### Developing Model Solution ### Range of gap. rowshift and shiftmode ###
-    gaprange = np.array([7.0, 10.0])
-    shiftrange = np.arange(0,16.1, 4.0)
+    gaprange = np.array([7.0])
+    shiftrange = np.arange(0,16.1, 1.0)
     shiftmoderange = ['circular']
     
     #scan_parameters = parameters.scan_parameters(periodlength = test_hyper_params.periodlength, gaprange = gaprange, shiftrange = shiftrange, shiftmoderange = shiftmoderange)
@@ -76,13 +77,13 @@ if __name__ == '__main__':
     sol1.solve(property = ['B','Forces'])
     
     my_path = 'D:\Profile\oqb\IVUE32_2023\Calculations'
-    rootname = 'ivue32_circ_asym_comp_221_20230823'
+    rootname = 'ivue32_circ_asym_221_20250409'
     
-    with open('{}\{}.dat'.format(my_path, rootname),'wb') as fp:
-        pickle.dump(sol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
+#    with open('{}\{}.dat'.format(my_path, rootname),'wb') as fp:
+#        pickle.dump(sol1,fp,protocol=pickle.HIGHEST_PROTOCOL)
     
-    with open('{}\{}.dat'.format(my_path,rootname),'rb') as fp:
-        sol1 = pickle.load(fp)
+#    with open('{}\{}.dat'.format(my_path,rootname),'rb') as fp:
+#        sol1 = pickle.load(fp)
     
     
     

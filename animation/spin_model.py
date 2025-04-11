@@ -225,7 +225,7 @@ class Canvas(app.Canvas):
         self.update()
         if self.time_count%1 == 0:
             scshframe = _screenshot()
-            image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\my_tst{}.png'.format(self.time_count), scshframe)
+            image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\plainAPPLE{}.png'.format(self.time_count), scshframe)
 
     # ---------------------------------
     def on_resize(self, event):
@@ -280,7 +280,7 @@ if __name__ == '__main__':
     
     #a = ArbAPPLE(model_parameters = a_param)
     
-    a = id1.compensatedAPPLEv2(model_parameters = a_param)
+    a = id1.plainAPPLE(model_parameters = a_param)
     
     #rd.ObjDrwOpenGL(a.cont.radobj)
     

@@ -208,7 +208,7 @@ class Canvas(app.Canvas):
         
         self.show()
         scshframe = _screenshot()
-        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\shift_comp_apple\ivue32_{}_{}.png'.format(mod_params.shiftmode,count), scshframe)
+        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\shift_plain_apple\ivue32_{}_{}.png'.format(mod_params.shiftmode,count), scshframe)
         self.close()
 
         
@@ -285,7 +285,7 @@ if __name__ == '__main__':
 
             #a = ArbAPPLE(model_parameters = a_param)
             
-            a = id1.compensatedAPPLEv2(model_parameters = a_param)
+            a = id1.plainAPPLE(model_parameters = a_param)
             
             #rd.ObjDrwOpenGL(a.cont.radobj)
             
