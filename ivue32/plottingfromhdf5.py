@@ -10,8 +10,8 @@ import h5py as h5
 import plotly
 
 if __name__ == '__main__':
-    filename = 'D:\Profile\oqb\IVUE32_2023\Calculations\ivue32_lin_asym_comp_221_20250409.h5'
-    dname = 'D:\Profile\oqb\IVUE32_2023\Calculations\Plots'
+    filename = 'D:\Profile\oqb\IVUE32_2023\Calculations\ivue32_comp_hv_asym_221_20250506.h5'
+    dname = 'd:\Profile\oqb\Desktop\presentations\POF2025\Forces\Plots'
     
     #read hdf5
     with h5.File(filename, "r") as f:
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         ds_obj = f[a_group_key]      # returns as a h5py dataset object
 #        ds_arr = f[a_group_key][()]  # returns as a numpy array
 
-        forces = f['Solution_0']['Force_Per_Quadrant'][()][0,0,:,:,:]
+        forces = f['Solution_0']['Force_Per_Quadrant'][()][0,:,0,:,:]
         
 plt.rcParams["figure.figsize"] = [7.00, 3.50]
 plt.rcParams["figure.autolayout"] = True
@@ -56,5 +56,5 @@ for shift in range(len(forces)):
         #ax.quiverkey(ax, 0,0,500, 'Quadrant {}'.format(row+1))
     
     ax.set_title("Force Vectors per Quadrant")
-    plt.savefig('{}\\forcevectorscompapple_lin{}.png'.format(dname, shift))
+    plt.savefig('{}\\forcevectorscompapple_h{}.png'.format(dname, shift+6))
     #plt.show()

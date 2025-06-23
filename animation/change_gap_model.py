@@ -208,7 +208,7 @@ class Canvas(app.Canvas):
         
         self.show()
         scshframe = _screenshot()
-        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\gap_apple\ivue32_{}_g{}_s{}.png'.format(mod_params.shiftmode,mod_params.gap,mod_params.rowshift), scshframe)
+        image.write_png('d:\Profile\oqb\Desktop\presentations\POF2025\Animation\gap_plain_apple\ivue32_{}_g{}_s{}.png'.format(mod_params.shiftmode,mod_params.gap,mod_params.rowshift), scshframe)
         self.close()
 
         
@@ -268,8 +268,8 @@ if __name__ == '__main__':
     #create ID
     
     #shift loop
-    for mode in ['circular', 'linear']:
-        for shift in range(32,33,16):
+    for mode in ['circular']:
+        for shift in range(0,17,16):
             for gap in range (6, 326,1):
                 ggap = (gap-6)/8+6
                 rd.UtiDelAll()
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     
                 #a = ArbAPPLE(model_parameters = a_param)
                 
-                a = id1.compensatedAPPLEv2(model_parameters = a_param)
+                a = id1.plainAPPLE(model_parameters = a_param)
                 
                 #rd.ObjDrwOpenGL(a.cont.radobj)
                 

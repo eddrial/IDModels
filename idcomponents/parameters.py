@@ -125,7 +125,7 @@ class model_parameters():
         
         
         #core undulator parameters
-        if self.type == 'Compensated_APPLE':
+        if self.type == 'Compensated_APPLE' or self.type == 'Symmetrically Compensated APPLE':
             self.magnet_rows = 12
             self.rows = 12
             

@@ -7,19 +7,20 @@ import cv2
 import os
 import numpy as np
 
-image_folder = 'd:\Profile\oqb\Desktop\presentations\POF2025\Animation\shift_plain_apple'
-video_name = 'circ_shift_plain.avi'
+image_folder = 'd:\Profile\oqb\Desktop\presentations\POF2025\Animation\gap_plain_apple'
+video_name = 'v_gap_plain.avi'
 
 
-image_ref = '{}\ivue32_circular_0.png'.format(image_folder)
+image_ref = '{}\ivue32_circular_g6.0_s16.png'.format(image_folder)
 frame = cv2.imread(image_ref)
 height, width, layers = frame.shape
 
 video = cv2.VideoWriter(os.path.join(image_folder,video_name), 0, 40    , (width,height))
 
-for i in np.arange(362):
+for i in np.arange(326):
     print(i)
-    image = 'ivue32_circular_{}.png'.format(i)
+    gap = (i-6)/8+6
+    image = 'ivue32_circular_g{}_s16.png'.format(gap)
     video.write(cv2.imread(os.path.join(image_folder, image)))
 
 cv2.destroyAllWindows()
