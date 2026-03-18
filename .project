@@ -3,6 +3,7 @@
 	<name>IDModels</name>
 	<comment></comment>
 	<projects>
+		<project>wRadia</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

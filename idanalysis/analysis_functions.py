@@ -524,8 +524,8 @@ class Solution():
     def save(self,hf = None,solstring = 'Solution_0', fname = 'M:\Work\Athena_APPLEIII\Python\Results\\'):
         if hf == None:
             hf = h5.File(fname, 'w')
-        else:  #NOT unnecessary!
-            hf = h5.File(hf,'w')
+#        else:  #NOT unnecessary!
+#            hf = h5.File(hf.filename,'w')
         
         hf.create_group(solstring)
         
@@ -704,7 +704,7 @@ class HyperSolution():
             self.hyper_results['2nd_Integral_Max_Harmonic'] = np.zeros(np.append(hyper_result_shape,11,2))
           
         if 'Forces' in self.hyper_solution_properties:
-            self.hyper_results['Force_Per_Magnet_Type'] = np.zeros(np.append(hyper_result_shape,[self.base_hyper_parameters.magnet_rows*self.base_hyper_parameters.magnets_per_period, 3]))
+            self.hyper_results['Force_Per_Magnet_Type'] = np.zeros(np.append(hyper_result_shape,[self.base_hyper_parameters.magnet_rows,self.base_hyper_parameters.magnets_per_period, 3]))
             self.hyper_results['Force_Per_Row'] = np.zeros(np.append(hyper_result_shape,[self.base_hyper_parameters.magnet_rows,3]))
             self.hyper_results['Force_Per_Quadrant'] = np.zeros(np.append(hyper_result_shape,[4,3]))
             self.hyper_results['Force_Per_Beam'] = np.zeros(np.append(hyper_result_shape,[2,3]))

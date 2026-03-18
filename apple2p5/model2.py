@@ -37,6 +37,7 @@ from idcomponents import magnet_shapes as ms
 from idcomponents import halbach_arrays as ha
 
 import matplotlib.gridspec as gridspec
+from wradia.wrad_obj import wradObjCnt
 
 class plainAPPLE():
     '''
@@ -546,6 +547,9 @@ class compensatedAPPLEv2_Sym():
         rd.UtiDelAll()
         self.cont = wrd.wradObjCnt([])
         
+        empty_end = wrd.wradObjCnt([])
+        empty_end.cont = wrd.wradObjCnt([])
+        
         self.model_parameters = model_parameters
         
         self.model_parameters.type = 'Symmetrically Compensated APPLE'
@@ -571,8 +575,13 @@ class compensatedAPPLEv2_Sym():
             else:
                 be = 1
             
-            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,Vcmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,Vcmagnet), beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArrayCompensation(model_parameters,Vcmagnet),
+                                              empty_end, beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+            
+            #self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,Vcmagnet),
+                                              #ha.HalbachTermination_APPLE(model_parameters,Vcmagnet), beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+        
+            
         for r in range(5,12,2):
             if r < 8:
                 be = 0
@@ -580,8 +589,11 @@ class compensatedAPPLEv2_Sym():
             else:
                 be = 1
             
-            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,Hcmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,Hcmagnet), beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArrayCompensation(model_parameters,Vcmagnet),
+                                              empty_end, beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
+            
+            #self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,Vcmagnet),
+                                              #ha.HalbachTermination_APPLE(model_parameters,Vcmagnet), beam = be, quadrant = int(self.rownames[r][1])-1, row = r)
         
         ##### Functional Magnets #####
         

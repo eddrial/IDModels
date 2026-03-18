@@ -38,15 +38,16 @@ class model_parameters():
             "periods" : 3, # Number of Periods of the APPLE Undulator
             "minimumgap" : 2, # Minimum designed gap in mm
             "gap" : 5, #Default Gap to calculate at
-            "shim" : 0.1, # The gap between each magnet in a row / magnet array.
+            "shim" : 0.3, # The gap between each magnet in a row / magnet array.
             "periodlength" : 15, # The period length of the undulator
             "secondperiodlength" : 15, #The period length of a second array (for multiperiod array models or APPLE KNOTs etc)
             "thirdperiodlength" : 15, #The period length of a third array, for multi period arrays for eg TRIBs exploitation
             "halbach_direction" : 1,  # a value to determine the sense of magnet rotation along the axis. 1 = Field BELOW array. -1 Field ABOVE array 
             "magnets_per_period" : 4, # This number is almost exclusively 4 in undulator Halbach arrays. But it doesn't *have* to be.
+            "magnets_per_period_comp" : 4, # This number is almost exclusively 4 in undulator Compensation Halbach arrays. But it doesn't *have* to be.
             
             #####  APPLE Undulator Parameters  #####
-            "rowtorowgap": 0.5, # for APPLE devices the distance between functional rows on the same jaw
+            "rowtorowgap": 1, # for APPLE devices the distance between functional rows on the same jaw
             "shiftmode" : 'circular', # Polarisation mode of the undulator ; 'circular' (parallel) or 'linear' (antiparallel)
             "rowshift" : 0, # distance of row shift in mm
             "jawshift" : 0, #distance of jawshift in mm
@@ -77,7 +78,8 @@ class model_parameters():
             
             "ksi" : [.019, .06], # Permeability - anisotropic
             "M" : 1.21*1.344, # Block Remanence [T] Default Cryogenic Grade
-            "Mova" : 0.0, # Off Vertical Angle of Vertical type magnet blocks [degrees]
+            "Mova" : 0.0, # Off Vertical Angle of Vertical type functional magnet blocks [degrees]
+            "Mova_comp" : 0.0, # Off Vertical Angle of Vertical type compensation magnet blocks [degrees]
             
             #####  Perturbation #####
             
@@ -95,11 +97,19 @@ class model_parameters():
         
         self.perturbation_list = np.zeros([self.totalmagnets,2])
         
+        # Off Vertical Angle of Vertical type compensation magnet blocks [degrees]
+        if "Mova_comp" not in prop_defaults.keys():
+            self.Mova_comp = self.Mova #
+        
+        #magnets per period of compensation Halbach Array
+        if "magnets_per_period_comp" not in prop_defaults.keys():
+            self.magnets_per_period_comp = self.magnets_per_period #
+        
         #magnet thicknesses
         self.nominal_fmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period * self.shim) / self.magnets_per_period
-        self.nominal_cmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
-        self.nominal_hcmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
-        self.nominal_vcmagnet_dimensions[1] = self.nominal_fmagnet_dimensions[1]
+        self.nominal_cmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period_comp * self.shim) / self.magnets_per_period_comp
+        self.nominal_hcmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period_comp * self.shim) / self.magnets_per_period_comp
+        self.nominal_vcmagnet_dimensions[1] = (self.periodlength-self.magnets_per_period_comp * self.shim) / self.magnets_per_period_comp
         
         
         #square magnet dimensions
@@ -121,6 +131,7 @@ class model_parameters():
         #magnetmaterial
         self.magnet_material = wrdm.wradMatLin(self.ksi,[0,0,self.M])
         
+
         
         
         

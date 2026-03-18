@@ -50,7 +50,8 @@ if __name__ == '__main__':
                                              gap = 7.0, 
                                              rowshift = 0,
                                              shiftmode = 'circular',
-                                             block_subdivision = [2,2,1]
+                                             block_subdivision = [2,2,1],
+                                             M = 1.3071934
                                              )
     a = id.compensatedAPPLEv2_Sym(test_hyper_params, fmagnet=ms.appleMagnetNonSymmetric)
     
@@ -61,6 +62,7 @@ if __name__ == '__main__':
     case1 = af.CaseSolution(a)
     case1.calculate_B_field()
     case1.calculate_force_per_magnet()
+    print(case1.model.model_parameters.M)
     print(case1.bmax)
     print(1)
     

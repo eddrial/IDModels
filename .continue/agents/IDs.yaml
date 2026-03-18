@@ -1,0 +1,31 @@
+name: IDs
+version: 1.0.0
+schema: v1
+models:
+  - name: blablador large
+    provider: openai
+    model: alias-large
+    apiBase: ${{ secrets.CUSTOM_API_URL }}
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    workspace: D:\Python_Projects
+
+  - name: blablador code
+    provider: openai
+    model: alias-code
+    apiBase: ${{ secrets.CUSTOM_API_URL }}
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    workspace: D:\Python_Projects
+
+  - name: blablador huge
+    provider: openai
+    model: alias-huge
+    apiBase: ${{ secrets.CUSTOM_API_URL }}
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    workspace: D:\Python_Projects
+
+  - name: blablador feb26
+    provider: openai
+    model: 7 - Qwen3-Coder-30B-A3B-Instruct - A code model from August 2025
+    apiBase: ${{ secrets.CUSTOM_API_URL }}
+    apiKey: ${{ secrets.OPENAI_API_KEY }}
+    workspace: D:\Python_Projects

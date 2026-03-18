@@ -1,0 +1,132 @@
+# Undulator Model Configuration File
+# Generated based on model_parameters and scan_parameters classes
+# Inputs for IDModels utilising the Wradia wrapper for Radia
+
+# =============================================================================
+# GENERAL PARAMETERS
+# =============================================================================
+general:
+  origin: [0.0, 0.0, 0.0]              # Origin of the device in [X, S, Z] coordinates
+  coordinate_names: ['X', 'S', 'Z']    # Coordinate system labels
+  points_per_period: 20                # Number of points per period for calculations
+  block_subdivision: [2, 3, 1]         # Subdivision factors for magnet blocks
+
+# =============================================================================
+# UNDULATOR PARAMETERS
+# =============================================================================
+undulator:
+  type: "Plain_APPLE"                  # Undulator type: "Plain_APPLE" or "Compensated_APPLE"
+  beams: 2                             # Number of electron beams
+  quadrants: 4                         # Number of quadrants in the device
+  rows_per_quadrant: 1                 # Rows per quadrant
+  periods: 3                           # Number of periods in the undulator
+  minimum_gap: 2.0                     # Minimum designed gap in mm
+  gap: 5.0                             # Default gap for calculations in mm
+  shim: 0.3                            # Gap between magnets in a row in mm
+  period_length: 15.0                  # Primary period length in mm
+  second_period_length: 15.0           # Secondary period length for multi-period arrays in mm
+  third_period_length: 15.0            # Tertiary period length for multi-period arrays in mm
+  halbach_direction: 1                 # Magnet rotation sense: 1 = Field BELOW array, -1 = Field ABOVE array
+  magnets_per_period: 4                # Magnets per period in Halbach array (typically 4)
+  magnets_per_period_comp: 4           # Magnets per period in compensation Halbach array (typically 4)
+
+# =============================================================================
+# APPLE UNDULATOR SPECIFIC PARAMETERS
+# =============================================================================
+apple_undulator:
+  row_to_row_gap: 1.0                  # Distance between functional rows on the same jaw in mm
+  shift_mode: "circular"               # Polarization mode: "circular" (parallel) or "linear" (antiparallel)
+  row_shift: 0.0                       # Distance of row shift in mm
+  jaw_shift: 0.0                       # Distance of jaw shift in mm
+  end_separation: 2.5                  # Separation of end magnet in standard APPLE constellation in mm
+
+# =============================================================================
+# COMPENSATED APPLE UNDULATOR PARAMETERS
+# =============================================================================
+compensated_apple:
+  comp_apple_separation: 15.0          # Gap between functional and compensation magnets in mm
+
+# =============================================================================
+# MAGNET SHAPE PARAMETERS
+# =============================================================================
+magnet_shape:
+  square_magnet: false                 # Use square magnets if true
+  nominal_functional_dimensions: [30.0, 0.0, 30.0]  # [width, thickness, height] in mm (thickness calculated automatically)
+  apple_clamp_cut: 5.0                 # Size of square removed for clamping APPLE magnets in mm
+  apple_clamp_cut_non_symmetric: [5.0, 0.0, 3.0]    # Non-symmetric clamp cut dimensions in mm
+  magnet_chamfer: [5.0, 0.0, 5.0]      # Chamfer dimensions for rectangular magnets in mm
+  direction: "y"                       # Extrusion direction: 'y' = electron travel direction
+
+# =============================================================================
+# COMPENSATION MAGNET PARAMETERS
+# =============================================================================
+compensation_magnets:
+  nominal_dimensions: [15.0, 0.0, 30.0]        # [width, thickness, height] in mm
+  chamfer: [5.0, 0.0, 5.0]                     # Chamfer dimensions in mm
+  horizontal:
+    nominal_dimensions: [15.0, 0.0, 30.0]      # Horizontal compensation magnet dimensions in mm
+    chamfer: [5.0, 0.0, 5.0]                   # Horizontal compensation magnet chamfer in mm
+  vertical:
+    nominal_dimensions: [15.0, 0.0, 30.0]      # Vertical compensation magnet dimensions in mm
+    chamfer: [5.0, 0.0, 5.0]                   # Vertical compensation magnet chamfer in mm
+
+# =============================================================================
+# MAGNET MATERIAL PARAMETERS
+# =============================================================================
+magnet_material:
+  ksi: [0.019, 0.06]                   # Permeability values (anisotropic)
+  remanence: 1.62624                   # Block remanence in T (1.21 * 1.344 for cryogenic grade)
+  off_vertical_angle: 0.0              # Off vertical angle for vertical functional magnets in degrees
+  off_vertical_angle_comp: 0.0         # Off vertical angle for vertical compensation magnets in degrees
+
+# =============================================================================
+# PERTURBATION PARAMETERS
+# =============================================================================
+perturbation:
+  enabled: false                       # Enable perturbation calculations
+  function: "default"                  # Perturbation function type: "default", "custom"
+  # custom_function: |                   # Custom perturbation function (Python expression)
+  #   lambda s: np.array([s*0.0, s*0.0])
+
+# =============================================================================
+# SCAN PARAMETERS
+# =============================================================================
+scan:
+  gap_range:                           # Gap values to scan over
+    start: 2.0
+    stop: 3.0
+    step: 4.0
+  shift_range:                         # Shift values to scan over
+    start: -7.5                        # -period_length/2.0
+    stop: 7.5                          # period_length/2.0 + 0.1
+    step: 7.5                          # period_length/2.0
+  shift_mode_range:                    # Polarization modes to scan
+    - "circular"
+
+# =============================================================================
+# OUTPUT AND SAVING OPTIONS
+# =============================================================================
+output:
+  save_json: true                      # Save configuration as JSON
+  save_h5: false                       # Save data in HDF5 format
+  output_directory: "./output"         # Directory for output files
+  filename_prefix: "undulator_model"   # Prefix for output filenames
+
+# =============================================================================
+# NOTES AND DOCUMENTATION
+# =============================================================================
+metadata:
+  author: "oqb"
+  created: "2024-01-01"
+  version: "1.0"
+  description: |
+    This YAML configuration file defines parameters for modeling
+    undulator devices, particularly APPLE-type undulators with
+    optional compensation magnets. The structure mirrors the
+    model_parameters and scan_parameters Python classes.
+  notes: |
+    - All length units are in millimeters (mm) unless otherwise specified
+    - Magnetic field units are in Tesla (T)
+    - Angle units are in degrees
+    - The 'ksi' parameter represents anisotropic permeability
+    - For square magnets, set square_magnet to true and specify the size

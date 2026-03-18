@@ -38,6 +38,19 @@ class HalbachArray():
             per_length = model_hyper_parameters.thirdperiodlength
             model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.thirdperiodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
         
+        #assign locally functional or compensation magnet quantities
+        if magnet == ms.appleMagnet:
+            magnet_length = model_hyper_parameters.nominal_fmagnet_dimensions[1]
+            total_magnets = model_hyper_parameters.totalmagnets
+            magnets_per_period = model_hyper_parameters.magnets_per_period
+            Mova = model_hyper_parameters.Mova
+            
+            
+        else:
+            magnet_length = model_hyper_parameters.nominal_cmagnet_dimensions[1]
+            total_magnets = int(model_hyper_parameters.periods*model_hyper_parameters.magnets_per_period_comp + 1)
+            magnets_per_period = model_hyper_parameters.magnets_per_period_comp 
+            Mova = model_hyper_parameters.Mova_comp
 
         
         #def appleArray(model_hyper_parameters, loc_offset, halbach_direction = -1):
@@ -46,7 +59,7 @@ class HalbachArray():
         loc_offset = [0,0,0]
         
         #define the location offset in S of the magnet
-        loc_offset[1] = -((model_hyper_parameters.totalmagnets-1)/2.0) * (model_hyper_parameters.nominal_fmagnet_dimensions[1] + model_hyper_parameters.shim)
+        loc_offset[1] = -((total_magnets-1)/2.0) * (magnet_length + model_hyper_parameters.shim)
         
         
         #functionally efined offset in x and z based on s. Function can be passed in.
@@ -54,16 +67,16 @@ class HalbachArray():
         
         M = []
         mat = []
-        for i in range(model_hyper_parameters.magnets_per_period):
+        for i in range(magnets_per_period):
             #M.append([halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0), np.cos(i*np.pi/2.0)*model_hyper_parameters.M])
-            M.append([np.cos(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),-1 * np.sin(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M, np.cos(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0)])
+            M.append([np.cos(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M*np.sin(2*np.pi*Mova/360.0),-1 * np.sin(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M, np.cos(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M * np.cos(2*np.pi*Mova/360.0)])
             
             mat.append(wrdm.wradMatLin(model_hyper_parameters.ksi,M[i]))
         
-        for x in range(-int((model_hyper_parameters.totalmagnets-1)/2),int(1+(model_hyper_parameters.totalmagnets-1)/2)):#0,model_hyper_parameters.appleMagnets
+        for x in range(-int((total_magnets-1)/2),int(1+(total_magnets-1)/2)):#0,model_hyper_parameters.appleMagnets
             
-            mag = magnet(model_hyper_parameters, loc_offset,mat[(x)%model_hyper_parameters.magnets_per_period]) 
-            loc_offset[1] += model_hyper_parameters.nominal_fmagnet_dimensions[1] + model_hyper_parameters.shim
+            mag = magnet(model_hyper_parameters, loc_offset,mat[(x)%magnets_per_period]) 
+            loc_offset[1] += magnet_length + model_hyper_parameters.shim
             loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
             self.cont.wradObjAddToCnt([mag.cont])
             
@@ -129,6 +142,71 @@ class HalbachTermination_APPLE():
         
         
         self.cont.wradObjAddToCnt([mag1.cont, mag2.cont, mag3.cont, mag4.cont, mag5.cont, mag6.cont])
+        
+class HalbachArrayCompensation():
+    '''
+    classdocs
+    '''
+
+
+    def __init__(self, model_hyper_parameters = parameters.model_parameters(), magnet = ms.appleMagnet, array_number = 1):
+        '''
+        Constructor
+        '''
+        #switch to find out which array order is required, for multi period undulators
+        if array_number == 1:
+            per_length = model_hyper_parameters.periodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.periodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+        elif array_number == 2:
+            per_length = model_hyper_parameters.secondperiodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.secondperiodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+            
+        elif array_number == 3:
+            per_length = model_hyper_parameters.thirdperiodlength
+            model_hyper_parameters.nominal_fmagnet_dimensions[1] = (model_hyper_parameters.thirdperiodlength-model_hyper_parameters.magnets_per_period * model_hyper_parameters.shim) / model_hyper_parameters.magnets_per_period
+        
+        #assign locally functional or compensation magnet quantities
+    
+        magnet_length = model_hyper_parameters.nominal_cmagnet_dimensions[1]
+        total_magnets = int(model_hyper_parameters.periods*model_hyper_parameters.magnets_per_period_comp + 1)
+        magnets_per_period = model_hyper_parameters.magnets_per_period_comp 
+        Mova = model_hyper_parameters.Mova_comp
+
+        
+        #def appleArray(model_hyper_parameters, loc_offset, halbach_direction = -1):
+        self.cont = wrd.wradObjCnt([])
+        
+        loc_offset = [0,0,0]
+        
+        #define the location offset in S of the magnet
+        loc_offset[1] = -((total_magnets-1)/2.0) * (magnet_length + model_hyper_parameters.shim)+magnet_length/2.0-model_hyper_parameters.nominal_fmagnet_dimensions[1]/2
+        
+        
+        #functionally efined offset in x and z based on s. Function can be passed in.
+        loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+        
+        M = []
+        mat = []
+        for i in range(magnets_per_period):
+            #M.append([halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0), np.cos(i*np.pi/2.0)*model_hyper_parameters.M])
+            M.append([np.cos(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M*np.sin(2*np.pi*Mova/360.0),-1 * np.sin(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M, np.cos(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M * np.cos(2*np.pi*Mova/360.0)])
+            
+            mat.append(wrdm.wradMatLin(model_hyper_parameters.ksi,M[i]))
+        
+        for x in range(-int((total_magnets-1)/2),int(1+(total_magnets-1)/2)-1):#0,model_hyper_parameters.appleMagnets
+            
+            mag = magnet(model_hyper_parameters, loc_offset,mat[(x)%magnets_per_period]) 
+            loc_offset[1] += magnet_length + model_hyper_parameters.shim
+            loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+            self.cont.wradObjAddToCnt([mag.cont])
+            
+        #return a
+        
+    #mag = appleMagnet(AII,4,materiald,[z,y,x])
+    #mag apply magnetisation and colour
+    #add to container
             
     
 class MagnetRow():
