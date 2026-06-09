@@ -16,14 +16,14 @@ from matplotlib.tri import Triangulation,  CubicTriInterpolator
 from shapely.geometry import LineString, point
 import time
 import radia as rd
+import cv2
+import os
 
 
-import numpy as np
 
 
-
-
-def plot_kickmap(raw_string, fig_title=None, units='T2m2', energy_gev=None, log_b2=False):
+def plot_kickmap(raw_string, fig_title=None, units='T2m2', energy_gev=None, 
+                 log_b2=False, kx_lim=None, ky_lim=None, b2_lim=None):
     """
     Parse and plot a RADIA FldFocKickPer output string.
 
@@ -96,13 +96,13 @@ def plot_kickmap(raw_string, fig_title=None, units='T2m2', energy_gev=None, log_
              title=f'Horizontal Kick $K_x$',
              cbar_label=f'$K_x$ [{units}]',
              cmap='RdBu_r', diverging=True,
-             nx=nx, ny=ny)
+             nx=nx, ny=ny, clim = kx_lim)
 
     _plot_2d(ax_ky, x_mm, y_mm, Ky,
              title=f'Vertical Kick $K_y$',
              cbar_label=f'$K_y$ [{units}]',
              cmap='RdBu_r', diverging=True,
-             nx=nx, ny=ny)
+             nx=nx, ny=ny, clim = ky_lim)
 
     # ------------------------------------------------------------------
     # 4. B² map — sequential, optional log scale
@@ -113,11 +113,11 @@ def plot_kickmap(raw_string, fig_title=None, units='T2m2', energy_gev=None, log_
              title=r'$\int B_\perp^2\,\mathrm{d}s$',
              cbar_label=r'$\int B_\perp^2\,\mathrm{d}s$ [T²m]',
              cmap='plasma', diverging=False,
-             nx=nx, ny=ny, norm=norm)
+             nx=nx, ny=ny, norm=norm, clim = b2_lim)
     if log_b2:
         ax_b2.set_title(ax_b2.get_title() + '  (log scale)', fontsize=10)
 
-    # ------------------------------------------------------------------
+# ------------------------------------------------------------------
     # 5. On-axis lineouts
     # ------------------------------------------------------------------
     colour_kx = '#d62728'
@@ -142,6 +142,17 @@ def plot_kickmap(raw_string, fig_title=None, units='T2m2', energy_gev=None, log_
     ax2.tick_params(axis='y', labelcolor=colour_b2)
     ax2.yaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
     ax2.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+
+    # -- Lineout axis limits --
+    if kx_lim is not None and ky_lim is not None:
+        ax_lineout.set_ylim(min(kx_lim[0], ky_lim[0]), max(kx_lim[1], ky_lim[1]))
+    elif kx_lim is not None:
+        ax_lineout.set_ylim(kx_lim)
+    elif ky_lim is not None:
+        ax_lineout.set_ylim(ky_lim)
+
+    if b2_lim is not None:
+        ax2.set_ylim(b2_lim)
 
     # Combined legend
     lines1, labels1 = ax_lineout.get_legend_handles_labels()
@@ -202,22 +213,26 @@ def _parse_block(lines, start_idx):
 
 
 def _plot_2d(ax, x_mm, y_mm, data, title, cbar_label, cmap,
-             diverging, nx, ny, norm=None):
-    if diverging:
+             diverging, nx, ny, norm=None, clim = None):
+    if clim is not None:
+        vmin, vmax = clim
+    elif diverging:
         vmax = np.max(np.abs(data))
         vmin = -vmax
     else:
         vmin, vmax = data.min(), data.max()
+        
+    levels = np.linspace(vmin, vmax, 64)
 
     cf = ax.contourf(x_mm, y_mm, data,
-                     levels=64, cmap=cmap,
+                     levels=levels, cmap=cmap,
                      vmin=None if norm else vmin,
                      vmax=None if norm else vmax,
                      norm=norm)
     # Overlay contour lines
     nlines = 7
     cl = ax.contour(x_mm, y_mm, data,
-                    levels=nlines, colors='k', linewidths=0.4, alpha=0.4,
+                    levels=np.linspace(vmin, vmax, nlines), colors='k', linewidths=0.4, alpha=0.4,
                     norm=norm)
 
     # Grid point markers
@@ -398,49 +413,9 @@ def stokes_from_single_period_field(
 
     return out
 
-def enphitable(enrange,phirange,X,Y):
-    
-    fig2, ax2 = plt.subplots()
-    
-    #t0 = time.time()
-    
-    ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten(), [-89.99])
-    ax2.tricontour(X.flatten(),Y.flatten(),E[0].flatten(), [200])
-    
-    res_table = np.zeros((2,len(enrange),len(phirange),4))
-    
-    for mode in range(2): #0 is circular, 1 is linear
-        for en in range(len(enrange)):
-            ax2.tricontour(X.flatten(),Y.flatten(),E[mode].flatten(), [enrange[en]])
-            E_contour = ax2.collections[-1]._paths[0].vertices
-            l2 = LineString(E_contour)
-            for phi in range(len(phirange)):
-                ax2.tricontour(X.flatten(),Y.flatten(),bphi[mode].flatten(), [phirange[phi]])
-                bphi_contour = ax2.collections[-1]._paths[0].vertices
-                l1 = LineString(bphi_contour)
-                p = l1.intersection(l2)
-                print('For mode {}, at Energy {} and angle {}, phase is expected to be {}, gap is expected to be {}'.format(['circular','linear'][mode], enrange[en],phirange[phi],p.centroid.x,p.centroid.y))
-                res_table[mode][en][phi]=[enrange[en],phirange[phi],p.centroid.x,p.centroid.y] #energy,angle, gap, shift 
-            
-    return res_table
-
-if __name__ == '__main__':
-    #define parameter space
-    #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.arange(14,60.1,1)
-    shifts = np.arange(-25.65-25.65/16,25.75+25.65/16,25.65/16)
-    
-    #shifts = np.arange(0,3,4)
-    shiftmodes = ['circular', 'linear']
-    #shiftmodes = ['linear']
-    #set up APPLE 2 device (UE56)
-    #solve peakfield in parameter space
-    print (gaps)
-    print(shifts)
-    
-    min_gap = 15
-    
+def loopdeloop(gap,shift,shiftmode):
     #parameter_Set Horizontal_polarisation
+    rd.UtiDelAll()
     UE51_params = parameters.model_parameters(Mova = 0,
                                         periods = 10, 
                                         periodlength =51.3,
@@ -455,176 +430,86 @@ if __name__ == '__main__':
                                         magnets_per_period = 4,
                                         rowtorowgap = 1.2,
                                         gap = 15, 
-                                        jawshift = 1,
-                                        rowshift = -51.3/4,
-                                        shiftmode = 'linear',
+                                        rowshift = shift,
+                                        shiftmode = shiftmode,
                                         block_subdivision = [3,2,1],
                                         M = 1.31,
                                         type = 'Plain_APPLE'                                        
                                         )
     
-    basescan = parameters.scan_parameters(51.3,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
     UE51 = id1.plainAPPLE(UE51_params)
     
     UE51.cont.wradSolve()
     
     fileheader = 'Undulator {}, Gap {}mm, Shift {}mm, Mode {}'.format(UE51_params.periodlength,
-                                                                      UE51_params.gap,
-                                                                      UE51_params.rowshift,
-                                                                      UE51_params.shiftmode)
+                                                                      gap,
+                                                                      shift,
+                                                                      shiftmode)
     
-#    a = rd.FldFocKickPer(UE51.cont.radobj, [0,0,0],[0,1,0],51.3,78,[1,0,0],40,81,10,21,fileheader,[5,8,0,0],'T2m2',1.72,'tab')
+    a = rd.FldFocKickPer(UE51.cont.radobj, [0,0,0],[0,1,0],51.3,78,[1,0,0],30,61,6,25,'fileheader',[11,50,0,0])#,'T2m2',1.72,'tab')
+    with open('D:/Results/UE51/kick_maps/kick_{}l_{}g_{}s_{}m.txt'.format(UE51_params.periodlength,
+                                                                      gap,
+                                                                      shift,
+                                                                      shiftmode), 'w') as f:
+        f.write(a[5])
     
-#    with open('kick_map.txt', 'w') as f:
-#        f.write(a[5])
+    figtitle = 'UE{} ¦¦ Mode: {} ¦¦ Gap: {}mm 11 Shift {}mm'.format(UE51_params.periodlength,
+                                                                  shiftmode,
+                                                                  gap,
+                                                                  shift
+                                                                  )
     
-#    b, c, d = plot_kickmap(a[5],units = 'rad', energy_gev = 1.72)
+    b, c, d = plot_kickmap(a[5], fig_title = figtitle, kx_lim=(-6e-3,6e-3), ky_lim = (-6e-3,6e-3), b2_lim = (0,2))
     
-    case = af.CaseSolution(UE51)
-    case.calculate_B_field()
-    
-    plt.plot(case.bfield[:,0],case.bfield[:,1])
-    plt.plot(case.bfield[:,0],case.bfield[:,3])
-    plt.show()
-    
-    print ("Peak Field for ID {} is {}".format('UE51', np.max(case.bmax)))
-    
-    a = stokes_from_single_period_field(case.bfield)
-    
-    print('stokes parameters are:\n')
-    print({k: a[k] for k in ["s1", "s2", "s3", "psi_deg", "chi_deg"]})
-    
-    sol = Solution(UE51_params,basescan,property = ['B'])
-    
- #   sol.solve('B')
-    
- #   babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
- #   bz = sol.results['Bmax'][:,:,:,0]
- #   bx = sol.results['Bmax'][:,:,:,2]
- #   bx[0,:,-2]= 0
- #   bx[0,:,1] = 0
- #   np.save('D:/Results/UE51/babs_UE51_gap_more321.npy',babs)
-  #  np.save('D:/Results/UE51/bx_UE51_gap_more321.npy',bx)
-  #  np.save('D:/Results/UE51/bz_UE51_gap_more321.npy',bz)
-    
-    
-#    bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
-#    bphi[:,:,1]=-90.1
-#    bphi[:,:,-2]=90.1
-#    np.save('D:/Results/UE51/bphi_UE51_gap_more321.npy',bphi)
-    
-    #or load
-    bphi=np.load('D:/Results/UE51/bphi_UE51_gap_more321.npy')
-    babs=np.load('D:/Results/UE51/babs_UE51_gap_more321.npy')
-    bx = np.load('D:/Results/UE51/bx_UE51_gap_more321.npy')
-    bz = np.load('D:/Results/UE51/bz_UE51_gap_more321.npy')
-    
-    bphi[:,:,1]=-90.1
-    bphi[:,:,-2]=90.1
-    
-    
-    Kx = 0.0934 * 51.3 * bx
-    Kz = 0.0934 * 51.3 * bz
-    #lamb = (51.3/(2*4892*4892))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
-    lamb = (51.3/(2*3369*3369))*(1 + (Kx*Kx/2)+ (Kz*Kz/2))
-    
-    E = 6.626e-34 * 3e8/(1e-3 * lamb*1.6e-19)
-    
-    X,Y =  np.meshgrid(shifts,gaps)
-    
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    
-    ax.plot_surface(X,Y,babs[0])
-    
-    fig1, ax1 = plt.subplots(subplot_kw={"projection": "3d"})
-    
-    ax1.plot_surface(X,Y,bphi[0])
-    
-    fig11, ax11 = plt.subplots(subplot_kw={"projection": "3d"})
-    
-    ax11.plot_surface(X,Y,E[0])
-    
-    
-    #creating triangular grid, and interpolating (shift, gap)
-    #grid creation
-    triObj = Triangulation(X.flatten(),Y.flatten())
-    
-    #cubic interpolation of abs B
-    babs_fzc = CubicTriInterpolator(triObj,babs[0].flatten())
-    
-    bx_fzc = CubicTriInterpolator(triObj,bx[0].flatten())
-    
-    bz_fzc = CubicTriInterpolator(triObj,bz[0].flatten())
-    
-    #cubic interpolation of E
-    E_fzc = CubicTriInterpolator(triObj,E[0].flatten())
-    
-    #cubic interpolation of phi
-    bphi_fzc = CubicTriInterpolator(triObj,bphi[0].flatten())
-    
-    #export 100 random values
-    
-#    rands = np.zeros([100000,4])
-#    for i in range(100000):
-#        gaprand = 15 + 44* np.random.random()
-#        shiftrand = -26 + 52 * np.random.random()
-#        rands[i] = [gaprand, shiftrand, E_fzc(shiftrand,gaprand),bphi_fzc(shiftrand,gaprand)]
-    
-    #plot rands
-#    figrand, axrand = plt.subplots()
-    
-#    axrand.tricontour(rands[:,1],rands[:,0],rands[:,2])
-#    axrand.tricontour(rands[:,1],rands[:,0],rands[:,3])
-    
-    
-    enrange = np.arange(240,241)
-    phirange = np.arange(-90,90.1,5)
-    
-    a = enphitable(enrange,phirange,X,Y)
-    
-    #plot on plane
-    fig2, ax2 = plt.subplots()
-    
-    t0 = time.time()
-    
-    ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten(), [-89.99])
-    ax2.tricontour(X.flatten(),Y.flatten(),E[0].flatten(), [200])
+    b.savefig('D:/Results/UE51/kick_maps/kickmap_{}l_{}g_{}s_{}m.png'.format(UE51_params.periodlength,
+                                                                      gap,
+                                                                      shift,
+                                                                      shiftmode), dpi=150, bbox_inches='tight')
+    plt.close(b)
     
 
-    #ax2.tricontour(X.flatten(),Y.flatten(),bphi[0].flatten())
-    #ax2.tricontour(X.flatten(),Y.flatten(),babs[0].flatten())
+def makevid(gap, shifts, shiftmode):
+    image_folder = 'D:/Results/UE51/kick_maps/'
+    video_name = 'UE51_Kicks_{}_mode_{}mm_gap.avi'.format(shiftmode, gap)
     
-    if ax2.collections[0].get_paths().__len__() >= 1:
-        bphi_contour = ax2.collections[0]._paths[0].vertices
-        l1 = LineString(bphi_contour)
     
-    if ax2.collections[1].get_paths().__len__() >= 1:
-        E_contour = ax2.collections[1]._paths[0].vertices
-        l2 = LineString(E_contour)
-        
-    if 'l1' in globals() and 'l2' in globals():
-        p = l1.intersection(l2)
+    image_ref = '{}kickmap_51.3l_15g_3.20625s_circularm.png'.format(image_folder)
+    frame = cv2.imread(image_ref)
+    height, width, layers = frame.shape
     
-        if isinstance(p,point.Point):
-            ax2.plot(p.coords.xy[0],p.coords.xy[1],'ro')
-    t1 = time.time()
-    print(t1-t0)
-    plt.show()
-    print(p.coords.xy)
-    print('working on points in a loop')
-    E_at_H = np.array([124,155.6,191.6,231.1,271.8,313.1,353,388.8,420.2,446.6,468.3,485.4,499.1,509,523.4,531.6])
-    E_at_H = np.arange(100,105)
-    E_at_V = np.array([157,196,234,269,302,342,379,412,439,487,505,534])
-    E_at_magic = np.arange(65,521,1./15.)
-    res_table = np.zeros((len(E_at_magic),4))
-    for en in range(len(E_at_H)):
-        ax2.tricontour(X.flatten(),Y.flatten(),E[0].flatten(), [E_at_H[en]])
-        E_contour = ax2.collections[-1]._paths[0].vertices
-        l2 = LineString(E_contour)
-        p = l1.intersection(l2)
-        print('At Energy {} and angle {}, phase is expected to be {}, gap is expected to be {}'.format(E_at_H[en],0,p.coords.xy[0][0],p.coords.xy[1][0]))
-        res_table[en] =[0.0,E_at_H[en],p.coords.xy[1][0],p.coords.xy[0][0]] #angle, energy, gap, shift 
-    print(res_table)
-#    np.savetxt('D:/Results/UE51/magic_angle/g_s_table_0.txt',res_table, header = 'Angle, Energy, Gap, Shift', fmt = '%10.4f')
+    video = cv2.VideoWriter(os.path.join(image_folder,video_name),0, 2    , (width,height))
     
+    for shift in shifts:
+        print(shift)
+        image = 'kickmap_{}l_{}g_{}s_{}m.png'.format(51.3,
+                                                      gap,
+                                                      shift,
+                                                      shiftmode)
+        frame = cv2.imread(os.path.join(image_folder, image))
+        resized_frame = cv2.resize(frame,(width,height))
+        print ('I found {}'.format(os.path.join(image_folder, image)))
+        video.write(resized_frame)
+    
+    cv2.destroyAllWindows()
+    video.release()
+
+if __name__ == '__main__':
+    gaps = np.arange(15,16,2)
+    shifts = np.concatenate([[-25.65], np.arange(-25, 26), [25.65]])
+#    shifts = np.array([-16*25.65/16])
+    shiftmodes = ['linear', 'circular']
+    
+
+    
+    for shiftmode in shiftmodes:
+        for gap in gaps:
+            for shift in shifts:
+                print('kickin out da kick map for Gap {}, Shift {} in Mode {}'.format(gap, shift, shiftmode))
+                loopdeloop(15, shift, shiftmode)
+                
+        makevid(gaps[0],shifts,shiftmode)
+                
+    
+    
+    print(1)

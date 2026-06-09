@@ -13,6 +13,7 @@ from wradia import wrad_mat as wrdm
 from idcomponents import parameters
 from idcomponents import magnet_shapes as ms
 from wradia.wrad_obj import wradObjCnt
+from apple2p5.model1 import model_hyper_parameters
 
 class HalbachArray():
     '''
@@ -143,6 +144,72 @@ class HalbachTermination_APPLE():
         
         self.cont.wradObjAddToCnt([mag1.cont, mag2.cont, mag3.cont, mag4.cont, mag5.cont, mag6.cont])
         
+class HalbachTermination_APPLE_HZB():
+    
+    def __init__(self, model_hyper_parameters = parameters.model_parameters(), magnet = ms.appleMagnet):
+        self.cont = wrd.wradObjCnt([])
+            
+        loc_offset = [0,0,0]
+        
+        loc_offset[1] = -(((model_hyper_parameters.totalmagnets-1)/2.0) * 
+                          (model_hyper_parameters.nominal_fmagnet_dimensions[1] + 
+                           model_hyper_parameters.shim) + 
+                          31*model_hyper_parameters.periodlength/32 + model_hyper_parameters.shim/2
+                          )
+        M = []
+        mat = []
+        
+        for i in range(model_hyper_parameters.magnets_per_period):
+            #M.append([halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0), np.cos(i*np.pi/2.0)*model_hyper_parameters.M])
+            M.append([np.cos(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),
+                      -1 * np.sin(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M, 
+                      np.cos(i*2*np.pi/model_hyper_parameters.magnets_per_period)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0)])
+            
+            mat.append(wrdm.wradMatLin(model_hyper_parameters.ksi,M[i]))
+        
+        Mus = -int((model_hyper_parameters.totalmagnets-1)/2)#1st full magnet Upstream in row
+        Mds = int((model_hyper_parameters.totalmagnets-1)/2)#1st full magnet Downstreamin row
+        
+        mag1 = magnet(model_hyper_parameters, loc_offset,mat[(Mus-4)%model_hyper_parameters.magnets_per_period], magnet_thickness = (0.25*model_hyper_parameters.periodlength/4)) 
+        loc_offset[1] += 7*model_hyper_parameters.periodlength/32
+        
+        mag2 = magnet(model_hyper_parameters, loc_offset,mat[(Mus-3)%model_hyper_parameters.magnets_per_period], magnet_thickness = (0.5*model_hyper_parameters.periodlength/4)) 
+        
+        loc_offset[1] += 9*model_hyper_parameters.periodlength/32
+        
+        mag3 = magnet(model_hyper_parameters, loc_offset,mat[(Mus-2)%model_hyper_parameters.magnets_per_period], magnet_thickness =(0.75*model_hyper_parameters.periodlength/4)) 
+        
+        loc_offset[1] += 3*model_hyper_parameters.periodlength/32 + model_hyper_parameters.shim+(model_hyper_parameters.nominal_fmagnet_dimensions[1])/2
+        
+        mag4 = magnet(model_hyper_parameters, loc_offset,mat[(Mus-1)%model_hyper_parameters.magnets_per_period], magnet_thickness =model_hyper_parameters.nominal_fmagnet_dimensions[1]) 
+        
+        
+        loc_offset[1] = (((model_hyper_parameters.totalmagnets-1)/2.0) * 
+                          (model_hyper_parameters.nominal_fmagnet_dimensions[1] + 
+                           model_hyper_parameters.shim) + 
+                          model_hyper_parameters.nominal_fmagnet_dimensions[1]/2.0 + model_hyper_parameters.shim +
+                          3*model_hyper_parameters.periodlength/32
+                          )
+        
+        mag5 = magnet(model_hyper_parameters, loc_offset,mat[(Mds+1)%model_hyper_parameters.magnets_per_period], magnet_thickness =model_hyper_parameters.nominal_fmagnet_dimensions[1]) 
+        loc_offset[1] += 3*model_hyper_parameters.periodlength/32 + model_hyper_parameters.shim+(model_hyper_parameters.nominal_fmagnet_dimensions[1])/2
+        
+        mag6 = magnet(model_hyper_parameters, loc_offset,mat[(Mds+2)%model_hyper_parameters.magnets_per_period], magnet_thickness =(0.75*model_hyper_parameters.periodlength/4)) 
+        loc_offset[1] += 9*model_hyper_parameters.periodlength/32
+        
+        mag7 = magnet(model_hyper_parameters, loc_offset,mat[(Mds+3)%model_hyper_parameters.magnets_per_period], magnet_thickness = (0.5*model_hyper_parameters.periodlength/4)) 
+        loc_offset[1] += 7*model_hyper_parameters.periodlength/32
+        
+        mag8 = magnet(model_hyper_parameters, loc_offset,mat[(Mds+4)%model_hyper_parameters.magnets_per_period], magnet_thickness = (0.25*model_hyper_parameters.periodlength/4)) 
+        
+        
+        self.cont.wradObjAddToCnt([mag1.cont, mag2.cont, mag3.cont, mag4.cont, mag5.cont, mag6.cont, mag7.cont, mag8.cont])
+        
+class Halbach2ArrayTermination():
+    
+    def __init__(self):
+        self.cont = wrd.wradObjCnt([])
+        
 class HalbachArrayCompensation():
     '''
     classdocs
@@ -207,7 +274,80 @@ class HalbachArrayCompensation():
     #mag = appleMagnet(AII,4,materiald,[z,y,x])
     #mag apply magnetisation and colour
     #add to container
+
+class Halbach2Array():
+    '''
+    classdocs
+    Hybrid array
+    '''
+
+
+    def __init__(self, model_hyper_parameters = parameters.model_parameters(), magnet = ms.appleMagnet, array_number = 1):
+        '''
+        Constructor
+        '''
+        
+        per_length = model_hyper_parameters.periodlength
+        model_hyper_parameters.nominal_fmagnet_dimensions[1] = model_hyper_parameters.magnet_length
+        model_hyper_parameters.nominal_pole_dimensions[1] = model_hyper_parameters.pole_length
+        
+        #assign magnet quantities
+        magnet_length = model_hyper_parameters.nominal_fmagnet_dimensions[1]
+        total_magnets = model_hyper_parameters.totalmagnets - 1
+        magnets_per_period = model_hyper_parameters.magnets_per_period
+        Mova = model_hyper_parameters.Mova
             
+            
+        pole_length = model_hyper_parameters.nominal_pole_dimensions[1]
+        total_poles = model_hyper_parameters.totalmagnets
+        poles_per_period = model_hyper_parameters.magnets_per_period
+
+        
+        #def appleArray(model_hyper_parameters, loc_offset, halbach_direction = -1):
+        self.cont = wrd.wradObjCnt([])
+        
+        loc_offset = [0,0,0]
+        
+        #define the location offset in S of the magnet
+        loc_offset[1] = -((magnet_length+pole_length)/2 +
+                          (magnet_length+pole_length+model_hyper_parameters.shim)*(total_magnets-2)/2)
+        
+        
+        #functionally defined offset in x and z based on s. Function can be passed in.
+        loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+        
+        M = []
+        mat = []
+        for i in range(magnets_per_period):
+            #M.append([halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M*np.sin(2*np.pi*model_hyper_parameters.Mova/360.0),halbach_direction * np.sin(i*np.pi/2.0)*model_hyper_parameters.M * np.cos(2*np.pi*model_hyper_parameters.Mova/360.0), np.cos(i*np.pi/2.0)*model_hyper_parameters.M])
+            M.append([0,
+                      np.cos(i*2*np.pi/magnets_per_period)*model_hyper_parameters.M, 
+                      0])
+            
+            mat.append(wrdm.wradMatLin(model_hyper_parameters.ksi,M[i]))
+        
+        for x in range(total_magnets):#0,model_hyper_parameters.appleMagnets
+            
+            mag = magnet(model_hyper_parameters, loc_offset,mat[(x)%magnets_per_period]) 
+            loc_offset[1] += magnet_length + model_hyper_parameters.shim + pole_length
+            loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+            self.cont.wradObjAddToCnt([mag.cont])
+            
+        loc_offset[1] = -((magnet_length+pole_length) +
+                          (magnet_length+pole_length+model_hyper_parameters.shim)*(total_magnets-2)/2 +
+                          model_hyper_parameters.shim)
+        
+        polmat = wrdm.wradMatLin(model_hyper_parameters.ksi,[0.1,0,0])
+        
+        for x in range(total_poles):
+            
+            
+            
+            pol = magnet(model_hyper_parameters, loc_offset,polmat,magnet_thickness = pole_length)
+            loc_offset[1] += magnet_length + model_hyper_parameters.shim + pole_length
+            loc_offset[0:3:2] = model_hyper_parameters.perturbation_fn(loc_offset[1])
+            self.cont.wradObjAddToCnt([pol.cont])  
+                
     
 class MagnetRow():
     def __init__(self,name = 'default_name', Body = HalbachArray(), Termination = HalbachTermination_APPLE(),beam = 0, quadrant = 0, row = 0):
@@ -220,12 +360,14 @@ class MagnetRow():
 
     
 if __name__ == '__main__':
-    mymodelparams = parameters.model_parameters(magnets_per_period = 6, periods = 1)
+    mymodelparams = parameters.model_parameters(periodlength = 51.3, magnets_per_period = 4, periods = 1)
     
     a = HalbachArray(mymodelparams)
     b = HalbachTermination_APPLE(mymodelparams)
     
     c = MagnetRow(a,b)
+    
+    d = HalbachTermination_APPLE_HZB(mymodelparams)
     
     a.cont.wradSolve(0.001, 1000)
     
@@ -233,6 +375,7 @@ if __name__ == '__main__':
 #    rd.ObjDrwOpenGL(a.cont.radobj)
     rd.ObjDrwOpenGL(b.cont.radobj)
     rd.ObjDrwOpenGL(c.cont.radobj)
+    rd.ObjDrwOpenGL(d.cont.radobj)
     
     
     

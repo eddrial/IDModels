@@ -1,0 +1,88 @@
+# Undulator Model Configuration File
+# Generated based on model_parameters and scan_parameters classes
+# Inputs for IDModels utilising the Wradia wrapper for Radia
+
+# =============================================================================
+# GENERAL PARAMETERS
+# =============================================================================
+general:
+  origin: [0.0, 0.0, 0.0]              # Origin of the device in [X, S, Z] coordinates
+  coordinate_names: ['X', 'Y', 'Z']    # Coordinate system labels, X-horizontal, Y-vertical, Z-longitudinal
+
+# =============================================================================
+# UNDULATOR PARAMETERS
+# =============================================================================
+undulator:
+  name: "CPMU20"
+  type: "Plain_APPLE"                  # Undulator type: "Plain_APPLE" or "Compensated_APPLE"
+  accelerator: "BESSYII"	       # Name of the accelerator
+  beams: 2                             # Number of electron beams
+  quadrants: 4                         # Number of quadrants in the device
+  rows_per_quadrant: 1                 # Rows per quadrant
+  periods: 73                          # Number of periods in the undulator
+  minimum_gap: 5.5                     # Minimum designed gap in mm
+  shim_mp: 0.0                            # Gap between magnets in a row in mm
+  shim_pm: 0.5                            # Gap between magnets in a row in mm
+  period_length: 15.0                  # Primary period length in mm
+  magnets_per_period: 2                # Magnets per period in Halbach array (typically 4)
+  magnetization_first_magnet: [0.0,0.0,1.0] # the magnetization vector of first periodic magnet on lower beam
+  magnets_per_period_comp: 0           # Magnets per period in compensation Halbach array (typically 4)
+
+# =============================================================================
+# APPLE UNDULATOR SPECIFIC PARAMETERS
+# =============================================================================
+apple_undulator:
+  row_to_row_gap: 1.0                  # Distance between functional rows on the same jaw in mm
+  row_shift: 0.0                       # Distance of row shift in mm
+  jaw_shift: 0.0                       # Distance of jaw shift in mm ??
+  end_separation: 2.5                  # Separation of end magnet in standard APPLE constellation in mm ??
+  
+# =============================================================================
+# Material Definitions
+# =============================================================================
+geometry_info_file: "cpmu20_geometries.yaml"
+
+periodic_pole:
+  geometry: "periodic_pole"
+  material: 'vanadium_permendur'
+
+end_pole:
+  geometry: "end_pole"
+  material: 'vanadium_permendur'
+
+periodic_magnet:
+  geometry: "periodic_magnet"
+  material: 'REC'
+  ksi: [0.019, 0.06]                   # Permeability values (anisotropic)
+  remanence: 1.62624                   # Block remanence in T (1.21 * 1.344 for cryogenic grade)
+
+end_magnet_1:
+  geometry: "end_magnet_1"
+  material: 'REC'
+  ksi: [0.019, 0.06]                   # Permeability values (anisotropic)
+  remanence: 1.62624                   # Block remanence in T (1.21 * 1.344 for cryogenic grade)
+
+end_magnet_2:
+  geometry: "end_magnet_2"
+  material: 'REC'
+  ksi: [0.019, 0.06]                   # Permeability values (anisotropic)
+  remanence: 1.62624                   # Block remanence in T (1.21 * 1.344 for cryogenic grade)
+
+# =============================================================================
+# NOTES AND DOCUMENTATION
+# =============================================================================
+metadata:
+  author: "oqb"
+  created: "2024-01-01"
+  version: "1.0"
+  description: |
+    This YAML configuration file defines parameters for modeling
+    undulator devices, particularly APPLE-type undulators with
+    optional compensation magnets. The structure mirrors the
+    model_parameters and scan_parameters Python classes.
+  notes: |
+    - All length units are in millimeters (mm) unless otherwise specified
+    - Magnetic field units are in Tesla (T)
+    - Angle units are in degrees
+    - The 'ksi' parameter represents anisotropic permeability
+    - For square magnets, set square_magnet to true and specify the size

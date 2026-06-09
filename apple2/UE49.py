@@ -427,23 +427,23 @@ def enphitable(enrange,phirange,X,Y):
 if __name__ == '__main__':
     #define parameter space
     #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.arange(14,60.1,1)
-    shifts = np.arange(-25.65-25.65/16,25.75+25.65/16,25.65/16)
+    gaps = np.arange(14.2,24.3,0.5)
+    shifts = np.arange(-24.5-24.5/16,24.5+24.5/16,24.5/16)
     
     #shifts = np.arange(0,3,4)
-    shiftmodes = ['circular', 'linear']
+    shiftmodes = ['linear']
     #shiftmodes = ['linear']
     #set up APPLE 2 device (UE56)
     #solve peakfield in parameter space
     print (gaps)
     print(shifts)
     
-    min_gap = 15
+    min_gap = 16.2
     
     #parameter_Set Horizontal_polarisation
-    UE51_params = parameters.model_parameters(Mova = 0,
+    UE49_params = parameters.model_parameters(Mova = 0,
                                         periods = 10, 
-                                        periodlength =51.3,
+                                        periodlength =49,
                                         nominal_fmagnet_dimensions = [40.0,0.0,40.0], 
                                         #square_magnet = True,
                                         nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -454,71 +454,66 @@ if __name__ == '__main__':
                                         comp_magnet_chamfer = [3.0,0.0,3.0],
                                         magnets_per_period = 4,
                                         rowtorowgap = 1.2,
-                                        gap = 15, 
-                                        jawshift = 1,
-                                        rowshift = -51.3/4,
-                                        shiftmode = 'linear',
+                                        gap = 16.2, 
+                                        rowshift = 0,
+                                        shiftmode = 'circular',
                                         block_subdivision = [3,2,1],
-                                        M = 1.31,
+                                        M = 1.27,
                                         type = 'Plain_APPLE'                                        
                                         )
     
     basescan = parameters.scan_parameters(51.3,gaprange = gaps,shiftrange = shifts, shiftmoderange = shiftmodes)
     
-    UE51 = id1.plainAPPLE(UE51_params)
+    UE49 = id1.plainAPPLE(UE49_params)
     
-    UE51.cont.wradSolve()
+    UE49.cont.wradSolve()
     
-    fileheader = 'Undulator {}, Gap {}mm, Shift {}mm, Mode {}'.format(UE51_params.periodlength,
-                                                                      UE51_params.gap,
-                                                                      UE51_params.rowshift,
-                                                                      UE51_params.shiftmode)
+    fileheader = 'Undulator {}, Gap {}mm, Shift {}mm, Mode {}'.format(UE49_params.periodlength,
+                                                                      UE49_params.gap,
+                                                                      UE49_params.rowshift,
+                                                                      UE49_params.shiftmode)
     
-#    a = rd.FldFocKickPer(UE51.cont.radobj, [0,0,0],[0,1,0],51.3,78,[1,0,0],40,81,10,21,fileheader,[5,8,0,0],'T2m2',1.72,'tab')
+#    a = rd.FldFocKickPer(UE49.cont.radobj, [0,0,0],[0,1,0],51.3,78,[1,0,0],40,81,10,21,fileheader,[5,8,0,0],'T2m2',1.72,'tab')
     
 #    with open('kick_map.txt', 'w') as f:
 #        f.write(a[5])
     
 #    b, c, d = plot_kickmap(a[5],units = 'rad', energy_gev = 1.72)
     
-    case = af.CaseSolution(UE51)
+    case = af.CaseSolution(UE49)
     case.calculate_B_field()
     
-    plt.plot(case.bfield[:,0],case.bfield[:,1])
-    plt.plot(case.bfield[:,0],case.bfield[:,3])
-    plt.show()
-    
-    print ("Peak Field for ID {} is {}".format('UE51', np.max(case.bmax)))
+    print ("Peak Field for ID {} is {}".format('UE49', np.max(case.bmax)))
     
     a = stokes_from_single_period_field(case.bfield)
     
     print('stokes parameters are:\n')
     print({k: a[k] for k in ["s1", "s2", "s3", "psi_deg", "chi_deg"]})
     
-    sol = Solution(UE51_params,basescan,property = ['B'])
+    sol = Solution(UE49_params,basescan,property = ['B'])
     
- #   sol.solve('B')
+    sol.solve('B')
     
- #   babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
- #   bz = sol.results['Bmax'][:,:,:,0]
- #   bx = sol.results['Bmax'][:,:,:,2]
- #   bx[0,:,-2]= 0
- #   bx[0,:,1] = 0
- #   np.save('D:/Results/UE51/babs_UE51_gap_more321.npy',babs)
-  #  np.save('D:/Results/UE51/bx_UE51_gap_more321.npy',bx)
-  #  np.save('D:/Results/UE51/bz_UE51_gap_more321.npy',bz)
+    babs = np.linalg.norm(sol.results['Bmax'], axis = 3)
+    bz = sol.results['Bmax'][:,:,:,0]
+    bx = sol.results['Bmax'][:,:,:,2]
+    bx[0,:,-2]= 0
+    bx[0,:,1] = 0
+    np.save('D:/Results/UE49/babs_UE49_gap_more321.npy',babs)
+    np.save('D:/Results/UE49/bx_UE49_gap_more321.npy',bx)
+    np.save('D:/Results/UE49/bz_UE49_gap_more321.npy',bz)
     
     
-#    bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
-#    bphi[:,:,1]=-90.1
-#    bphi[:,:,-2]=90.1
-#    np.save('D:/Results/UE51/bphi_UE51_gap_more321.npy',bphi)
+    bphi = np.sign(shifts[:]) * (180 / np.pi) * np.arctan(sol.results['Bmax'][:,:,:,0]/sol.results['Bmax'][:,:,:,2])
+    bphi[:,:,1]=-90.1
+    bphi[:,:,-2]=90.1
+    np.save('D:/Results/UE49/bphi_UE49_gap_more321.npy',bphi)
     
     #or load
-    bphi=np.load('D:/Results/UE51/bphi_UE51_gap_more321.npy')
-    babs=np.load('D:/Results/UE51/babs_UE51_gap_more321.npy')
-    bx = np.load('D:/Results/UE51/bx_UE51_gap_more321.npy')
-    bz = np.load('D:/Results/UE51/bz_UE51_gap_more321.npy')
+    bphi=np.load('D:/Results/UE49/bphi_UE49_gap_more321.npy')
+    babs=np.load('D:/Results/UE49/babs_UE49_gap_more321.npy')
+    bx = np.load('D:/Results/UE49/bx_UE49_gap_more321.npy')
+    bz = np.load('D:/Results/UE49/bz_UE49_gap_more321.npy')
     
     bphi[:,:,1]=-90.1
     bphi[:,:,-2]=90.1

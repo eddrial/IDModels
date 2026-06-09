@@ -52,9 +52,15 @@ class model_parameters():
             "rowshift" : 0, # distance of row shift in mm
             "jawshift" : 0, #distance of jawshift in mm
             "end_separation" : 2.5, #separation of end magnet in usual APPLE end constellation
+            "termination_style" : 'HZB', #Default to HZB termination style. All other entries default to ESRF type termination
             
             #####  Compensated APPLE Undulator Parameters  #####
             "compappleseparation" : 15.0, # The gap between functional magnets and compenation magnets
+            
+            #####   CPMU Undulator Parameters   #####
+            "magnet_pole_ratio" : 6.1/3.4,
+            "magnet_length" : 6.1,
+            "pole_length" : 3.4,
             
             #####  Magnet Shape  #####
             
@@ -64,7 +70,10 @@ class model_parameters():
             "apple_clampcut_non_symmetric": [5.0, 0.0, 3.0],
             "magnet_chamfer" : [5.0,0.0,5.0], # Dimensions of chamfer for a rectangular magnet (to make it octagonal) [mm]
             "direction" : 'y', # The direction of extrusion - along the direction of travel of the electrons. Dimensions propogate in the order [z,y,x]
-        
+            
+            #####   Pole Shape   #####
+            "nominal_pole_dimensions" : [20.0,0.0,20.0,],
+            
             #####  Compensation Magnets #####
             
             "nominal_cmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
@@ -73,6 +82,10 @@ class model_parameters():
             "hcomp_magnet_chamfer" : [5.0,0.0,5.0],
             "nominal_vcmagnet_dimensions" : [15.0,0.0,30.0], # dimensions of the compensation magnets [mm]
             "vcomp_magnet_chamfer" : [5.0,0.0,5.0],
+            
+            #####  TRIBS Magnets #####
+            
+            "nominal_tmagnet_dimensions" : [30.0,0,30.0], # dimensions of the central magnet row magnets in a TRIBS undulator [mm]
             
             #####  Magnet Material #####
             

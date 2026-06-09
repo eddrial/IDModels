@@ -19,8 +19,8 @@ import time
 if __name__ == '__main__':
     #define parameter space
     #gaps = np.array([15,17,20,25,30,40,50])
-    gaps = np.arange(4,7.1,1)
-    shifts = np.arange(0,20.1,2500/4)
+    gaps = np.arange(4,6.1,2)
+    shifts = np.arange(0,12.9,12.8)
     
     #shifts = np.arange(0,3,4)
     #shiftmodes = ['circular', 'linear']
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     #parameter_Set Horizontal_polarisation
     UE40_params = parameters.model_parameters(Mova = 0,
                                         periods = 5, 
-                                        periodlength =40.0,
+                                        periodlength =25.6,
                                         nominal_fmagnet_dimensions = [30.0,0.0,30.0], 
                                         #square_magnet = True,
                                         nominal_cmagnet_dimensions = [10.0,0.0,15.0],
@@ -50,7 +50,7 @@ if __name__ == '__main__':
                                         rowshift = 0,
                                         shiftmode = 'linear',
                                         block_subdivision = [2,3,1],
-                                        M = 1.31,
+                                        M = 1.61,
                                         type = 'Plain_APPLE'                                        
                                         )
     

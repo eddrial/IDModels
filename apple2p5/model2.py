@@ -40,6 +40,8 @@ import matplotlib.gridspec as gridspec
 from wradia.wrad_obj import wradObjCnt
 
 class plainAPPLE():
+    
+
     '''
     classdocs
     '''
@@ -52,6 +54,12 @@ class plainAPPLE():
         rd.UtiDelAll()
         self.cont = wrd.wradObjCnt([])
         
+        if model_parameters.termination_style == 'HZB':
+            termination = ha.HalbachTermination_APPLE_HZB(model_parameters,fmagnet)
+            
+        else:
+            termination = ha.HalbachTermination_APPLE(model_parameters,fmagnet)
+        
         self.model_parameters = model_parameters
         mp = self.model_parameters
         
@@ -63,12 +71,24 @@ class plainAPPLE():
             shiftmodesign = 0
         
         self.rownames = ['q1','q2','q3','q4']
-        self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet),ha.HalbachTermination_APPLE(model_parameters,fmagnet)) for _ in range(4)])
         
-        for r in range(4):
-            self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet),
-                                              ha.HalbachTermination_APPLE(model_parameters,fmagnet), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
-        
+        if model_parameters.termination_style == 'HZB':
+            self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet),
+                                                       ha.HalbachTermination_APPLE_HZB(model_parameters, fmagnet)) for _ in range(4)])
+            
+            for r in range(4):
+                self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet),
+                                                  ha.HalbachTermination_APPLE_HZB(model_parameters, fmagnet), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+            
+        else:
+            self.allarraytabs = np.array([ha.MagnetRow(self.rownames[0], ha.HalbachArray(model_parameters,fmagnet),
+                                                       ha.HalbachTermination_APPLE(model_parameters, fmagnet)) for _ in range(4)])
+            
+            for r in range(4):
+                self.allarraytabs[r] = ha.MagnetRow(self.rownames[r], ha.HalbachArray(model_parameters,fmagnet),
+                                                  ha.HalbachTermination_APPLE(model_parameters, fmagnet), beam = int((r//2)), quadrant = int(self.rownames[r][1])-1, row = r)
+            
+            
         ##### Functional Magnets #####
         
         ### Q1 ###
@@ -960,7 +980,7 @@ class tribsAPPLE():
         
         ### S1 ###
 
-        self.allarraytabs[0].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+        self.allarraytabs[0].cont.wradTranslate([-((mp.nominal_fmagnet_dimensions[2]+mp.nominal_tmagnet_dimensions[2])/2 + mp.rowtorowgap),
                                                  0.0,
                                                  -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
         self.allarraytabs[0].cont.wradFieldInvert()
@@ -971,12 +991,12 @@ class tribsAPPLE():
         ### S2 ###
         self.allarraytabs[1].cont.wradTranslate([0,
                                                  mp.rowshift,
-                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+                                                 -(mp.nominal_tmagnet_dimensions[0] + mp.gap)/2.0])
         self.allarraytabs[1].cont.wradFieldInvert()
         self.allarraytabs[1].cont.wradRotate([0,0,0],[0,1,0],np.pi)
 
         ### S3 ###
-        self.allarraytabs[2].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+        self.allarraytabs[2].cont.wradTranslate([-((mp.nominal_fmagnet_dimensions[2]+mp.nominal_tmagnet_dimensions[2])/2 + mp.rowtorowgap),
                                                  0.0,
                                                  -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
         self.allarraytabs[2].cont.wradFieldInvert()
@@ -986,18 +1006,18 @@ class tribsAPPLE():
         
         
         ### S4 ###
-        self.allarraytabs[3].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+        self.allarraytabs[3].cont.wradTranslate([-((mp.nominal_fmagnet_dimensions[2]+mp.nominal_tmagnet_dimensions[2])/2 + mp.rowtorowgap),
                                                  mp.rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
         
         ### S5 ###
         self.allarraytabs[4].cont.wradTranslate([0,
                                                  0.0,
-                                                 -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
+                                                 -(mp.nominal_tmagnet_dimensions[0] + mp.gap)/2.0])
  
         
         ### S6 ###
-        self.allarraytabs[5].cont.wradTranslate([-(mp.nominal_fmagnet_dimensions[2] + mp.rowtorowgap),
+        self.allarraytabs[5].cont.wradTranslate([-((mp.nominal_fmagnet_dimensions[2]+mp.nominal_tmagnet_dimensions[2])/2 + mp.rowtorowgap),
                                                  mp.rowshift*shiftmodesign,
                                                  -(mp.nominal_fmagnet_dimensions[0] + mp.gap)/2.0])
         self.allarraytabs[5].cont.wradReflect([0,0,0],[1,0,0])
@@ -1032,7 +1052,7 @@ if __name__ == '__main__':
     #array2magnet = ms.appleMagnet(magnet_centre  = [0,0,0], this_magnet_material = 'default', colour = 'default', magnet_thickness=testparams.secondperiodlength)
     #b = twoPeriodAPPLE(testparams)
     
-    b = tribsAPPLE(testparams)
+    b = plainAPPLE(testparams)
 
     
     #draw object

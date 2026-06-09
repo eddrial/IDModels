@@ -1,0 +1,72 @@
+# =============================================================================
+# MAGNET/POLE SHAPE DEFINITIONS
+# =============================================================================
+periodic_magnet:
+  form_type: 'clamp' 		       # types: 'square', 'clamp1', 'pole1', ..., depending on type, other parameters!
+  full_block_dimensions: [50.0, 35.0, 6.1]  # [width, height, thickness] in mm (thickness calculated automatically)  
+  clamp_cutout: [5.0,12.3,6.1] # dimensions of clamps to be cut-out of full blocks, upper left and right corners if magnet viewed in x-y plane
+  y_drop: -0.07 # drop in y-direction (positive=farther away from beam)
+  y_alignment_0: "gap" # describing how the vertical direction is aligned: "gap" - top of element is aligned via gap value (without y_drop)
+  chamf: 0.3 # chamfer in up- and down-stream direction
+  frac_y: 1
+  frac_z: 1
+  segm_x: 4
+  segm_y: 2
+  segm_z: 4
+ 
+end_magnet_1:
+  form_type: 'clamp' 		       # types: 'square', 'clamp1', 'pole1', ..., depending on type, other parameters!
+  full_block_dimensions: [50.0, 29.0, 7.9]  # [width, height, thickness] in mm (thickness calculated automatically)  
+  clamp_cutout: [5.0,9.1,7.9] # dimensions of clamps to be cut-out of full blocks, upper left and right corners if magnet viewed in x-y plane
+  y_drop: 0.0 # drop in y-direction (positive=farther away from beam)
+  chamf: 0.3 # chamfer in up- and down-stream direction
+  y_alignment_0: "bottom" # describing how the vertical direction is aligned: "gap" - top of element is aligned via gap value (without y_drop), "bottom" - bottom aligned with lowest edge
+  frac_y: 1
+  frac_z: 1
+  segm_x: 4
+  segm_y: 2
+  segm_z: 4
+ 
+end_magnet_2:
+  form_type: 'square' 		       # types: 'square', 'clamp1', 'pole1', ..., depending on type, other parameters!
+  full_block_dimensions: [50.0, 18.1, 6.5]  # [width, height, thickness] in mm (thickness calculated automatically)  
+  y_drop: 0.0 # drop in y-direction (positive=farther away from beam)
+  chamf: 0.3 # chamfer in up- and down-stream direction
+  y_alignment_0: "bottom" # describing how the vertical direction is aligned: "gap" - top of element is aligned via gap value (without y_drop), "bottom" - bottom aligned with lowest edge
+  frac_y: 1
+  frac_z: 1
+  segm_x: 4
+  segm_y: 2
+  segm_z: 4
+
+periodic_pole:
+  form_type: 'cpmu20_pole'        # types: 'square', 'clamp1', 'pole1', ..., depending on type, other parameters!
+  main_block_dimensions: [34.0,30.0,3.4]  # [lPolMZ,lPolMY,lPole] in mm (thickness calculated automatically)  
+  lPolMSY: 2.84
+  lPolSZ: 3.0
+  lPolLSY: 18.0
+  lPolMChamf: 0.5  
+  y_drop: 0.0 # drop in y-direction (positive=farther away from beam)
+  y_alignment_0: "gap" # describing how the vertical direction is aligned: "gap" - top of element is aligned via gap value (without y_drop)
+  chamf: 0.3
+  frac_y: 12
+  frac_z: 6
+  segm_x: 6
+  segm_y: 12
+  segm_z: 4
+
+end_pole:
+  form_type: 'cpmu20_pole' 		       # types: 'square', 'clamp1', 'pole1', ..., depending on type, other parameters!
+  main_block_dimensions: [34.0,35.0,2.2]  # [lPolMZ,lPolMY,lPole] in mm (thickness calculated automatically)  
+  lPolMSY: 2.84
+  lPolSZ: 3.0
+  lPolLSY: 18.0
+  lPolMChamf: 0.5  
+  y_drop: 0.0 # drop in y-direction (positive=farther away from beam)
+  y_alignment_0: "gap" # describing how the vertical direction is aligned: "gap" - top of element is aligned via gap value (without y_drop)  chamf: 0.3
+  frac_y: 12
+  frac_z: 6
+  segm_x: 6
+  segm_y: 12
+  segm_z: 4
+
